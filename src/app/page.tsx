@@ -64,14 +64,29 @@ export default function Dashboard() {
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-               <h3 className="font-bold text-gray-800 mb-2">Accesos Directos</h3>
-               <div className="space-y-2">
-                 <Link href="/config/establecimientos" className="block text-[#016098] hover:underline">Ir al Mantenedor de Establecimientos →</Link>
-                 <Link href="/config/asignaturas" className="block text-[#016098] hover:underline">Ir al Mantenedor de Asignaturas →</Link>
-               </div>
-             </div>
+          <div className="mt-8">
+            <h3 className="font-bold text-gray-800 mb-4 text-lg">Accesos Directos de Administración</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <Link href="/config/establecimientos" className="group bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:border-[#016098] hover:shadow-md transition-all flex items-center gap-4 cursor-pointer">
+                 <div className="bg-blue-50 p-4 rounded-full text-[#016098] group-hover:bg-[#016098] group-hover:text-white transition-colors">
+                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                 </div>
+                 <div>
+                   <h4 className="font-bold text-gray-800 text-lg group-hover:text-[#016098]">Mantenedor de Establecimientos</h4>
+                   <p className="text-sm text-gray-500 mt-1">Gestione colegios, liceos y asigne niveles educativos.</p>
+                 </div>
+               </Link>
+
+               <Link href="/config/asignaturas" className="group bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:border-amber-500 hover:shadow-md transition-all flex items-center gap-4 cursor-pointer">
+                 <div className="bg-amber-50 p-4 rounded-full text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                 </div>
+                 <div>
+                   <h4 className="font-bold text-gray-800 text-lg group-hover:text-amber-600">Mantenedor de Asignaturas</h4>
+                   <p className="text-sm text-gray-500 mt-1">Cree y edite asignaturas regulares, especialistas y JEC.</p>
+                 </div>
+               </Link>
+            </div>
           </div>
         </>
       ) : (

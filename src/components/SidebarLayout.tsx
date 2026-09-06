@@ -104,7 +104,7 @@ export default function SidebarLayout({
               >
                 <option value="">-- Global (Seleccione) --</option>
                 {establecimientos.map(e => (
-                  <option key={e.id} value={e.id}>{e.rbd} - {e.nombre}</option>
+                  <option key={e.esedSec} value={e.esedSec}>{e.esedCod} - {e.esedDescripcion}</option>
                 ))}
               </select>
             </div>

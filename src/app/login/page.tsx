@@ -23,7 +23,7 @@ export default function Login() {
         } else {
            localStorage.setItem('selectedEstablecimientoId', ''); // Global view
         }
-        router.push('/');
+        window.location.href = '/';
       } else {
         setError('Credenciales incorrectas. (Pista: a16@cmds.cl o admin@cmds.cl / admin)');
       }

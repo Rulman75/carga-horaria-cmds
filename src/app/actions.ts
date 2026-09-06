@@ -530,10 +530,10 @@ export async function updateAsignaturaNombre(asigCod: string, asigDescripcion: s
 export async function getDashboardSummary(establecimientoId?: number) {
   if (establecimientoId) {
     const docentes = await prisma.docenteEstablecimiento.count({ where: { establecimientoId } });
-    const config = await prisma.establecimiento.findUnique({ where: { id: establecimientoId } });
+    const config = await prisma.establecimiento.findUnique({ where: { esedSec: establecimientoId } });
     const grados = await prisma.establecimientoGrado.findMany({ where: { establecimientoId }, include: { grado: true } });
     const totalCursos = grados.reduce((sum, g) => sum + g.cantidadCursos, 0);
-    return { docentes, cursos: totalCursos, tipo: 'ESTABLECIMIENTO', nombre: config?.nombre || '' };
+    return { docentes, cursos: totalCursos, tipo: 'ESTABLECIMIENTO', nombre: config?.esedDescripcion || '' };
   } else {
     const establecimientos = await prisma.establecimiento.count();
     const docentes = await prisma.docente.count();

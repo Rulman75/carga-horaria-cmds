@@ -1,0 +1,310 @@
+{
+  "44": {
+    "lectivas_pedagogicas": 38,
+    "lectivas_cronologicas": "28:30",
+    "recreo_cronologicas": "3:00",
+    "no_lectivas_cronologicas": "12:30",
+    "total_cronologicas": 44
+  },
+  "43": {
+    "lectivas_pedagogicas": 37,
+    "lectivas_cronologicas": "27:45",
+    "recreo_cronologicas": "2:56",
+    "no_lectivas_cronologicas": "12:19",
+    "total_cronologicas": 43
+  },
+  "42": {
+    "lectivas_pedagogicas": 36,
+    "lectivas_cronologicas": "27:00",
+    "recreo_cronologicas": "2:52",
+    "no_lectivas_cronologicas": "12:08",
+    "total_cronologicas": 42
+  },
+  "41": {
+    "lectivas_pedagogicas": 35,
+    "lectivas_cronologicas": "26:15",
+    "recreo_cronologicas": "2:48",
+    "no_lectivas_cronologicas": "11:57",
+    "total_cronologicas": 41
+  },
+  "40": {
+    "lectivas_pedagogicas": 35,
+    "lectivas_cronologicas": "26:15",
+    "recreo_cronologicas": "2:44",
+    "no_lectivas_cronologicas": "11:01",
+    "total_cronologicas": 40
+  },
+  "39": {
+    "lectivas_pedagogicas": 34,
+    "lectivas_cronologicas": "25:30",
+    "recreo_cronologicas": "2:40",
+    "no_lectivas_cronologicas": "10:50",
+    "total_cronologicas": 39
+  },
+  "38": {
+    "lectivas_pedagogicas": 33,
+    "lectivas_cronologicas": "24:45",
+    "recreo_cronologicas": "2:35",
+    "no_lectivas_cronologicas": "10:40",
+    "total_cronologicas": 38
+  },
+  "37": {
+    "lectivas_pedagogicas": 32,
+    "lectivas_cronologicas": "24:00",
+    "recreo_cronologicas": "2:31",
+    "no_lectivas_cronologicas": "10:29",
+    "total_cronologicas": 37
+  },
+  "36": {
+    "lectivas_pedagogicas": 31,
+    "lectivas_cronologicas": "23:15",
+    "recreo_cronologicas": "2:27",
+    "no_lectivas_cronologicas": "10:18",
+    "total_cronologicas": 36
+  },
+  "35": {
+    "lectivas_pedagogicas": 30,
+    "lectivas_cronologicas": "22:30",
+    "recreo_cronologicas": "2:23",
+    "no_lectivas_cronologicas": "10:07",
+    "total_cronologicas": 35
+  },
+  "34": {
+    "lectivas_pedagogicas": 29,
+    "lectivas_cronologicas": "21:45",
+    "recreo_cronologicas": "2:19",
+    "no_lectivas_cronologicas": "9:56",
+    "total_cronologicas": 34
+  },
+  "33": {
+    "lectivas_pedagogicas": 29,
+    "lectivas_cronologicas": "21:45",
+    "recreo_cronologicas": "2:15",
+    "no_lectivas_cronologicas": "9:00",
+    "total_cronologicas": 33
+  },
+  "32": {
+    "lectivas_pedagogicas": 28,
+    "lectivas_cronologicas": "21:00",
+    "recreo_cronologicas": "2:11",
+    "no_lectivas_cronologicas": "8:49",
+    "total_cronologicas": 32
+  },
+  "31": {
+    "lectivas_pedagogicas": 27,
+    "lectivas_cronologicas": "20:15",
+    "recreo_cronologicas": "2:07",
+    "no_lectivas_cronologicas": "8:38",
+    "total_cronologicas": 31
+  },
+  "30": {
+    "lectivas_pedagogicas": 26,
+    "lectivas_cronologicas": "19:30",
+    "recreo_cronologicas": "2:03",
+    "no_lectivas_cronologicas": "8:27",
+    "total_cronologicas": 30
+  },
+  "29": {
+    "lectivas_pedagogicas": 25,
+    "lectivas_cronologicas": "18:45",
+    "recreo_cronologicas": "1:59",
+    "no_lectivas_cronologicas": "8:16",
+    "total_cronologicas": 29
+  },
+  "28": {
+    "lectivas_pedagogicas": 24,
+    "lectivas_cronologicas": "18:00",
+    "recreo_cronologicas": "1:55",
+    "no_lectivas_cronologicas": "8:05",
+    "total_cronologicas": 28
+  },
+  "27": {
+    "lectivas_pedagogicas": 23,
+    "lectivas_cronologicas": "17:15",
+    "recreo_cronologicas": "1:50",
+    "no_lectivas_cronologicas": "7:55",
+    "total_cronologicas": 27
+  },
+  "26": {
+    "lectivas_pedagogicas": 22,
+    "lectivas_cronologicas": "16:30",
+    "recreo_cronologicas": "1:46",
+    "no_lectivas_cronologicas": "7:44",
+    "total_cronologicas": 26
+  },
+  "25": {
+    "lectivas_pedagogicas": 22,
+    "lectivas_cronologicas": "16:30",
+    "recreo_cronologicas": "1:42",
+    "no_lectivas_cronologicas": "6:48",
+    "total_cronologicas": 25
+  },
+  "24": {
+    "lectivas_pedagogicas": 21,
+    "lectivas_cronologicas": "15:45",
+    "recreo_cronologicas": "1:38",
+    "no_lectivas_cronologicas": "6:37",
+    "total_cronologicas": 24
+  },
+  "23": {
+    "lectivas_pedagogicas": 20,
+    "lectivas_cronologicas": "15:00",
+    "recreo_cronologicas": "1:34",
+    "no_lectivas_cronologicas": "6:26",
+    "total_cronologicas": 23
+  },
+  "22": {
+    "lectivas_pedagogicas": 19,
+    "lectivas_cronologicas": "14:15",
+    "recreo_cronologicas": "1:30",
+    "no_lectivas_cronologicas": "6:15",
+    "total_cronologicas": 22
+  },
+  "21": {
+    "lectivas_pedagogicas": 18,
+    "lectivas_cronologicas": "13:30",
+    "recreo_cronologicas": "1:26",
+    "no_lectivas_cronologicas": "6:04",
+    "total_cronologicas": 21
+  },
+  "20": {
+    "lectivas_pedagogicas": 17,
+    "lectivas_cronologicas": "12:45",
+    "recreo_cronologicas": "1:22",
+    "no_lectivas_cronologicas": "5:53",
+    "total_cronologicas": 20
+  },
+  "19": {
+    "lectivas_pedagogicas": 16,
+    "lectivas_cronologicas": "12:00",
+    "recreo_cronologicas": "1:18",
+    "no_lectivas_cronologicas": "5:42",
+    "total_cronologicas": 19
+  },
+  "18": {
+    "lectivas_pedagogicas": 16,
+    "lectivas_cronologicas": "12:00",
+    "recreo_cronologicas": "1:14",
+    "no_lectivas_cronologicas": "4:46",
+    "total_cronologicas": 18
+  },
+  "17": {
+    "lectivas_pedagogicas": 15,
+    "lectivas_cronologicas": "11:15",
+    "recreo_cronologicas": "1:10",
+    "no_lectivas_cronologicas": "4:35",
+    "total_cronologicas": 17
+  },
+  "16": {
+    "lectivas_pedagogicas": 14,
+    "lectivas_cronologicas": "10:30",
+    "recreo_cronologicas": "1:05",
+    "no_lectivas_cronologicas": "4:25",
+    "total_cronologicas": 16
+  },
+  "15": {
+    "lectivas_pedagogicas": 13,
+    "lectivas_cronologicas": "9:45",
+    "recreo_cronologicas": "1:01",
+    "no_lectivas_cronologicas": "4:14",
+    "total_cronologicas": 15
+  },
+  "14": {
+    "lectivas_pedagogicas": 12,
+    "lectivas_cronologicas": "9:00",
+    "recreo_cronologicas": "0:57",
+    "no_lectivas_cronologicas": "4:03",
+    "total_cronologicas": 14
+  },
+  "13": {
+    "lectivas_pedagogicas": 11,
+    "lectivas_cronologicas": "8:15",
+    "recreo_cronologicas": "0:53",
+    "no_lectivas_cronologicas": "3:52",
+    "total_cronologicas": 13
+  },
+  "12": {
+    "lectivas_pedagogicas": 10,
+    "lectivas_cronologicas": "7:30",
+    "recreo_cronologicas": "0:49",
+    "no_lectivas_cronologicas": "3:41",
+    "total_cronologicas": 12
+  },
+  "11": {
+    "lectivas_pedagogicas": 10,
+    "lectivas_cronologicas": "7:30",
+    "recreo_cronologicas": "0:45",
+    "no_lectivas_cronologicas": "2:45",
+    "total_cronologicas": 11
+  },
+  "10": {
+    "lectivas_pedagogicas": 9,
+    "lectivas_cronologicas": "6:45",
+    "recreo_cronologicas": "0:41",
+    "no_lectivas_cronologicas": "2:34",
+    "total_cronologicas": 10
+  },
+  "9": {
+    "lectivas_pedagogicas": 8,
+    "lectivas_cronologicas": "6:00",
+    "recreo_cronologicas": "0:37",
+    "no_lectivas_cronologicas": "2:23",
+    "total_cronologicas": 9
+  },
+  "8": {
+    "lectivas_pedagogicas": 7,
+    "lectivas_cronologicas": "5:15",
+    "recreo_cronologicas": "0:33",
+    "no_lectivas_cronologicas": "2:12",
+    "total_cronologicas": 8
+  },
+  "7": {
+    "lectivas_pedagogicas": 6,
+    "lectivas_cronologicas": "4:30",
+    "recreo_cronologicas": "0:29",
+    "no_lectivas_cronologicas": "2:01",
+    "total_cronologicas": 7
+  },
+  "6": {
+    "lectivas_pedagogicas": 5,
+    "lectivas_cronologicas": "3:45",
+    "recreo_cronologicas": "0:25",
+    "no_lectivas_cronologicas": "1:50",
+    "total_cronologicas": 6
+  },
+  "5": {
+    "lectivas_pedagogicas": 4,
+    "lectivas_cronologicas": "3:00",
+    "recreo_cronologicas": "0:20",
+    "no_lectivas_cronologicas": "1:40",
+    "total_cronologicas": 5
+  },
+  "4": {
+    "lectivas_pedagogicas": 3,
+    "lectivas_cronologicas": "2:15",
+    "recreo_cronologicas": "0:16",
+    "no_lectivas_cronologicas": "1:29",
+    "total_cronologicas": 4
+  },
+  "3": {
+    "lectivas_pedagogicas": 3,
+    "lectivas_cronologicas": "2:15",
+    "recreo_cronologicas": "0:12",
+    "no_lectivas_cronologicas": "0:33",
+    "total_cronologicas": 3
+  },
+  "2": {
+    "lectivas_pedagogicas": 2,
+    "lectivas_cronologicas": "1:30",
+    "recreo_cronologicas": "0:08",
+    "no_lectivas_cronologicas": "0:22",
+    "total_cronologicas": 2
+  },
+  "1": {
+    "lectivas_pedagogicas": 1,
+    "lectivas_cronologicas": "0:45",
+    "recreo_cronologicas": "0:04",
+    "no_lectivas_cronologicas": "0:11",
+    "total_cronologicas": 1
+  }
+}

@@ -1,0 +1,238 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Usuario {
+  id                Int      @id @default(autoincrement())
+  email             String   @unique
+  nombre            String
+  password          String
+  rol               String   @default("USER") // ADMIN o ESTABLECIMIENTO
+  establecimientoId Int?     // Si es nulo, es admin global. Si tiene ID, está restringido.
+  establecimiento   Establecimiento? @relation(fields: [establecimientoId], references: [esedSec])
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Establecimiento {
+  esedSec         Int      @id
+  esedCod         Int?
+  esadCod         Int?
+  esedDescripcion String?
+  esedDescCorta   String?
+  esJec           Boolean  @default(false)
+
+  docentes        DocenteEstablecimiento[]
+  usuarios        Usuario[]
+  grados          EstablecimientoGrado[]
+  planesPropios   PlanEstablecimiento[]
+  tiposEnsenanza  EstablecimientoTipoEnsenanza[]
+}
+
+model TipoEnsenanza {
+  tienCod         Int      @id
+  tienDescripcion String?
+  grados          Grado[]
+  planDetalles    PlanEstudioDet[]
+  planEstDetalles PlanEstablecimientoDet[]
+  establecimientos EstablecimientoTipoEnsenanza[]
+}
+
+model EstablecimientoTipoEnsenanza {
+  establecimientoId Int
+  establecimiento   Establecimiento @relation(fields: [establecimientoId], references: [esedSec])
+  
+  tienCod           Int
+  tipoEnsenanza     TipoEnsenanza @relation(fields: [tienCod], references: [tienCod])
+
+  @@id([establecimientoId, tienCod])
+}
+
+model Grado {
+  tienCod               Int
+  tipoEnsenanza         TipoEnsenanza @relation(fields: [tienCod], references: [tienCod])
+  grteCod               Int
+  grteDescrip           String?
+  grteCodInt            Float?
+  grteCodMinisterial    Float?
+  grteDescMinisterial   String?
+  grteCodSige           Float?
+
+  @@id([tienCod, grteCod])
+
+  cargasHorarias        CargaHoraria[]
+  planDetalles          PlanEstudioDet[]
+  planEstDetalles       PlanEstablecimientoDet[]
+  establecimientoGrados EstablecimientoGrado[]
+}
+
+model EstablecimientoGrado {
+  establecimientoId Int
+  establecimiento   Establecimiento @relation(fields: [establecimientoId], references: [esedSec])
+  
+  tienCod           Int
+  grteCod           Int
+  grado             Grado @relation(fields: [tienCod, grteCod], references: [tienCod, grteCod])
+
+  cantidadCursos    Int   @default(1)
+
+  @@id([establecimientoId, tienCod, grteCod])
+}
+
+model Asignatura {
+  asigCod               String   @id
+  asigDescripcion       String
+  esEspecialistaSiempre Boolean  @default(false)
+  esTallerJec           Boolean  @default(false)
+  asigTipo              String?
+  
+  cargasHorarias  CargaHoraria[]
+  planDetalles    PlanEstudioDet[]
+  planEstDetalles PlanEstablecimientoDet[]
+}
+
+model Docente {
+  id              Int      @id @default(autoincrement())
+  rut             String   @unique
+  nombres         String
+  apellidos       String
+  apellidoPaterno String?
+  apellidoMaterno String?
+  tipoContrato    String?  
+  horasTitular    Int?     
+  tituloProfesional String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  establecimientos DocenteEstablecimiento[]
+  cargasHorarias   CargaHoraria[]
+}
+
+model DocenteEstablecimiento {
+  docenteId         Int
+  establecimientoId Int
+  docente           Docente @relation(fields: [docenteId], references: [id])
+  establecimiento   Establecimiento @relation(fields: [establecimientoId], references: [esedSec])
+
+  @@id([docenteId, establecimientoId])
+}
+
+model PlanEstudioEnc {
+  codPlan      Int       @id
+  nombrePlan   String?
+  estadoPlan   String?
+  tipo         String?
+
+  detalles     PlanEstudioDet[]
+  planesPropios PlanEstablecimiento[]
+}
+
+model PlanEstudioDet {
+  id           Int       @id @default(autoincrement())
+  codPlan      Int
+  planEnc      PlanEstudioEnc @relation(fields: [codPlan], references: [codPlan])
+  
+  tienCod      Int
+  tipoEnsenanza TipoEnsenanza @relation(fields: [tienCod], references: [tienCod])
+  
+  grteCod      Int
+  grado        Grado @relation(fields: [tienCod, grteCod], references: [tienCod, grteCod])
+  
+  codAsignatura String
+  asignatura    Asignatura @relation(fields: [codAsignatura], references: [asigCod])
+  
+  horasCJ       Float?
+  horasSJ       Float?
+  obligatoria   String?
+  formacion     String?
+}
+
+// NUEVOS MODELOS PARA EL ESTABLECIMIENTO (Plan Propio)
+model PlanEstablecimiento {
+  id                Int       @id @default(autoincrement())
+  establecimientoId Int
+  establecimiento   Establecimiento @relation(fields: [establecimientoId], references: [esedSec])
+  
+  codPlanBase       Int
+  planBase          PlanEstudioEnc @relation(fields: [codPlanBase], references: [codPlan])
+  
+  nombre            String    // Ej. "Plan 1° a 6° Básico D-75 2026"
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  detalles          PlanEstablecimientoDet[]
+  cargasHorarias    CargaHoraria[]
+}
+
+model PlanEstablecimientoDet {
+  id                    Int       @id @default(autoincrement())
+  planEstablecimientoId Int
+  planEstablecimiento   PlanEstablecimiento @relation(fields: [planEstablecimientoId], references: [id], onDelete: Cascade)
+  
+  tienCod               Int
+  tipoEnsenanza         TipoEnsenanza @relation(fields: [tienCod], references: [tienCod])
+  
+  grteCod               Int
+  grado                 Grado @relation(fields: [tienCod, grteCod], references: [tienCod, grteCod])
+  
+  codAsignatura         String
+  asignatura            Asignatura @relation(fields: [codAsignatura], references: [asigCod])
+  
+  horas                 Float     // Ya resuelto si es CJ o SJ al momento de clonar o editar
+  obligatoria           String?
+  formacion             String?
+  esPropio              Boolean   @default(false) // True si el colegio la agregó manualmente, False si viene del Plan Base
+}
+
+
+model ActividadNoLectiva {
+  id          Int      @id @default(autoincrement())
+  descripcion String   @unique
+  cargas      CargaHoraria[]
+}
+
+model CargaHoraria {
+  id                    Int      @id @default(autoincrement())
+  docenteId             Int
+  docente               Docente  @relation(fields: [docenteId], references: [id])
+  
+  planEstablecimientoId Int
+  planEstablecimiento   PlanEstablecimiento @relation(fields: [planEstablecimientoId], references: [id])
+  
+  // Opcionales para horas No Lectivas
+  tienCod               Int?
+  grteCod               Int?
+  grado                 Grado?    @relation(fields: [tienCod, grteCod], references: [tienCod, grteCod])
+  
+  asignaturaCod         String?
+  asignatura            Asignatura? @relation(fields: [asignaturaCod], references: [asigCod])
+  
+  // Opcionales para horas No Lectivas
+  actividadNoLectivaId  Int?
+  actividadNoLectiva    ActividadNoLectiva? @relation(fields: [actividadNoLectivaId], references: [id])
+  
+  financiamiento        String? // 'SEP', 'PIE', null
+
+  horasAllocadas        Int      
+  tipoCarga             String   // 'LECTIVA' o 'NO_LECTIVA'
+  observacion           String?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+
+
+model TablaConversion {
+  jornadaSemanal         Int    @id
+  lectivasPedagogicas    Int
+  lectivasCronologicas   String
+  recreoCronologicas     String
+  noLectivasCronologicas String
+}

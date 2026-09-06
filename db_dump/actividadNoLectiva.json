@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "descripcion": "Planificación"
+  },
+  {
+    "id": 2,
+    "descripcion": "Consejo de Profesores"
+  },
+  {
+    "id": 3,
+    "descripcion": "Atención de Apoderados"
+  },
+  {
+    "id": 4,
+    "descripcion": "Taller Técnico"
+  },
+  {
+    "id": 5,
+    "descripcion": "Colación"
+  },
+  {
+    "id": 6,
+    "descripcion": "Actividades Extracurriculares"
+  },
+  {
+    "id": 7,
+    "descripcion": "Reforzamiento Educativo"
+  },
+  {
+    "id": 8,
+    "descripcion": "Taller Pedagógico"
+  },
+  {
+    "id": 9,
+    "descripcion": "Apoyo Curricular"
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "email": "admin@cmds.cl",
+    "nombre": "Administrador CMDS",
+    "password": "admin",
+    "rol": "ADMIN",
+    "establecimientoId": null,
+    "createdAt": "2026-09-04T16:44:34.311Z",
+    "updatedAt": "2026-09-04T16:44:34.311Z"
+  },
+  {
+    "id": 2,
+    "email": "a16@cmds.cl",
+    "nombre": "Director A-16",
+    "password": "admin",
+    "rol": "ESTABLECIMIENTO",
+    "establecimientoId": 2,
+    "createdAt": "2026-09-04T16:44:34.320Z",
+    "updatedAt": "2026-09-04T17:20:34.505Z"
+  },
+  {
+    "id": 4,
+    "email": "d75@cmds.cl",
+    "nombre": "Director D-75",
+    "password": "admin",
+    "rol": "ESTABLECIMIENTO",
+    "establecimientoId": 18,
+    "createdAt": "2026-09-05T22:35:00.170Z",
+    "updatedAt": "2026-09-05T22:35:00.170Z"
+  }
+]

@@ -1,0 +1,1937 @@
+[
+  {
+    "tienCod": 10,
+    "grteCod": 130,
+    "grteDescrip": "1er nivel de Transición (Pre-kinder)",
+    "grteCodInt": 4,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Primer Nivel de Transición (Pre-Kinder)",
+    "grteCodSige": 4
+  },
+  {
+    "tienCod": 10,
+    "grteCod": 140,
+    "grteDescrip": "2° nivel de Transición (Kinder)",
+    "grteCodInt": 5,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Segundo Nivel de Transición (Kinder)",
+    "grteCodSige": 5
+  },
+  {
+    "tienCod": 10,
+    "grteCod": 150,
+    "grteDescrip": "Sala Cuna Menor",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Sala Cuna",
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 10,
+    "grteCod": 160,
+    "grteDescrip": "Sala Cuna Mayor",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Sala Cuna",
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 10,
+    "grteCod": 170,
+    "grteDescrip": "Nivel Medio Menor",
+    "grteCodInt": 2,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Nivel Medio Menor",
+    "grteCodSige": 2
+  },
+  {
+    "tienCod": 10,
+    "grteCod": 180,
+    "grteDescrip": "Nivel Medio Mayor",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Nivel Medio Mayor",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 110,
+    "grteCod": 10,
+    "grteDescrip": "1° básico",
+    "grteCodInt": 1,
+    "grteCodMinisterial": 377,
+    "grteDescMinisterial": "1º Básico",
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 110,
+    "grteCod": 20,
+    "grteDescrip": "2° básico",
+    "grteCodInt": 2,
+    "grteCodMinisterial": 378,
+    "grteDescMinisterial": "2º Básico",
+    "grteCodSige": 2
+  },
+  {
+    "tienCod": 110,
+    "grteCod": 30,
+    "grteDescrip": "3° básico",
+    "grteCodInt": 3,
+    "grteCodMinisterial": 379,
+    "grteDescMinisterial": "3º Básico",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 110,
+    "grteCod": 40,
+    "grteDescrip": "4° básico",
+    "grteCodInt": 4,
+    "grteCodMinisterial": 380,
+    "grteDescMinisterial": "4º Básico",
+    "grteCodSige": 4
+  },
+  {
+    "tienCod": 110,
+    "grteCod": 50,
+    "grteDescrip": "5° básico",
+    "grteCodInt": 5,
+    "grteCodMinisterial": 381,
+    "grteDescMinisterial": "5º Básico",
+    "grteCodSige": 5
+  },
+  {
+    "tienCod": 110,
+    "grteCod": 60,
+    "grteDescrip": "6° básico",
+    "grteCodInt": 6,
+    "grteCodMinisterial": 382,
+    "grteDescMinisterial": "6º Básico",
+    "grteCodSige": 6
+  },
+  {
+    "tienCod": 110,
+    "grteCod": 70,
+    "grteDescrip": "7° básico",
+    "grteCodInt": 7,
+    "grteCodMinisterial": 383,
+    "grteDescMinisterial": "7º Básico",
+    "grteCodSige": 7
+  },
+  {
+    "tienCod": 110,
+    "grteCod": 80,
+    "grteDescrip": "8° básico",
+    "grteCodInt": 8,
+    "grteCodMinisterial": 384,
+    "grteDescMinisterial": "8º Básico",
+    "grteCodSige": 8
+  },
+  {
+    "tienCod": 165,
+    "grteCod": 190,
+    "grteDescrip": "Nivel Básico 1(1° a 4° básico)",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Nivel Básico 1 (1º a 4º básico)",
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 165,
+    "grteCod": 200,
+    "grteDescrip": "Nivel Básico 2(5° y 6° básico)",
+    "grteCodInt": 2,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Nivel Básico 2 (5º a 6º básico)",
+    "grteCodSige": 2
+  },
+  {
+    "tienCod": 165,
+    "grteCod": 210,
+    "grteDescrip": "Nivel Básico 3(7° y 8° básico)",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Nivel Básico 3 (7º a 8º básico)",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 167,
+    "grteCod": 200,
+    "grteDescrip": "Nivel Básico 2(5° y 6° básico)",
+    "grteCodInt": 2,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Nivel Básico 2 (5º a 6º básico)",
+    "grteCodSige": 2
+  },
+  {
+    "tienCod": 167,
+    "grteCod": 210,
+    "grteDescrip": "Nivel Básico 3(7° y 8° básico)",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Nivel Básico 3 (7º a 8º básico)",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 211,
+    "grteCod": 10,
+    "grteDescrip": "Prebásico Materno 1°",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico materno 1º",
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 211,
+    "grteCod": 20,
+    "grteDescrip": "Prebásico 1º - 1",
+    "grteCodInt": 2,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 1º - 1",
+    "grteCodSige": 2
+  },
+  {
+    "tienCod": 211,
+    "grteCod": 30,
+    "grteDescrip": "Prebásico 1º - 2",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 1º - 2",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 211,
+    "grteCod": 40,
+    "grteDescrip": "Prebásico 1º - 3",
+    "grteCodInt": 4,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 1º - 3",
+    "grteCodSige": 4
+  },
+  {
+    "tienCod": 211,
+    "grteCod": 50,
+    "grteDescrip": "Prebásico 1º - 4",
+    "grteCodInt": 5,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 2º - 4",
+    "grteCodSige": 5
+  },
+  {
+    "tienCod": 211,
+    "grteCod": 60,
+    "grteDescrip": "Prebásico 1º - 5",
+    "grteCodInt": 6,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 2º - 5",
+    "grteCodSige": 6
+  },
+  {
+    "tienCod": 211,
+    "grteCod": 70,
+    "grteDescrip": "Básico 1º - 1",
+    "grteCodInt": 7,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 1º - 1",
+    "grteCodSige": 7
+  },
+  {
+    "tienCod": 211,
+    "grteCod": 80,
+    "grteDescrip": "Básico 1º - 2",
+    "grteCodInt": 8,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 1º - 2",
+    "grteCodSige": 8
+  },
+  {
+    "tienCod": 211,
+    "grteCod": 90,
+    "grteDescrip": "Básico 1º - 3",
+    "grteCodInt": 9,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 1º - 3",
+    "grteCodSige": 9
+  },
+  {
+    "tienCod": 211,
+    "grteCod": 100,
+    "grteDescrip": "Básico 1º - 4",
+    "grteCodInt": 10,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 1º - 4",
+    "grteCodSige": 10
+  },
+  {
+    "tienCod": 211,
+    "grteCod": 110,
+    "grteDescrip": "Básico 2º - 5",
+    "grteCodInt": 11,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 2º - 5",
+    "grteCodSige": 11
+  },
+  {
+    "tienCod": 211,
+    "grteCod": 120,
+    "grteDescrip": "Básico 2º - 6",
+    "grteCodInt": 12,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 2º - 6",
+    "grteCodSige": 12
+  },
+  {
+    "tienCod": 211,
+    "grteCod": 130,
+    "grteDescrip": "Básico 2º - 7",
+    "grteCodInt": 13,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 2º - 7",
+    "grteCodSige": 13
+  },
+  {
+    "tienCod": 211,
+    "grteCod": 140,
+    "grteDescrip": "Básico 2º - 8",
+    "grteCodInt": 14,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 2º - 8",
+    "grteCodSige": 14
+  },
+  {
+    "tienCod": 211,
+    "grteCod": 150,
+    "grteDescrip": "Laboral 1",
+    "grteCodInt": 15,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Laboral 1",
+    "grteCodSige": 15
+  },
+  {
+    "tienCod": 211,
+    "grteCod": 160,
+    "grteDescrip": "Laboral 2",
+    "grteCodInt": 16,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Laboral 2",
+    "grteCodSige": 16
+  },
+  {
+    "tienCod": 211,
+    "grteCod": 170,
+    "grteDescrip": "Laboral 3",
+    "grteCodInt": 17,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Laboral 3",
+    "grteCodSige": 17
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 310,
+    "grteDescrip": "Prebásico 1° - 1",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 1º - 1",
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 320,
+    "grteDescrip": "Prebásico 1° - 2",
+    "grteCodInt": 2,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 1º - 2",
+    "grteCodSige": 2
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 340,
+    "grteDescrip": "Prebásico 2° - 3",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 2º - 3",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 350,
+    "grteDescrip": "Prebásico 2° - 4",
+    "grteCodInt": 4,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 2º - 4",
+    "grteCodSige": 4
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 505,
+    "grteDescrip": "1° Básico",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": null,
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 510,
+    "grteDescrip": "Básico 1º - 5",
+    "grteCodInt": 5,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 1º - 5",
+    "grteCodSige": 5
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 511,
+    "grteDescrip": "Integrado",
+    "grteCodInt": null,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": null,
+    "grteCodSige": null
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 515,
+    "grteDescrip": "2° Básico",
+    "grteCodInt": 2,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": null,
+    "grteCodSige": 2
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 520,
+    "grteDescrip": "Básico 1º - 6",
+    "grteCodInt": 6,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 1º - 6",
+    "grteCodSige": 6
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 525,
+    "grteDescrip": "3° Básico",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": null,
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 530,
+    "grteDescrip": "Básico 1º - 7",
+    "grteCodInt": 7,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 1º - 7",
+    "grteCodSige": 7
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 535,
+    "grteDescrip": "4° Básico",
+    "grteCodInt": 4,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": null,
+    "grteCodSige": 4
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 540,
+    "grteDescrip": "Básico 2º - 8",
+    "grteCodInt": 8,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 2º - 8",
+    "grteCodSige": 8
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 545,
+    "grteDescrip": "6° Básico",
+    "grteCodInt": 6,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": null,
+    "grteCodSige": 6
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 550,
+    "grteDescrip": "Básico 2º - 9",
+    "grteCodInt": 9,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 2º - 9",
+    "grteCodSige": 9
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 555,
+    "grteDescrip": "8° Básico",
+    "grteCodInt": 8,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": null,
+    "grteCodSige": 8
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 565,
+    "grteDescrip": "5° Básico",
+    "grteCodInt": 5,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": null,
+    "grteCodSige": 5
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 570,
+    "grteDescrip": "Básico 2º - 10",
+    "grteCodInt": 10,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 2º - 10",
+    "grteCodSige": 10
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 575,
+    "grteDescrip": "7° Básico",
+    "grteCodInt": 7,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": null,
+    "grteCodSige": 7
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 580,
+    "grteDescrip": "Básico 9",
+    "grteCodInt": 9,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": null,
+    "grteCodSige": 9
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 590,
+    "grteDescrip": "Básico 10",
+    "grteCodInt": 10,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": null,
+    "grteCodSige": 10
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 600,
+    "grteDescrip": "Laboral 1",
+    "grteCodInt": 11,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Laboral 1",
+    "grteCodSige": 11
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 610,
+    "grteDescrip": "Laboral 2",
+    "grteCodInt": 12,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Laboral 2",
+    "grteCodSige": 12
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 620,
+    "grteDescrip": "Laboral 3",
+    "grteCodInt": 13,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Laboral 3",
+    "grteCodSige": 13
+  },
+  {
+    "tienCod": 212,
+    "grteCod": 680,
+    "grteDescrip": "Prebásico Materno 1° (Estimulación Temprana)",
+    "grteCodInt": 14,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico Materno 1° (Estimulación Temprana)",
+    "grteCodSige": 14
+  },
+  {
+    "tienCod": 213,
+    "grteCod": 10,
+    "grteDescrip": "Estimulación temprana 1º - 1",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Estimulación temprana 1º - 1",
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 213,
+    "grteCod": 20,
+    "grteDescrip": "Estimulación temprana 1º - 2",
+    "grteCodInt": 2,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Estimulación temprana 1º - 2",
+    "grteCodSige": 2
+  },
+  {
+    "tienCod": 213,
+    "grteCod": 30,
+    "grteDescrip": "Prebásico 1º - 1",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 1º - 1",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 213,
+    "grteCod": 40,
+    "grteDescrip": "Prebásico 1º - 2",
+    "grteCodInt": 4,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 1º - 2",
+    "grteCodSige": 4
+  },
+  {
+    "tienCod": 213,
+    "grteCod": 50,
+    "grteDescrip": "Prebásico 2º - 3",
+    "grteCodInt": 5,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 2º - 3",
+    "grteCodSige": 5
+  },
+  {
+    "tienCod": 213,
+    "grteCod": 60,
+    "grteDescrip": "Prebásico 2º - 4",
+    "grteCodInt": 6,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 2º - 4",
+    "grteCodSige": 6
+  },
+  {
+    "tienCod": 213,
+    "grteCod": 70,
+    "grteDescrip": "Básico 1º - 1",
+    "grteCodInt": 7,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 1º - 1",
+    "grteCodSige": 7
+  },
+  {
+    "tienCod": 213,
+    "grteCod": 80,
+    "grteDescrip": "Básico 1º - 2",
+    "grteCodInt": 8,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 1º - 2",
+    "grteCodSige": 8
+  },
+  {
+    "tienCod": 213,
+    "grteCod": 90,
+    "grteDescrip": "Básico 1º - 3",
+    "grteCodInt": 9,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 1º - 3",
+    "grteCodSige": 9
+  },
+  {
+    "tienCod": 213,
+    "grteCod": 100,
+    "grteDescrip": "Básico 1º - 4",
+    "grteCodInt": 10,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 1º - 4",
+    "grteCodSige": 10
+  },
+  {
+    "tienCod": 213,
+    "grteCod": 110,
+    "grteDescrip": "Básico 2º - 5",
+    "grteCodInt": 11,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 2º - 5",
+    "grteCodSige": 11
+  },
+  {
+    "tienCod": 213,
+    "grteCod": 120,
+    "grteDescrip": "Básico 2º - 6",
+    "grteCodInt": 12,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 2º - 6",
+    "grteCodSige": 12
+  },
+  {
+    "tienCod": 213,
+    "grteCod": 130,
+    "grteDescrip": "Básico 2º - 7",
+    "grteCodInt": 13,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 2º - 7",
+    "grteCodSige": 13
+  },
+  {
+    "tienCod": 213,
+    "grteCod": 140,
+    "grteDescrip": "Básico 2º - 8",
+    "grteCodInt": 14,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 2º - 8",
+    "grteCodSige": 14
+  },
+  {
+    "tienCod": 213,
+    "grteCod": 150,
+    "grteDescrip": "Laboral 1º - 1",
+    "grteCodInt": 15,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Laboral 1º - 1",
+    "grteCodSige": 15
+  },
+  {
+    "tienCod": 213,
+    "grteCod": 160,
+    "grteDescrip": "Laboral 1º - 2",
+    "grteCodInt": 16,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Laboral 1º - 2",
+    "grteCodSige": 16
+  },
+  {
+    "tienCod": 213,
+    "grteCod": 170,
+    "grteDescrip": "Laboral 2º - 3",
+    "grteCodInt": 17,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Laboral 2º - 3",
+    "grteCodSige": 17
+  },
+  {
+    "tienCod": 213,
+    "grteCod": 180,
+    "grteDescrip": "Laboral 2º - 4",
+    "grteCodInt": 18,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Laboral 2º - 4",
+    "grteCodSige": 18
+  },
+  {
+    "tienCod": 214,
+    "grteCod": 10,
+    "grteDescrip": "Medio Menor",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Medio Menor",
+    "grteCodSige": 22
+  },
+  {
+    "tienCod": 214,
+    "grteCod": 20,
+    "grteDescrip": "Medio Mayor",
+    "grteCodInt": 2,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Medio Mayor",
+    "grteCodSige": 23
+  },
+  {
+    "tienCod": 214,
+    "grteCod": 30,
+    "grteDescrip": "1er nivel de Transición (Pre-kinder)",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Primer Nivel de Transición (Pre-kinder)",
+    "grteCodSige": 24
+  },
+  {
+    "tienCod": 214,
+    "grteCod": 40,
+    "grteDescrip": "2° nivel de Transición (Kinder)",
+    "grteCodInt": 4,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Segundo Nivel de Transición (Kinder)",
+    "grteCodSige": 25
+  },
+  {
+    "tienCod": 215,
+    "grteCod": 310,
+    "grteDescrip": "Prebásico 1° - 1",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 1º - 1",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 215,
+    "grteCod": 320,
+    "grteDescrip": "Prebásico 1° - 2",
+    "grteCodInt": 4,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 1º - 2",
+    "grteCodSige": 4
+  },
+  {
+    "tienCod": 215,
+    "grteCod": 330,
+    "grteDescrip": "Prebásico 1° - 3",
+    "grteCodInt": 5,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 1º - 3",
+    "grteCodSige": 5
+  },
+  {
+    "tienCod": 215,
+    "grteCod": 340,
+    "grteDescrip": "Prebásico 2º - 4",
+    "grteCodInt": 6,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 2º - 4",
+    "grteCodSige": 6
+  },
+  {
+    "tienCod": 215,
+    "grteCod": 350,
+    "grteDescrip": "Laboral Discapacidad Multiple",
+    "grteCodInt": null,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": null,
+    "grteCodSige": null
+  },
+  {
+    "tienCod": 215,
+    "grteCod": 360,
+    "grteDescrip": "Prebásico 2° - 5",
+    "grteCodInt": 7,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 2º - 5",
+    "grteCodSige": 7
+  },
+  {
+    "tienCod": 215,
+    "grteCod": 470,
+    "grteDescrip": "Básico 1° - 1",
+    "grteCodInt": 8,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 1º - 1",
+    "grteCodSige": 8
+  },
+  {
+    "tienCod": 215,
+    "grteCod": 480,
+    "grteDescrip": "Básico 1° - 2",
+    "grteCodInt": 9,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 1º - 2",
+    "grteCodSige": 9
+  },
+  {
+    "tienCod": 215,
+    "grteCod": 490,
+    "grteDescrip": "Básico 1° - 3",
+    "grteCodInt": 10,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 1º - 3",
+    "grteCodSige": 10
+  },
+  {
+    "tienCod": 215,
+    "grteCod": 500,
+    "grteDescrip": "Básico 1° - 4",
+    "grteCodInt": 11,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 1º - 4",
+    "grteCodSige": 11
+  },
+  {
+    "tienCod": 215,
+    "grteCod": 540,
+    "grteDescrip": "Básico 2° - 5",
+    "grteCodInt": 12,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 2º - 5",
+    "grteCodSige": 12
+  },
+  {
+    "tienCod": 215,
+    "grteCod": 550,
+    "grteDescrip": "Básico 2° - 6",
+    "grteCodInt": 13,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 2º - 6",
+    "grteCodSige": 13
+  },
+  {
+    "tienCod": 215,
+    "grteCod": 560,
+    "grteDescrip": "Básico 2° - 7",
+    "grteCodInt": 14,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 2º - 7",
+    "grteCodSige": 14
+  },
+  {
+    "tienCod": 215,
+    "grteCod": 570,
+    "grteDescrip": "Básico 2° - 8",
+    "grteCodInt": 15,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 2º - 8",
+    "grteCodSige": 15
+  },
+  {
+    "tienCod": 215,
+    "grteCod": 640,
+    "grteDescrip": "Laboral 1° - 1",
+    "grteCodInt": 16,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Laboral 1º - 1",
+    "grteCodSige": 16
+  },
+  {
+    "tienCod": 215,
+    "grteCod": 650,
+    "grteDescrip": "Laboral 1° - 2",
+    "grteCodInt": 17,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Laboral 1º - 2",
+    "grteCodSige": 17
+  },
+  {
+    "tienCod": 215,
+    "grteCod": 655,
+    "grteDescrip": "Laboral 1",
+    "grteCodInt": null,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": null,
+    "grteCodSige": null
+  },
+  {
+    "tienCod": 215,
+    "grteCod": 660,
+    "grteDescrip": "Laboral 2° - 3",
+    "grteCodInt": 18,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Laboral 2º - 3",
+    "grteCodSige": 18
+  },
+  {
+    "tienCod": 215,
+    "grteCod": 670,
+    "grteDescrip": "Laboral 2° - 4",
+    "grteCodInt": 19,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Laboral 2º - 4",
+    "grteCodSige": 19
+  },
+  {
+    "tienCod": 215,
+    "grteCod": 690,
+    "grteDescrip": "Estimulación Temprana 1° - 1",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Estimulación temprana 1º - 1",
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 215,
+    "grteCod": 700,
+    "grteDescrip": "Estimulación Temprana 1° - 2",
+    "grteCodInt": 2,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Estimulación temprana 1º - 2",
+    "grteCodSige": 2
+  },
+  {
+    "tienCod": 216,
+    "grteCod": 310,
+    "grteDescrip": "Prebásico 1° - 1",
+    "grteCodInt": 15,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 1° - 1",
+    "grteCodSige": 15
+  },
+  {
+    "tienCod": 216,
+    "grteCod": 320,
+    "grteDescrip": "Prebásico 1° - 2",
+    "grteCodInt": 16,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 1° - 2",
+    "grteCodSige": 16
+  },
+  {
+    "tienCod": 216,
+    "grteCod": 340,
+    "grteDescrip": "Prebásico 2° - 3",
+    "grteCodInt": 17,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 2° - 3",
+    "grteCodSige": 17
+  },
+  {
+    "tienCod": 216,
+    "grteCod": 350,
+    "grteDescrip": "Prebásico 2° - 4",
+    "grteCodInt": 18,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 2° - 4",
+    "grteCodSige": 18
+  },
+  {
+    "tienCod": 216,
+    "grteCod": 510,
+    "grteDescrip": "Autista 1",
+    "grteCodInt": null,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": null,
+    "grteCodSige": null
+  },
+  {
+    "tienCod": 216,
+    "grteCod": 511,
+    "grteDescrip": "Autista 2",
+    "grteCodInt": null,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": null,
+    "grteCodSige": null
+  },
+  {
+    "tienCod": 216,
+    "grteCod": 512,
+    "grteDescrip": "Autista 3",
+    "grteCodInt": null,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": null,
+    "grteCodSige": null
+  },
+  {
+    "tienCod": 216,
+    "grteCod": 520,
+    "grteDescrip": "Básico 1° - 5",
+    "grteCodInt": 5,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 1° - 5",
+    "grteCodSige": 5
+  },
+  {
+    "tienCod": 216,
+    "grteCod": 530,
+    "grteDescrip": "Básico 1° - 6",
+    "grteCodInt": 6,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 1° - 6",
+    "grteCodSige": 6
+  },
+  {
+    "tienCod": 216,
+    "grteCod": 540,
+    "grteDescrip": "Básico 1° - 7",
+    "grteCodInt": 7,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 1° - 7",
+    "grteCodSige": 7
+  },
+  {
+    "tienCod": 216,
+    "grteCod": 550,
+    "grteDescrip": "2° Básico",
+    "grteCodInt": null,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": null,
+    "grteCodSige": null
+  },
+  {
+    "tienCod": 216,
+    "grteCod": 570,
+    "grteDescrip": "Básico 2° - 8",
+    "grteCodInt": 8,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 2° - 8",
+    "grteCodSige": 8
+  },
+  {
+    "tienCod": 216,
+    "grteCod": 580,
+    "grteDescrip": "Básico 2° - 9",
+    "grteCodInt": 9,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 2° - 9",
+    "grteCodSige": 9
+  },
+  {
+    "tienCod": 216,
+    "grteCod": 590,
+    "grteDescrip": "Básico 2° - 10",
+    "grteCodInt": 10,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 2° - 10",
+    "grteCodSige": 10
+  },
+  {
+    "tienCod": 216,
+    "grteCod": 600,
+    "grteDescrip": "Laboral 1",
+    "grteCodInt": 11,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Laboral 1",
+    "grteCodSige": 11
+  },
+  {
+    "tienCod": 216,
+    "grteCod": 610,
+    "grteDescrip": "Laboral 2",
+    "grteCodInt": 12,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Laboral 2",
+    "grteCodSige": 12
+  },
+  {
+    "tienCod": 216,
+    "grteCod": 620,
+    "grteDescrip": "Laboral 3",
+    "grteCodInt": 13,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Laboral 3",
+    "grteCodSige": 13
+  },
+  {
+    "tienCod": 216,
+    "grteCod": 680,
+    "grteDescrip": "Prebásico Materno 1° (Estimulación Temprana)",
+    "grteCodInt": 14,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico Materno 1° (Estimulación Temprana)",
+    "grteCodSige": 14
+  },
+  {
+    "tienCod": 217,
+    "grteCod": 10,
+    "grteDescrip": "Prebásico 1º - 1",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 1º - 1",
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 217,
+    "grteCod": 20,
+    "grteDescrip": "Prebásico 1º - 2",
+    "grteCodInt": 2,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 1º - 2",
+    "grteCodSige": 2
+  },
+  {
+    "tienCod": 217,
+    "grteCod": 30,
+    "grteDescrip": "Prebásico 2º - 3",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 2º - 3",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 217,
+    "grteCod": 40,
+    "grteDescrip": "Prebásico 2º - 4",
+    "grteCodInt": 4,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 2º - 4",
+    "grteCodSige": 4
+  },
+  {
+    "tienCod": 217,
+    "grteCod": 50,
+    "grteDescrip": "Básico 1º - 5",
+    "grteCodInt": 5,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 1º - 5",
+    "grteCodSige": 5
+  },
+  {
+    "tienCod": 217,
+    "grteCod": 60,
+    "grteDescrip": "Básico 1º - 6",
+    "grteCodInt": 6,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 1º - 6",
+    "grteCodSige": 6
+  },
+  {
+    "tienCod": 217,
+    "grteCod": 70,
+    "grteDescrip": "Básico 1º - 7",
+    "grteCodInt": 7,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 1º - 7",
+    "grteCodSige": 7
+  },
+  {
+    "tienCod": 217,
+    "grteCod": 80,
+    "grteDescrip": "Básico 2º - 8",
+    "grteCodInt": 8,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 2º - 8",
+    "grteCodSige": 8
+  },
+  {
+    "tienCod": 217,
+    "grteCod": 90,
+    "grteDescrip": "Básico 2º - 9",
+    "grteCodInt": 9,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 2º - 9",
+    "grteCodSige": 9
+  },
+  {
+    "tienCod": 217,
+    "grteCod": 100,
+    "grteDescrip": "Básico 2º - 10",
+    "grteCodInt": 10,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 2º - 10",
+    "grteCodSige": 10
+  },
+  {
+    "tienCod": 217,
+    "grteCod": 110,
+    "grteDescrip": "Laboral 1",
+    "grteCodInt": 11,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Laboral 1",
+    "grteCodSige": 11
+  },
+  {
+    "tienCod": 217,
+    "grteCod": 120,
+    "grteDescrip": "Laboral 2",
+    "grteCodInt": 12,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Laboral 2",
+    "grteCodSige": 12
+  },
+  {
+    "tienCod": 217,
+    "grteCod": 130,
+    "grteDescrip": "Laboral 3",
+    "grteCodInt": 13,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Laboral 3",
+    "grteCodSige": 13
+  },
+  {
+    "tienCod": 217,
+    "grteCod": 140,
+    "grteDescrip": "Prebásico Materno 1º (Estimulación temprana)",
+    "grteCodInt": 14,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico Materno 1º (Estimulación temprana)",
+    "grteCodSige": 14
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 260,
+    "grteDescrip": "Prebásico 1",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 1",
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 270,
+    "grteDescrip": "Prebásico 2",
+    "grteCodInt": 2,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 2",
+    "grteCodSige": 2
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 280,
+    "grteDescrip": "Prebásico 3",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 3",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 290,
+    "grteDescrip": "Prebásico 4",
+    "grteCodInt": 4,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 4",
+    "grteCodSige": 4
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 300,
+    "grteDescrip": "Prebásico 5",
+    "grteCodInt": 5,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Prebásico 5",
+    "grteCodSige": 5
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 370,
+    "grteDescrip": "Básico 1",
+    "grteCodInt": 6,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 1",
+    "grteCodSige": 6
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 375,
+    "grteDescrip": "1º Básico",
+    "grteCodInt": 6,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "1º Básico",
+    "grteCodSige": 6
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 380,
+    "grteDescrip": "Básico 2",
+    "grteCodInt": 7,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 2",
+    "grteCodSige": 7
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 385,
+    "grteDescrip": "2º Básico",
+    "grteCodInt": 7,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "2º Básico",
+    "grteCodSige": 7
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 390,
+    "grteDescrip": "Básico 3",
+    "grteCodInt": 8,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 3",
+    "grteCodSige": 8
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 395,
+    "grteDescrip": "3º Básico",
+    "grteCodInt": 8,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "3º Básico",
+    "grteCodSige": 8
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 400,
+    "grteDescrip": "Básico 4",
+    "grteCodInt": 9,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 4",
+    "grteCodSige": 9
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 405,
+    "grteDescrip": "4º Básico",
+    "grteCodInt": 9,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "4º Básico",
+    "grteCodSige": 9
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 410,
+    "grteDescrip": "Básico 5",
+    "grteCodInt": 10,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 5",
+    "grteCodSige": 10
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 415,
+    "grteDescrip": "5º Básico",
+    "grteCodInt": 10,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "5º Básico",
+    "grteCodSige": 10
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 420,
+    "grteDescrip": "Básico 6",
+    "grteCodInt": 11,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 6",
+    "grteCodSige": 11
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 425,
+    "grteDescrip": "6º Básico",
+    "grteCodInt": 11,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "6º Básico",
+    "grteCodSige": 11
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 430,
+    "grteDescrip": "Básico 7",
+    "grteCodInt": 12,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 7",
+    "grteCodSige": 12
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 435,
+    "grteDescrip": "7º Básico",
+    "grteCodInt": 12,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "7º Básico",
+    "grteCodSige": 12
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 440,
+    "grteDescrip": "Básico 8",
+    "grteCodInt": 13,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 8",
+    "grteCodSige": 13
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 445,
+    "grteDescrip": "8º Básico",
+    "grteCodInt": 13,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "8º Básico",
+    "grteCodSige": 13
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 450,
+    "grteDescrip": "Básico 9",
+    "grteCodInt": 14,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Básico 9",
+    "grteCodSige": 14
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 460,
+    "grteDescrip": "Básico 10",
+    "grteCodInt": 15,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": null,
+    "grteCodSige": 15
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 600,
+    "grteDescrip": "Laboral 1",
+    "grteCodInt": 16,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Laboral 1",
+    "grteCodSige": 16
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 610,
+    "grteDescrip": "Laboral 2",
+    "grteCodInt": 17,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Laboral 2",
+    "grteCodSige": 17
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 620,
+    "grteDescrip": "Laboral 3",
+    "grteCodInt": 18,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Laboral 3",
+    "grteCodSige": 18
+  },
+  {
+    "tienCod": 299,
+    "grteCod": 630,
+    "grteDescrip": "Laboral 4",
+    "grteCodInt": 19,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Laboral 4",
+    "grteCodSige": 19
+  },
+  {
+    "tienCod": 310,
+    "grteCod": 90,
+    "grteDescrip": "1° medio",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "1º medio",
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 310,
+    "grteCod": 100,
+    "grteDescrip": "2° medio",
+    "grteCodInt": 2,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "2º medio",
+    "grteCodSige": 2
+  },
+  {
+    "tienCod": 310,
+    "grteCod": 110,
+    "grteDescrip": "3° medio",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "3º medio",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 310,
+    "grteCod": 111,
+    "grteDescrip": "3° medio Humanista - Cientifico",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "3º medio",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 310,
+    "grteCod": 120,
+    "grteDescrip": "4° medio",
+    "grteCodInt": 4,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "4º medio",
+    "grteCodSige": 4
+  },
+  {
+    "tienCod": 310,
+    "grteCod": 121,
+    "grteDescrip": "4° medio Humanista - Cientifico",
+    "grteCodInt": 4,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "4º medio",
+    "grteCodSige": 4
+  },
+  {
+    "tienCod": 363,
+    "grteCod": 220,
+    "grteDescrip": "1er nivel (1° y 2° medio)",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Primer nivel (1º y 2º medio)",
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 363,
+    "grteCod": 230,
+    "grteDescrip": "2do nivel (3° y 4° medio)",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Segundo nivel (3º y 4º medio)",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 410,
+    "grteCod": 90,
+    "grteDescrip": "1° medio",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "1° medio",
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 410,
+    "grteCod": 100,
+    "grteDescrip": "2° medio",
+    "grteCodInt": 2,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "2° medio",
+    "grteCodSige": 2
+  },
+  {
+    "tienCod": 410,
+    "grteCod": 110,
+    "grteDescrip": "3° medio",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "3° medio",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 410,
+    "grteCod": 120,
+    "grteDescrip": "4° medio",
+    "grteCodInt": 4,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "4° medio",
+    "grteCodSige": 4
+  },
+  {
+    "tienCod": 463,
+    "grteCod": 220,
+    "grteDescrip": "1er nivel (1° y 2° medio)",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Primer nivel (1º y 2º medio)",
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 463,
+    "grteCod": 240,
+    "grteDescrip": "2do nivel (3° medio)",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Segundo nivel (3º medio)",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 463,
+    "grteCod": 250,
+    "grteDescrip": "3er nivel (4° medio)",
+    "grteCodInt": 4,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Tercero nivel (4º medio)",
+    "grteCodSige": 4
+  },
+  {
+    "tienCod": 510,
+    "grteCod": 90,
+    "grteDescrip": "1° medio",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "1° medio",
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 510,
+    "grteCod": 100,
+    "grteDescrip": "2° medio",
+    "grteCodInt": 2,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "2° medio",
+    "grteCodSige": 2
+  },
+  {
+    "tienCod": 510,
+    "grteCod": 110,
+    "grteDescrip": "3° medio",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "3° medio",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 510,
+    "grteCod": 112,
+    "grteDescrip": "3° medio Mecanica",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "3° medio",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 510,
+    "grteCod": 120,
+    "grteDescrip": "4° medio",
+    "grteCodInt": 4,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "4° medio",
+    "grteCodSige": 4
+  },
+  {
+    "tienCod": 510,
+    "grteCod": 122,
+    "grteDescrip": "4° medio Mecanica Industrial",
+    "grteCodInt": 4,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "4° medio",
+    "grteCodSige": 4
+  },
+  {
+    "tienCod": 563,
+    "grteCod": 220,
+    "grteDescrip": "1er nivel (1° y 2° medio)",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Primer nivel (1º y 2º medio)",
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 563,
+    "grteCod": 240,
+    "grteDescrip": "2do nivel (3° medio)",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Primer nivel (1º y 2º medio)",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 563,
+    "grteCod": 250,
+    "grteDescrip": "3er nivel (4° medio)",
+    "grteCodInt": 4,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Tercero nivel (4º medio)",
+    "grteCodSige": 4
+  },
+  {
+    "tienCod": 610,
+    "grteCod": 90,
+    "grteDescrip": "1° medio",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "1° medio",
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 610,
+    "grteCod": 100,
+    "grteDescrip": "2° medio",
+    "grteCodInt": 2,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "2° medio",
+    "grteCodSige": 2
+  },
+  {
+    "tienCod": 610,
+    "grteCod": 110,
+    "grteDescrip": "3° medio",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "3° medio",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 610,
+    "grteCod": 120,
+    "grteDescrip": "4° medio",
+    "grteCodInt": 4,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "4° medio",
+    "grteCodSige": 4
+  },
+  {
+    "tienCod": 663,
+    "grteCod": 220,
+    "grteDescrip": "1er nivel (1° y 2° medio)",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Primer nivel (1º y 2º medio)",
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 663,
+    "grteCod": 240,
+    "grteDescrip": "2do nivel (3° medio)",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Segundo nivel (3º medio)",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 663,
+    "grteCod": 250,
+    "grteDescrip": "3er nivel (4° medio)",
+    "grteCodInt": 4,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Tercero nivel (4º medio)",
+    "grteCodSige": 4
+  },
+  {
+    "tienCod": 710,
+    "grteCod": 90,
+    "grteDescrip": "1° medio",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "1° medio",
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 710,
+    "grteCod": 100,
+    "grteDescrip": "2° medio",
+    "grteCodInt": 2,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "2° medio",
+    "grteCodSige": 2
+  },
+  {
+    "tienCod": 710,
+    "grteCod": 110,
+    "grteDescrip": "3° medio",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "3° medio",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 710,
+    "grteCod": 120,
+    "grteDescrip": "4° medio",
+    "grteCodInt": 4,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "4° medio",
+    "grteCodSige": 4
+  },
+  {
+    "tienCod": 763,
+    "grteCod": 220,
+    "grteDescrip": "1er nivel (1° y 2° medio)",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Primer nivel (1º y 2º medio)",
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 763,
+    "grteCod": 240,
+    "grteDescrip": "2do nivel (3° medio)",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Segundo nivel (3º medio)",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 763,
+    "grteCod": 250,
+    "grteDescrip": "3er nivel (4° medio)",
+    "grteCodInt": 4,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Tercero nivel (4º medio)",
+    "grteCodSige": 4
+  },
+  {
+    "tienCod": 810,
+    "grteCod": 90,
+    "grteDescrip": "1° medio",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "1° medio",
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 810,
+    "grteCod": 100,
+    "grteDescrip": "2° medio",
+    "grteCodInt": 2,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "2° medio",
+    "grteCodSige": 2
+  },
+  {
+    "tienCod": 810,
+    "grteCod": 110,
+    "grteDescrip": "3° medio",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "3° medio",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 810,
+    "grteCod": 120,
+    "grteDescrip": "4° medio",
+    "grteCodInt": 4,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "4° medio",
+    "grteCodSige": 4
+  },
+  {
+    "tienCod": 863,
+    "grteCod": 220,
+    "grteDescrip": "1er nivel (1° y 2° medio)",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Primer nivel (1º y 2º medio)",
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 863,
+    "grteCod": 240,
+    "grteDescrip": "2do nivel (3° medio)",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Segundo nivel (3º medio)",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 863,
+    "grteCod": 250,
+    "grteDescrip": "3er nivel (4° medio)",
+    "grteCodInt": 4,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Tercero nivel (4º medio)",
+    "grteCodSige": 4
+  },
+  {
+    "tienCod": 910,
+    "grteCod": 90,
+    "grteDescrip": "1° medio",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "1° medio",
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 910,
+    "grteCod": 100,
+    "grteDescrip": "2° medio",
+    "grteCodInt": 2,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "2° medio",
+    "grteCodSige": 2
+  },
+  {
+    "tienCod": 910,
+    "grteCod": 110,
+    "grteDescrip": "3° medio",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "3° medio",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 910,
+    "grteCod": 120,
+    "grteDescrip": "4° medio",
+    "grteCodInt": 4,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "4° medio",
+    "grteCodSige": 4
+  },
+  {
+    "tienCod": 963,
+    "grteCod": 220,
+    "grteDescrip": "1er nivel (1° y 2° medio)",
+    "grteCodInt": 1,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Primer nivel (1º y 2º medio)",
+    "grteCodSige": 1
+  },
+  {
+    "tienCod": 963,
+    "grteCod": 240,
+    "grteDescrip": "2do nivel (3° medio)",
+    "grteCodInt": 3,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Segundo nivel (3º medio)",
+    "grteCodSige": 3
+  },
+  {
+    "tienCod": 963,
+    "grteCod": 250,
+    "grteDescrip": "3er nivel (4° medio)",
+    "grteCodInt": 4,
+    "grteCodMinisterial": null,
+    "grteDescMinisterial": "Tercero nivel (4º medio)",
+    "grteCodSige": 4
+  }
+]

@@ -21,7 +21,7 @@ export default function Login() {
         if (user.establecimientoId) {
            localStorage.setItem('selectedEstablecimientoId', user.establecimientoId.toString());
         } else {
-           localStorage.setItem('selectedEstablecimientoId', '2'); // Fallback for admin until we build a selector
+           localStorage.setItem('selectedEstablecimientoId', ''); // Global view
         }
         router.push('/');
       } else {

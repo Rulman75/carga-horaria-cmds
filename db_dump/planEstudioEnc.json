@@ -1,0 +1,38 @@
+[
+  {
+    "codPlan": 12,
+    "nombrePlan": "1º A 2º Medio",
+    "estadoPlan": "VIGENTE",
+    "tipo": "M"
+  },
+  {
+    "codPlan": 14,
+    "nombrePlan": "1º A 4º Básico",
+    "estadoPlan": "VIGENTE",
+    "tipo": "M"
+  },
+  {
+    "codPlan": 34,
+    "nombrePlan": "3º A 4º Medio",
+    "estadoPlan": "VIGENTE",
+    "tipo": "M"
+  },
+  {
+    "codPlan": 56,
+    "nombrePlan": "5º A 6º Básico",
+    "estadoPlan": "VIGENTE",
+    "tipo": "M"
+  },
+  {
+    "codPlan": 78,
+    "nombrePlan": "7º A 8º Básico",
+    "estadoPlan": "VIGENTE",
+    "tipo": "M"
+  },
+  {
+    "codPlan": 781,
+    "nombrePlan": "7º A 8º Básico SLI",
+    "estadoPlan": "VIGENTE",
+    "tipo": "M"
+  }
+]

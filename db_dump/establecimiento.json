@@ -1,0 +1,418 @@
+[
+  {
+    "esedSec": 2,
+    "esedCod": 279,
+    "esadCod": 1,
+    "esedDescripcion": "LICEO INDUSTRIAL EULOGIO GORDO MONEO",
+    "esedDescCorta": "A-16",
+    "esJec": true
+  },
+  {
+    "esedSec": 3,
+    "esedCod": 280,
+    "esadCod": 1,
+    "esedDescripcion": "LICEO COMERCIAL JERARDO MUÑOZ CAMPOS",
+    "esedDescCorta": "A-12",
+    "esJec": false
+  },
+  {
+    "esedSec": 4,
+    "esedCod": 282,
+    "esadCod": 1,
+    "esedDescripcion": "LICEO DR. ANTONIO RENDIC I. ANEXO 282",
+    "esedDescCorta": "B-32",
+    "esJec": false
+  },
+  {
+    "esedSec": 5,
+    "esedCod": 283,
+    "esadCod": 1,
+    "esedDescripcion": "LICEO TÉCNICO DE ANTOFAGASTA",
+    "esedDescCorta": "A-14",
+    "esJec": false
+  },
+  {
+    "esedSec": 6,
+    "esedCod": 284,
+    "esadCod": 1,
+    "esedDescripcion": "LICEO DE HOMBRES MARIO BAHAMONDE SILVA, ANTOFAGASTA",
+    "esedDescCorta": "A-15",
+    "esJec": false
+  },
+  {
+    "esedSec": 7,
+    "esedCod": 285,
+    "esadCod": 1,
+    "esedDescripcion": "LICEO BICENTENARIO MARTA NAREA DIAZ",
+    "esedDescCorta": "A-17",
+    "esJec": false
+  },
+  {
+    "esedSec": 8,
+    "esedCod": 286,
+    "esadCod": 1,
+    "esedDescripcion": "LICEO LA PORTADA",
+    "esedDescCorta": "A-22",
+    "esJec": false
+  },
+  {
+    "esedSec": 9,
+    "esedCod": 287,
+    "esadCod": 1,
+    "esedDescripcion": "LICEO DOMINGO HERRERA RIVERA",
+    "esedDescCorta": "B-13",
+    "esJec": false
+  },
+  {
+    "esedSec": 10,
+    "esedCod": 288,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA JAPÓN",
+    "esedDescCorta": "D-58",
+    "esJec": false
+  },
+  {
+    "esedSec": 11,
+    "esedCod": 289,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA ESPAÑA",
+    "esedDescCorta": "D-59",
+    "esJec": false
+  },
+  {
+    "esedSec": 12,
+    "esedCod": 291,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA PADRE GUSTAVO LE PAIGE WALQUE",
+    "esedDescCorta": "D-65",
+    "esJec": false
+  },
+  {
+    "esedSec": 13,
+    "esedCod": 292,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA REPUBLICA DE ITALIA",
+    "esedDescCorta": "D-66",
+    "esJec": false
+  },
+  {
+    "esedSec": 14,
+    "esedCod": 293,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA JOSE PAPIC RADNIC",
+    "esedDescCorta": "D-68",
+    "esJec": false
+  },
+  {
+    "esedSec": 15,
+    "esedCod": 294,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA PROFESORA LJUBICA DOMIC WUTH",
+    "esedDescCorta": "D-72",
+    "esJec": false
+  },
+  {
+    "esedSec": 16,
+    "esedCod": 296,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA REPUBLICA DE ESTADOS UNIDOS",
+    "esedDescCorta": "D-73",
+    "esJec": false
+  },
+  {
+    "esedSec": 17,
+    "esedCod": 297,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA ALCALDE MAXIMILIANO POBLETE CORTES",
+    "esedDescCorta": "D-74",
+    "esJec": false
+  },
+  {
+    "esedSec": 18,
+    "esedCod": 298,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA DARIO SALAS DIAZ",
+    "esedDescCorta": "D-75",
+    "esJec": true
+  },
+  {
+    "esedSec": 19,
+    "esedCod": 301,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA ROMULO J. PEÑA MATURANA",
+    "esedDescCorta": "D-85",
+    "esJec": false
+  },
+  {
+    "esedSec": 20,
+    "esedCod": 302,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA JUAN LOPEZ",
+    "esedDescCorta": "D-86",
+    "esJec": false
+  },
+  {
+    "esedSec": 21,
+    "esedCod": 303,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA REPUBLICA ARGENTINA",
+    "esedDescCorta": "D-90",
+    "esJec": false
+  },
+  {
+    "esedSec": 22,
+    "esedCod": 304,
+    "esadCod": 1,
+    "esedDescripcion": "LICEO BICENTENARIO ANDRES SABELLA",
+    "esedDescCorta": "B-29",
+    "esJec": false
+  },
+  {
+    "esedSec": 23,
+    "esedCod": 305,
+    "esadCod": 1,
+    "esedDescripcion": "HUMBERTO GONZALEZ ECHEGOYEN",
+    "esedDescCorta": "D-121",
+    "esJec": false
+  },
+  {
+    "esedSec": 24,
+    "esedCod": 306,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA HUANCHACA",
+    "esedDescCorta": "E-56",
+    "esJec": false
+  },
+  {
+    "esedSec": 25,
+    "esedCod": 307,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA DE PARVULOS MARCELA PAZ",
+    "esedDescCorta": "E-57",
+    "esJec": false
+  },
+  {
+    "esedSec": 26,
+    "esedCod": 310,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA CLAUDIO MATTE PEREZ",
+    "esedDescCorta": "E-67",
+    "esJec": false
+  },
+  {
+    "esedSec": 27,
+    "esedCod": 311,
+    "esadCod": 1,
+    "esedDescripcion": "ESC DIFERENCIAL JUAN SANDOVAL CARRASCO",
+    "esedDescCorta": "E-77",
+    "esJec": false
+  },
+  {
+    "esedSec": 28,
+    "esedCod": 312,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA REPÚBLICA DEL  ECUADOR",
+    "esedDescCorta": "E-79",
+    "esJec": false
+  },
+  {
+    "esedSec": 29,
+    "esedCod": 313,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA ARTURO PRAT",
+    "esedDescCorta": "E-80",
+    "esJec": false
+  },
+  {
+    "esedSec": 30,
+    "esedCod": 315,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA HEROES DE LA CONCEPCION",
+    "esedDescCorta": "E-81",
+    "esJec": false
+  },
+  {
+    "esedSec": 31,
+    "esedCod": 316,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA LAS AMERICAS",
+    "esedDescCorta": "E-84",
+    "esJec": false
+  },
+  {
+    "esedSec": 32,
+    "esedCod": 317,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA LAS ROCAS",
+    "esedDescCorta": "E-87",
+    "esJec": false
+  },
+  {
+    "esedSec": 33,
+    "esedCod": 318,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA EDDA CUNEO DONNAGIO",
+    "esedDescCorta": "E-88",
+    "esJec": false
+  },
+  {
+    "esedSec": 34,
+    "esedCod": 319,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA LA BANDERA",
+    "esedDescCorta": "E-97",
+    "esJec": false
+  },
+  {
+    "esedSec": 35,
+    "esedCod": 320,
+    "esadCod": 1,
+    "esedDescripcion": "LICEO ARTÍSTICO ARMANDO CARRERA GONZÁLEZ",
+    "esedDescCorta": "F-60",
+    "esJec": false
+  },
+  {
+    "esedSec": 36,
+    "esedCod": 322,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA GENERAL MANUEL BAQUEDANO",
+    "esedDescCorta": "F-78",
+    "esJec": false
+  },
+  {
+    "esedSec": 37,
+    "esedCod": 324,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA FUNDACION MINERA ESCONDIDA",
+    "esedDescCorta": "F-89",
+    "esJec": false
+  },
+  {
+    "esedSec": 38,
+    "esedCod": 326,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA SANTIAGO AMENGUAL B.",
+    "esedDescCorta": "F-94",
+    "esJec": false
+  },
+  {
+    "esedSec": 39,
+    "esedCod": 329,
+    "esadCod": 1,
+    "esedDescripcion": "INSTITUTO BICENTENARIO CIENTÍFICO EDUCACIONAL JOSÉ MAZA SANCHO",
+    "esedDescCorta": "ICEDUC",
+    "esJec": false
+  },
+  {
+    "esedSec": 40,
+    "esedCod": 330,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA DE PARVULOS LOS PINGUINITOS",
+    "esedDescCorta": "F-112",
+    "esJec": false
+  },
+  {
+    "esedSec": 41,
+    "esedCod": 332,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA GABRIELA MISTRAL",
+    "esedDescCorta": "G-111",
+    "esJec": false
+  },
+  {
+    "esedSec": 42,
+    "esedCod": 333,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA DE PARVULOS BLANCA NIEVES",
+    "esedDescCorta": "G-113",
+    "esJec": false
+  },
+  {
+    "esedSec": 43,
+    "esedCod": 10968,
+    "esadCod": 1,
+    "esedDescripcion": "LICEO MAYOR GRAL.(E) OSCAR BONILLA",
+    "esedDescCorta": "A-26",
+    "esJec": false
+  },
+  {
+    "esedSec": 44,
+    "esedCod": 10979,
+    "esadCod": 1,
+    "esedDescripcion": "LICEO DR. ANTONIO RENDIC I. ANEXO 10979",
+    "esedDescCorta": "B-32",
+    "esJec": false
+  },
+  {
+    "esedSec": 45,
+    "esedCod": 12822,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA DE PARVULOS SEMILLITA",
+    "esedDescCorta": "F128",
+    "esJec": false
+  },
+  {
+    "esedSec": 46,
+    "esedCod": 12840,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA JUAN PABLO II",
+    "esedDescCorta": "D-129",
+    "esJec": false
+  },
+  {
+    "esedSec": 47,
+    "esedCod": 12870,
+    "esadCod": 1,
+    "esedDescripcion": "C.E.I.A. DR. ANTONIO RENDIC I.",
+    "esedDescCorta": "B-32",
+    "esJec": false
+  },
+  {
+    "esedSec": 48,
+    "esedCod": 12944,
+    "esadCod": 1,
+    "esedDescripcion": "REVERENDO PADRE PATRICIO CARIOLA",
+    "esedDescCorta": "D-136",
+    "esJec": false
+  },
+  {
+    "esedSec": 49,
+    "esedCod": 12945,
+    "esadCod": 1,
+    "esedDescripcion": "ECOLOGICA PADRE ALBERTO HURTADO",
+    "esedDescCorta": "D-138",
+    "esJec": false
+  },
+  {
+    "esedSec": 50,
+    "esedCod": 12962,
+    "esadCod": 1,
+    "esedDescripcion": "ESCUELA ELMO FUNEZ CARRIZO",
+    "esedDescCorta": "D-139",
+    "esJec": false
+  },
+  {
+    "esedSec": 51,
+    "esedCod": 12972,
+    "esadCod": 1,
+    "esedDescripcion": "COLEGIO LA CONCEPCION",
+    "esedDescCorta": "B-35",
+    "esJec": false
+  },
+  {
+    "esedSec": 52,
+    "esedCod": 31343,
+    "esadCod": 1,
+    "esedDescripcion": "LICEO CIENTIFICO HUMANISTA LA CHIMBA",
+    "esedDescCorta": "B-36",
+    "esJec": false
+  },
+  {
+    "esedSec": 53,
+    "esedCod": 31345,
+    "esadCod": 1,
+    "esedDescripcion": "LICEO POLITECNICO LOS ARENALES",
+    "esedDescCorta": "A-33",
+    "esJec": false
+  }
+]

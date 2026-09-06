@@ -1,0 +1,74 @@
+[
+  {
+    "establecimientoId": 2,
+    "tienCod": 610,
+    "grteCod": 90,
+    "cantidadCursos": 4
+  },
+  {
+    "establecimientoId": 2,
+    "tienCod": 610,
+    "grteCod": 100,
+    "cantidadCursos": 4
+  },
+  {
+    "establecimientoId": 2,
+    "tienCod": 610,
+    "grteCod": 110,
+    "cantidadCursos": 4
+  },
+  {
+    "establecimientoId": 2,
+    "tienCod": 610,
+    "grteCod": 120,
+    "cantidadCursos": 4
+  },
+  {
+    "establecimientoId": 18,
+    "tienCod": 110,
+    "grteCod": 10,
+    "cantidadCursos": 4
+  },
+  {
+    "establecimientoId": 18,
+    "tienCod": 110,
+    "grteCod": 20,
+    "cantidadCursos": 4
+  },
+  {
+    "establecimientoId": 18,
+    "tienCod": 110,
+    "grteCod": 30,
+    "cantidadCursos": 4
+  },
+  {
+    "establecimientoId": 18,
+    "tienCod": 110,
+    "grteCod": 40,
+    "cantidadCursos": 4
+  },
+  {
+    "establecimientoId": 18,
+    "tienCod": 110,
+    "grteCod": 50,
+    "cantidadCursos": 4
+  },
+  {
+    "establecimientoId": 18,
+    "tienCod": 110,
+    "grteCod": 60,
+    "cantidadCursos": 4
+  },
+  {
+    "establecimientoId": 18,
+    "tienCod": 110,
+    "grteCod": 70,
+    "cantidadCursos": 4
+  },
+  {
+    "establecimientoId": 18,
+    "tienCod": 110,
+    "grteCod": 80,
+    "cantidadCursos": 4
+  }
+]

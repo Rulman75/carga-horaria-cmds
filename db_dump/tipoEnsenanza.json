@@ -1,0 +1,166 @@
+[
+  {
+    "tienCod": 10,
+    "tienDescripcion": "Educación Parvularia"
+  },
+  {
+    "tienCod": 110,
+    "tienDescripcion": "Enseñanza Básica"
+  },
+  {
+    "tienCod": 160,
+    "tienDescripcion": "Educación Básica Común Adultos (Decreto 584/2007)"
+  },
+  {
+    "tienCod": 161,
+    "tienDescripcion": "Educación Básica Especial Adultos"
+  },
+  {
+    "tienCod": 163,
+    "tienDescripcion": "Escuelas Cárceles (Básica Adultos)"
+  },
+  {
+    "tienCod": 165,
+    "tienDescripcion": "Educación Básica Adultos Sin Oficios (Decreto 584/2007)"
+  },
+  {
+    "tienCod": 167,
+    "tienDescripcion": "Educación Básica Adultos Con Oficios (Decreto 584/2007 y 999/2009)"
+  },
+  {
+    "tienCod": 211,
+    "tienDescripcion": "Educación Especial Discapacidad Auditiva"
+  },
+  {
+    "tienCod": 212,
+    "tienDescripcion": "Educación Especial Codigo 212"
+  },
+  {
+    "tienCod": 213,
+    "tienDescripcion": "Educación Especial Discapacidad Visual"
+  },
+  {
+    "tienCod": 214,
+    "tienDescripcion": "Educación Especial Trastornos Específicos del Lenguaje"
+  },
+  {
+    "tienCod": 215,
+    "tienDescripcion": "Educación Especial Trastornos Motores"
+  },
+  {
+    "tienCod": 216,
+    "tienDescripcion": "Educación Especial Autismo"
+  },
+  {
+    "tienCod": 217,
+    "tienDescripcion": "Educación Especial Discapacidad Graves Alteraciones en la Capacidad de Relación y Comunicación"
+  },
+  {
+    "tienCod": 299,
+    "tienDescripcion": "Opción 4 Programa Integración Escolar"
+  },
+  {
+    "tienCod": 310,
+    "tienDescripcion": "Enseñanza Media H-C niños y jóvenes"
+  },
+  {
+    "tienCod": 360,
+    "tienDescripcion": "Educación Media H-C adultos vespertino y nocturno (Decreto N° 190/1975)"
+  },
+  {
+    "tienCod": 361,
+    "tienDescripcion": "Educación Media H-C adultos (Decreto N° 12/1987)"
+  },
+  {
+    "tienCod": 362,
+    "tienDescripcion": "Escuelas Cárceles (Media Adultos)"
+  },
+  {
+    "tienCod": 363,
+    "tienDescripcion": "Educación Media H-C Adultos (Decreto N°1000/2009)"
+  },
+  {
+    "tienCod": 410,
+    "tienDescripcion": "Enseñanza Media T-P Comercial Niños y Jóvenes"
+  },
+  {
+    "tienCod": 460,
+    "tienDescripcion": "Educación Media T-P Comercial Adultos (Decreto N° 152/1989)"
+  },
+  {
+    "tienCod": 461,
+    "tienDescripcion": "Educación Media T-P Comercial Adultos (Decreto N° 152/1989)"
+  },
+  {
+    "tienCod": 463,
+    "tienDescripcion": "Educación Media T-P Comercial Adultos (Decreto N° 1000/2009)"
+  },
+  {
+    "tienCod": 510,
+    "tienDescripcion": "Enseñanza Media T-P Industrial Niños y Jóvenes"
+  },
+  {
+    "tienCod": 560,
+    "tienDescripcion": "Educación Media T-P Industrial Adultos (Decreto N° 152/1989)"
+  },
+  {
+    "tienCod": 561,
+    "tienDescripcion": "Educación Media T-P Industrial Adultos (Decreto N° 152/1989)"
+  },
+  {
+    "tienCod": 563,
+    "tienDescripcion": "Educación Media T-P Industrial Adultos (Decreto N° 1000/2009)"
+  },
+  {
+    "tienCod": 610,
+    "tienDescripcion": "Enseñanza Media T-P Técnica Niños y Jóvenes"
+  },
+  {
+    "tienCod": 660,
+    "tienDescripcion": "Educación Media T-P Técnica Adultos (Decreto N° 152/1989)"
+  },
+  {
+    "tienCod": 661,
+    "tienDescripcion": "Educación Media T-P Técnica Adultos (Decreto N° 152/1989)"
+  },
+  {
+    "tienCod": 663,
+    "tienDescripcion": "Educación Media T-P Técnica Adultos (Decreto N° 1000/2009)"
+  },
+  {
+    "tienCod": 710,
+    "tienDescripcion": "Enseñanza Media T-P Agrícola Niños y Jóvenes"
+  },
+  {
+    "tienCod": 760,
+    "tienDescripcion": "Educación Media T-P Agrícola Adultos (Decreto N° 152/1989)"
+  },
+  {
+    "tienCod": 761,
+    "tienDescripcion": "Educación Media T-P Agrícola Adultos (Decreto N° 152/1989)"
+  },
+  {
+    "tienCod": 763,
+    "tienDescripcion": "Educación Media T-P Agrícola Adultos (Decreto N° 1000/2009)"
+  },
+  {
+    "tienCod": 810,
+    "tienDescripcion": "Enseñanza Media T-P Marítima Niños y Jóvenes"
+  },
+  {
+    "tienCod": 860,
+    "tienDescripcion": "Enseñanza Media T-P Marítima Adultos (Decreto N° 152/1989)"
+  },
+  {
+    "tienCod": 863,
+    "tienDescripcion": "Enseñanza Media T-P Marítima Adultos (Decreto N° 1000/2009)"
+  },
+  {
+    "tienCod": 910,
+    "tienDescripcion": "Enseñanza Media Artística Niños y Jóvenes"
+  },
+  {
+    "tienCod": 963,
+    "tienDescripcion": "Enseñanza Media Artística Adultos"
+  }
+]

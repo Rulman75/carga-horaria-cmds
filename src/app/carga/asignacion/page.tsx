@@ -61,8 +61,8 @@ export default function AsignacionCargaPage() {
     getDocentesEstablecimiento(estId).then(setDocentes);
     getGradosEstablecimiento(estId).then(setGrados);
     getCargasEstablecimiento(estId).then(setTodasCargas);
-    getActividadesNoLectivas(), getTablaConversion(),
-        getTablaConversion().then(setActividadesNL);
+    getActividadesNoLectivas().then(setActividadesNL);
+      getTablaConversion().then(setTablaConversion);
   }, []);
 
   const loadTodasCargas = () => {

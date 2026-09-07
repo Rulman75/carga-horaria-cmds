@@ -107,6 +107,21 @@ model Docente {
   tipoContrato    String?  
   horasTitular    Int?     
   tituloProfesional String?
+  
+  // Nuevos campos
+  contrato        String?
+  descripcion     String?
+  inicioContrato  DateTime?
+  terminoContrato DateTime?
+  horasContrato   Float?
+  horasExtension  Float?
+  horasPie        Float?
+  horasSep        Float?
+  horasGremial    Float?
+  horasSippe      Float?
+  horasExtraescolar Float?
+  totalJornada    Float?
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

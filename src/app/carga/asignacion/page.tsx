@@ -236,6 +236,15 @@ export default function AsignacionCargaPage() {
     setCargas(newCargas);
   };
 
+  const handleCambiarHoras = (index: number, delta: number) => {
+    const newCargas = [...cargas];
+    const nuevaHora = newCargas[index].horas + delta;
+    if (nuevaHora > 0) {
+      newCargas[index].horas = nuevaHora;
+      setCargas(newCargas);
+    }
+  };
+
   const handleGuardar = async () => {
     if (!docenteSeleccionado) return;
     setSaving(true);
@@ -749,7 +758,22 @@ export default function AsignacionCargaPage() {
                             {carga.tipoCarga === 'LECTIVA' ? getGradoNombre(carga.tienCod, carga.grteCod) : (carga.financiamiento ? `Financiamiento: ${carga.financiamiento}` : 'Global')}
                           </p>
                           <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs font-bold opacity-90">{carga.horas} {carga.tipoCarga === 'LECTIVA' ? 'Ped' : 'Crono'}</span>
+                            <div className="flex items-center gap-1 bg-white rounded px-1 py-0.5 border border-gray-200 shadow-sm">
+                              <button 
+                                onClick={() => handleCambiarHoras(index, -1)}
+                                className="w-5 h-5 flex items-center justify-center rounded hover:bg-gray-100 text-xs font-bold text-gray-600 transition-colors"
+                              >
+                                -
+                              </button>
+                              <span className="text-xs font-bold opacity-90 w-5 text-center">{carga.horas}</span>
+                              <button 
+                                onClick={() => handleCambiarHoras(index, 1)}
+                                className="w-5 h-5 flex items-center justify-center rounded hover:bg-gray-100 text-xs font-bold text-gray-600 transition-colors"
+                              >
+                                +
+                              </button>
+                            </div>
+                            <span className="text-xs font-bold opacity-90">{carga.tipoCarga === 'LECTIVA' ? 'Ped' : 'Crono'}</span>
                             <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${badge}`}>
                               {carga.tipoCarga}
                             </span>

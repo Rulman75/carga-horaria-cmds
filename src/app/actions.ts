@@ -661,7 +661,7 @@ export async function getSchoolAnalytics(establecimientoId: number) {
         anlCrono += c.horasAllocadas;
       } else if (c.tipoCarga === 'EXTRACURRICULAR') {
         extraCrono += c.horasAllocadas;
-        const extraName = c.actividadExtracurricular?.nombre || 'Otra Extra';
+        const extraName = c.actividadExtracurricular?.descripcion || 'Otra Extra';
         extraDistribution[extraName] = (extraDistribution[extraName] || 0) + c.horasAllocadas;
       }
     });
@@ -725,9 +725,9 @@ export async function getGlobalAnalytics() {
       const docCargas = cargas.filter(c => c.docenteId === r.docente.id);
       let lectPed = 0, noLect = 0, extra = 0;
       docCargas.forEach(c => {
-        if(c.tipoCarga==='LECTIVA') lectPed += c.horas;
-        if(c.tipoCarga==='NO_LECTIVA') noLect += c.horas;
-        if(c.tipoCarga==='EXTRACURRICULAR') extra += c.horas;
+        if(c.tipoCarga==='LECTIVA') lectPed += c.horasAllocadas;
+        if(c.tipoCarga==='NO_LECTIVA') noLect += c.horasAllocadas;
+        if(c.tipoCarga==='EXTRACURRICULAR') extra += c.horasAllocadas;
       });
       
       let colacion = contrato >= 30 ? 2 : 1;

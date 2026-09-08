@@ -386,6 +386,7 @@ export async function getCargasEstablecimiento(establecimientoId: number) {
     include: {
       asignatura: true,
       actividadNoLectiva: true,
+      actividadExtracurricular: true,
       grado: { include: { tipoEnsenanza: true } }
     }
   });
@@ -406,7 +407,8 @@ export async function saveCargasHorarias(docenteId: number, cargas: any[]) {
         grteCod: c.grteCod || null,
         asignaturaCod: c.codAsignatura || null,
         actividadNoLectivaId: c.actividadNoLectivaId || null,
-        financiamiento: c.financiamiento || null,
+          actividadExtracurricularId: c.actividadExtracurricularId || null,
+          financiamiento: c.financiamiento || null,
         horasAllocadas: c.horas,
         tipoCarga: c.tipoCarga,
         observacion: ''
@@ -482,9 +484,16 @@ export async function getActividadesNoLectivas() {
   });
 }
 
-export async function createActividadNoLectiva(descripcion: string) {
+export async function createActividadNoLectiva(descripcion: string, esPlanificacion: boolean = false) {
   return await prisma.actividadNoLectiva.create({
-    data: { descripcion }
+    data: { descripcion, esPlanificacion }
+  });
+}
+
+export async function updateActividadNoLectiva(id: number, esPlanificacion: boolean) {
+  return await prisma.actividadNoLectiva.update({
+    where: { id },
+    data: { esPlanificacion }
   });
 }
 
@@ -540,4 +549,221 @@ export async function getDashboardSummary(establecimientoId?: number) {
     const asignaturas = await prisma.asignatura.count();
     return { establecimientos, docentes, asignaturas, tipo: 'GLOBAL' };
   }
+}
+
+
+// --- EXTRACURRICULARES ---
+export async function getActividadesExtracurriculares() {
+  return await prisma.actividadExtracurricular.findMany({
+    orderBy: { descripcion: 'asc' }
+  });
+}
+
+export async function createActividadExtracurricular(descripcion: string) {
+  return await prisma.actividadExtracurricular.create({
+    data: { descripcion }
+  });
+}
+
+export async function deleteActividadExtracurricular(id: number) {
+  return await prisma.actividadExtracurricular.delete({
+    where: { id }
+  });
+}
+
+// --- CONFIGURACION GLOBAL ---
+export async function getConfiguracionGlobal() {
+  let config = await prisma.configuracionGlobal.findFirst();
+  if (!config) {
+    config = await prisma.configuracionGlobal.create({
+      data: { id: 1, horasColacion: 2, maxHorasPie: 3 }
+    });
+  }
+  return config;
+}
+
+export async function updateConfiguracionGlobal(horasColacion: number, maxHorasPie: number) {
+  return await prisma.configuracionGlobal.upsert({
+    where: { id: 1 },
+    update: { horasColacion, maxHorasPie },
+    create: { id: 1, horasColacion, maxHorasPie }
+  });
+}
+
+export async function getDashboardStats() {
+  const ests = await prisma.establecimiento.findMany({
+    orderBy: { esedDescripcion: 'asc' }
+  });
+  const rels = await prisma.docenteEstablecimiento.findMany({
+    include: { docente: true }
+  });
+  
+  let rows = ests.map(e => {
+    const d = rels.filter(r => r.establecimientoId === e.esedSec);
+    const totalHoras = d.reduce((sum, r) => sum + (r.docente.totalDefinitivo || r.docente.totalJornada || r.docente.horasTitular || 0), 0);
+    return {
+      nombre: e.esedDescripcion,
+      docentes: d.length,
+      horas: totalHoras
+    };
+  }).filter(r => r.docentes > 0);
+  
+  return rows;
+}
+
+
+
+  const parseCronoToDecimal = (crono: string) => {
+    if (!crono) return 0;
+    const parts = crono.split(':');
+    if (parts.length !== 2) return 0;
+    return parseInt(parts[0]) + parseInt(parts[1]) / 60;
+  };
+
+export async function getSchoolAnalytics(establecimientoId: number) {
+  const tablaConversion = await prisma.tablaConversion.findMany();
+  // Get all teachers for this school
+  const rels = await prisma.docenteEstablecimiento.findMany({
+    where: { establecimientoId },
+    include: { docente: true }
+  });
+  
+  // Get all cargas for this school
+  const cargas = await prisma.cargaHoraria.findMany({
+    where: { planEstablecimiento: { establecimientoId } },
+    include: { asignatura: true, actividadExtracurricular: true }
+  });
+
+  // Calculate metrics
+  let totalHorasContrato = 0;
+  let totalHorasAsignadas = 0;
+  let totalJecAsignadas = 0;
+  let totalBaseAsignadas = 0;
+  let docentesAsignados = 0;
+  let extraDistribution: Record<string, number> = {};
+
+  for (const rel of rels) {
+    const doc = rel.docente;
+    const contrato = doc.totalDefinitivo || doc.totalJornada || doc.horasTitular || 0;
+    totalHorasContrato += contrato;
+    
+    const docCargas = cargas.filter(c => c.docenteId === doc.id);
+    let lectivasPed = 0;
+    let anlCrono = 0;
+    let extraCrono = 0;
+    
+    docCargas.forEach(c => {
+      if (c.tipoCarga === 'LECTIVA') {
+        lectivasPed += c.horasAllocadas;
+        if (c.asignatura?.esTallerJec) totalJecAsignadas += c.horasAllocadas;
+        else totalBaseAsignadas += c.horasAllocadas;
+      } else if (c.tipoCarga === 'NO_LECTIVA') {
+        anlCrono += c.horasAllocadas;
+      } else if (c.tipoCarga === 'EXTRACURRICULAR') {
+        extraCrono += c.horasAllocadas;
+        const extraName = c.actividadExtracurricular?.nombre || 'Otra Extra';
+        extraDistribution[extraName] = (extraDistribution[extraName] || 0) + c.horasAllocadas;
+      }
+    });
+
+    
+    const colacion = contrato >= 30 ? 2 : 1;
+    let recreoDecimal = 0;
+    if (lectivasPed > 0) {
+      const row = tablaConversion.find(r => r.lectivasPedagogicas === lectivasPed);
+      if (row) recreoDecimal = parseCronoToDecimal(row.recreoCronologicas);
+    }
+    
+    let asigTotal = 0;
+    if (lectivasPed > 0 || anlCrono > 0 || extraCrono > 0) {
+      asigTotal = Math.round((lectivasPed * 45 / 60) + recreoDecimal) + anlCrono + extraCrono + colacion;
+    }
+ 
+    totalHorasAsignadas += asigTotal;
+    
+    // If they have any assignment
+    if (asigTotal > 0) docentesAsignados++;
+  }
+
+  const chartExtra = Object.keys(extraDistribution).map(name => ({ name, value: extraDistribution[name] }));
+
+  return {
+    totalDocentes: rels.length,
+    docentesAsignados,
+    totalHorasContrato,
+    totalHorasAsignadas,
+    horasOciosas: totalHorasContrato - totalHorasAsignadas, // Note: this ignores colacion/recreo exact match for now, just an indicator
+    totalJecAsignadas,
+    totalBaseAsignadas,
+    chartExtra
+  };
+}
+
+export async function getGlobalAnalytics() {
+  const tablaConversion = await prisma.tablaConversion.findMany();
+  const ests = await prisma.establecimiento.findMany({ orderBy: { esedDescripcion: 'asc' } });
+  const rels = await prisma.docenteEstablecimiento.findMany({ include: { docente: true } });
+  const cargas = await prisma.cargaHoraria.findMany();
+
+  let schoolStats = [];
+  let totalDocentesComuna = 0;
+  let totalHorasComuna = 0;
+  
+  for (const est of ests) {
+    const sRels = rels.filter(r => r.establecimientoId === est.esedSec);
+    const sCargas = cargas.filter(c => c.planEstablecimientoId && est.esedSec === est.esedSec); // approximate by checking school later
+    
+    let estContrato = 0;
+    let estAsignado = 0;
+    
+    sRels.forEach(r => {
+      const contrato = r.docente.totalDefinitivo || r.docente.totalJornada || r.docente.horasTitular || 0;
+      estContrato += contrato;
+      totalDocentesComuna++;
+      totalHorasComuna += contrato;
+      
+      const docCargas = cargas.filter(c => c.docenteId === r.docente.id);
+      let lectPed = 0, noLect = 0, extra = 0;
+      docCargas.forEach(c => {
+        if(c.tipoCarga==='LECTIVA') lectPed += c.horas;
+        if(c.tipoCarga==='NO_LECTIVA') noLect += c.horas;
+        if(c.tipoCarga==='EXTRACURRICULAR') extra += c.horas;
+      });
+      
+      let colacion = contrato >= 30 ? 2 : 1;
+      let recreoDecimal = 0;
+      if (lectPed > 0) {
+        const row = tablaConversion.find(r => r.lectivasPedagogicas === lectPed);
+        if (row) recreoDecimal = parseCronoToDecimal(row.recreoCronologicas);
+      }
+      
+      if (lectPed > 0 || noLect > 0 || extra > 0) {
+        estAsignado += Math.round((lectPed * 45 / 60) + recreoDecimal) + noLect + extra + colacion;
+      }
+
+    });
+
+    if (sRels.length > 0) {
+      schoolStats.push({
+        nombre: est.esedDescripcion,
+        contrato: estContrato,
+        asignado: estAsignado,
+        ociosas: estContrato - estAsignado
+      });
+    }
+  }
+
+  // Sort by ociosas (Deficit vs Eficiencia)
+  schoolStats.sort((a, b) => b.ociosas - a.ociosas);
+  
+  const topDeficit = schoolStats.slice(0, 5);
+  const topEfficient = schoolStats.slice(-5).reverse();
+
+  return {
+    totalDocentesComuna,
+    totalHorasComuna,
+    topDeficit,
+    topEfficient,
+    schoolStats
+  };
 }

@@ -26,7 +26,9 @@ model Establecimiento {
   esadCod         Int?
   esedDescripcion String?
   esedDescCorta   String?
+  nombreDirector  String?
   esJec           Boolean  @default(false)
+  maxHorasPie     Float    @default(3)
 
   docentes        DocenteEstablecimiento[]
   usuarios        Usuario[]
@@ -121,6 +123,7 @@ model Docente {
   horasSippe      Float?
   horasExtraescolar Float?
   totalJornada    Float?
+  totalDefinitivo Float?   @default(0)
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -209,6 +212,7 @@ model PlanEstablecimientoDet {
 model ActividadNoLectiva {
   id          Int      @id @default(autoincrement())
   descripcion String   @unique
+  esPlanificacion Boolean @default(false)
   cargas      CargaHoraria[]
 }
 
@@ -231,6 +235,9 @@ model CargaHoraria {
   // Opcionales para horas No Lectivas
   actividadNoLectivaId  Int?
   actividadNoLectiva    ActividadNoLectiva? @relation(fields: [actividadNoLectivaId], references: [id])
+
+  actividadExtracurricularId Int?
+  actividadExtracurricular   ActividadExtracurricular? @relation(fields: [actividadExtracurricularId], references: [id])
   
   financiamiento        String? // 'SEP', 'PIE', null
 
@@ -250,4 +257,16 @@ model TablaConversion {
   lectivasCronologicas   String
   recreoCronologicas     String
   noLectivasCronologicas String
+}
+
+model ConfiguracionGlobal {
+  id            Int   @id @default(1)
+  horasColacion Float @default(2)
+  maxHorasPie   Float @default(3)
+}
+
+model ActividadExtracurricular {
+  id          Int      @id @default(autoincrement())
+  descripcion String   @unique
+  cargas      CargaHoraria[]
 }

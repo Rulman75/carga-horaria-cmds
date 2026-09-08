@@ -1,227 +1,301 @@
 'use client';
-
 import React, { useState, useEffect } from 'react';
-import { getDocentesEstablecimiento, getCargasEstablecimiento } from '../../actions';
+import { 
+  getCargasEstablecimiento, 
+  getDocentesEstablecimiento, 
+  getGradosEstablecimiento,
+  getActividadesNoLectivas,
+  getActividadesExtracurriculares,
+  getConfiguracionGlobal,
+  getTablaConversion
+} from '../../actions';
 
-export default function MatrizClasicaPage() {
+export default function SabanaClasicaPage() {
+  const parseCronoToDecimal = (crono: string) => { if(!crono) return 0; const p = crono.split(':'); if(p.length !== 2) return 0; return parseInt(p[0]) + parseInt(p[1])/60; };
+  const [ESTABLECIMIENTO_ID, setEstablecimientoId] = useState<number | null>(null);
   const [docentes, setDocentes] = useState<any[]>([]);
   const [cargas, setCargas] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [grados, setGrados] = useState<any[]>([]);
+  const [tablaConversion, setTablaConversion] = useState<any[]>([]);
+  const [catAnl, setCatAnl] = useState<any[]>([]);
+  const [catExt, setCatExt] = useState<any[]>([]);
+  const [config, setConfig] = useState<any>(null);
 
   useEffect(() => {
-    async function loadData() {
-      const estId = Number(localStorage.getItem('selectedEstablecimientoId')) || 2;
-      const [docs, car] = await Promise.all([
-        getDocentesEstablecimiento(estId),
-        getCargasEstablecimiento(estId)
-      ]);
-      setDocentes(docs);
-      setCargas(car);
-      setLoading(false);
-    }
-    loadData();
+    const estId = Number(localStorage.getItem('selectedEstablecimientoId')) || 2;
+    setEstablecimientoId(estId);
+    getDocentesEstablecimiento(estId).then(setDocentes);
+    getCargasEstablecimiento(estId).then(setCargas);
+    getGradosEstablecimiento(estId).then(setGrados);
+      getTablaConversion().then(setTablaConversion);
+    getActividadesNoLectivas().then(setCatAnl);
+    getActividadesExtracurriculares().then(setCatExt);
+    getConfiguracionGlobal().then(setConfig);
   }, []);
 
-  if (loading) {
-    return <div className="p-8 text-center text-gray-500">Cargando sábana clásica...</div>;
-  }
-
-  // 1. Obtener lista única de asignaturas y ANL (columnas)
-  const asignaturasMap = new Map<string, { cod: string, desc: string, esJec: boolean }>();
-  const anlMap = new Map<string, { cod: string, desc: string, finan: string }>();
+  const docentesMap: Record<number, any> = {};
   
-  cargas.forEach(c => {
-    if (c.tipoCarga === 'LECTIVA' && c.asignaturaCod) {
-      asignaturasMap.set(c.asignaturaCod, {
-        cod: c.asignaturaCod,
-        desc: c.asignatura?.asigDescripcion || c.asignaturaCod,
-        esJec: c.asignatura?.esTallerJec || false
-      });
-    } else if (c.tipoCarga === 'NO_LECTIVA' && c.actividadNoLectivaId) {
-      const k = `${c.actividadNoLectivaId}-${c.financiamiento || 'Normal'}`;
-      anlMap.set(k, {
-        cod: k,
-        desc: c.actividadNoLectiva?.descripcion || 'No Lectiva',
-        finan: c.financiamiento || 'Normal'
-      });
-    }
-  });
-  
-  const asignaturasBase = Array.from(asignaturasMap.values()).filter(a => !a.esJec).sort((a, b) => a.desc.localeCompare(b.desc));
-  const asignaturasJec = Array.from(asignaturasMap.values()).filter(a => a.esJec).sort((a, b) => a.desc.localeCompare(b.desc));
-  const anlColumnas = Array.from(anlMap.values()).sort((a, b) => a.desc.localeCompare(b.desc));
-
-  // 2. Agrupar cargas por docente y por asignatura
-  const resumenPorDocente = new Map<number, any>();
-  
+  // Inicializar docentes
   docentes.forEach(d => {
-    resumenPorDocente.set(d.id, {
-      id: d.id,
-      rut: d.rut,
-      nombres: d.nombres,
-      apellidos: d.apellidos,
-      horasTitular: d.horasTitular,
-      asignaturas: {} as Record<string, number>,
-      anls: {} as Record<string, number>,
-      lectivas: 0,
-      noLectivas: 0
-    });
+    const contrato = d.totalDefinitivo || d.totalJornada || d.horasTitular || 0;
+    const colacion = contrato >= 30 ? (config?.horasColacion || 2) : 1;
+    docentesMap[d.id] = {
+      ...d,
+      contrato,
+      colacion,
+      asignaturasBase: {},
+      asignaturasJec: {},
+      anls: {},
+      extras: {},
+      totalAnlCrono: 0,
+      totalExtraCrono: 0
+    };
   });
 
+  const asignaturasBaseSet = new Set<string>();
+  const asignaturasJecSet = new Set<string>();
+  const anlSet = new Set<string>();
+  const extSet = new Set<string>();
+
   cargas.forEach(c => {
-    const doc = resumenPorDocente.get(c.docenteId);
-    if (doc) {
-      const h = c.horasAllocadas || 0;
-      if (c.tipoCarga === 'LECTIVA') {
-        doc.lectivas += h;
-        if (c.asignaturaCod) {
-          if (!doc.asignaturas[c.asignaturaCod]) {
-            doc.asignaturas[c.asignaturaCod] = 0;
-          }
-          doc.asignaturas[c.asignaturaCod] += h;
-        }
+    const d = docentesMap[c.docenteId];
+    if (!d) return;
+
+    if (c.tipoCarga === 'LECTIVA') {
+      const isJec = c.asignatura?.esTallerJec || false;
+      const asigDesc = c.asignatura?.asigDescripcion || 'Desconocida';
+      
+      const key = `${c.asignaturaCod}|${asigDesc}`;
+      if (isJec) {
+        asignaturasJecSet.add(key);
+        d.asignaturasJec[key] = (d.asignaturasJec[key] || 0) + c.horasAllocadas;
       } else {
-        doc.noLectivas += h;
-        if (c.actividadNoLectivaId) {
-          const k = `${c.actividadNoLectivaId}-${c.financiamiento || 'Normal'}`;
-          if (!doc.anls[k]) doc.anls[k] = 0;
-          doc.anls[k] += h;
-        }
+        asignaturasBaseSet.add(key);
+        d.asignaturasBase[key] = (d.asignaturasBase[key] || 0) + c.horasAllocadas;
       }
+    } else if (c.tipoCarga === 'NO_LECTIVA') {
+      const anlDesc = c.actividadNoLectiva?.descripcion || 'No Lectiva';
+      const finan = c.financiamiento || 'Normal';
+      const key = `${c.actividadNoLectivaId}|${anlDesc}|${finan}`;
+      anlSet.add(key);
+      d.anls[key] = (d.anls[key] || 0) + c.horasAllocadas;
+      d.totalAnlCrono += c.horasAllocadas;
+    } else if (c.tipoCarga === 'EXTRACURRICULAR') {
+      const extDesc = c.actividadExtracurricular?.descripcion || 'Extracurricular';
+      const finan = c.financiamiento || 'Normal';
+      const key = `${c.actividadExtracurricularId}|${extDesc}|${finan}`;
+      extSet.add(key);
+      d.extras[key] = (d.extras[key] || 0) + c.horasAllocadas;
+      d.totalExtraCrono += c.horasAllocadas;
     }
   });
 
-  const docentesArray = Array.from(resumenPorDocente.values());
+  const colsBase = Array.from(asignaturasBaseSet).map(x => ({ key: x, desc: x.split('|')[1] })).sort((a,b) => a.desc.localeCompare(b.desc));
+  const colsJec = Array.from(asignaturasJecSet).map(x => ({ key: x, desc: x.split('|')[1] })).sort((a,b) => a.desc.localeCompare(b.desc));
+  const colsAnl = Array.from(anlSet).map(x => {
+    const p = x.split('|');
+    return { key: x, desc: p[1], finan: p[2] };
+  }).sort((a,b) => a.desc.localeCompare(b.desc));
+  const colsExt = Array.from(extSet).map(x => {
+    const p = x.split('|');
+    return { key: x, desc: p[1], finan: p[2] };
+  }).sort((a,b) => a.desc.localeCompare(b.desc));
+
+  const docentesArray = Object.values(docentesMap).sort((a, b) => a.apellidos.localeCompare(b.apellidos));
+
+  
+  const exportarExcel = () => {
+    const table = document.getElementById('sabana-table');
+    if (!table) return;
+    const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body>${table.outerHTML}</body></html>`;
+    const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'SabanaCarga.xls';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)] bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
-      <div className="p-4 border-b border-[#e2e8f0] bg-[#f8fafc] flex justify-between items-center shrink-0">
+    
+      <div className="flex flex-col gap-6 h-full">
+<style>{`
+        @media print {
+          @page { size: landscape; margin: 10mm; }
+          body, html { height: auto !important; overflow: visible !important; background: white !important; }
+          aside, nav, .no-print { display: none !important; }
+          main { height: auto !important; overflow: visible !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
+          /* Reset parent flex containers that clip content */
+          div[class*="flex h-screen"] { display: block !important; height: auto !important; overflow: visible !important; }
+          .custom-scrollbar { overflow: visible !important; }
+          table { width: 100% !important; page-break-inside: auto; }
+          tr { page-break-inside: avoid; page-break-after: auto; }
+          thead { display: table-header-group; }
+          tfoot { display: table-footer-group; }
+          /* Avoid text colors disappearing in print mode */
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          /* Un-stick elements so they flow properly across pages */
+          th.sticky, td.sticky { position: static !important; }
+          thead.sticky { position: static !important; }
+        }
+      `}</style>
+
+      
+      <div className="flex justify-between items-center no-print">
         <div>
-          <h1 className="text-xl font-bold text-[#016098]">Sábana Clásica (Por Asignatura y Actividad)</h1>
-          <p className="text-sm text-gray-500">Vista consolidada similar a la matriz Excel tradicional</p>
+          <h1 className="text-xl font-bold text-[#016098]">Sábana Clásica de Carga (Global)</h1>
+          <p className="text-sm text-gray-500">Matriz en horas cronológicas y pedagógicas según corresponda.</p>
         </div>
         <button 
-          onClick={() => window.print()}
-          className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2"
+          onClick={exportarExcel}
+          className="bg-[#107c41] hover:bg-[#0c5c30] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors mr-2"
         >
-          🖨️ Imprimir / Exportar
+          Exportar Excel
+        </button>
+        <button 
+          onClick={() => window.print()}
+          className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg text-sm font-medium shadow-sm"
+        >
+          Imprimir / PDF
         </button>
       </div>
 
-      <div className="flex-1 overflow-auto custom-scrollbar relative bg-[#f8fafc]">
-        <table className="w-full text-sm text-left border-collapse" style={{ minWidth: 'max-content' }}>
-          <thead className="text-xs text-[#1e293b] uppercase bg-[#e2e8f0] sticky top-0 z-20 shadow-sm">
+      <div className="flex-1 overflow-auto custom-scrollbar bg-[#f8fafc]">
+        <table id="sabana-table" className="w-full text-sm text-left border-collapse" style={{ minWidth: 'max-content' }}>
+          <thead className="text-[10px] text-[#1e293b] uppercase bg-[#e2e8f0] sticky top-0 z-20 shadow-sm">
             <tr>
-              {/* Frozen columns */}
-              <th className="px-4 py-3 border border-[#cbd5e1] bg-[#e2e8f0] sticky left-0 z-30 min-w-[250px]" rowSpan={2}>Docente</th>
-              <th className="px-3 py-3 border border-[#cbd5e1] text-center bg-[#e2e8f0] sticky left-[250px] z-30 min-w-[90px]" rowSpan={2}>Hrs Titular<br/><span className="text-[9px]">(Cronológicas)</span></th>
+              <th colSpan={3} className="bg-[#e2e8f0] sticky left-0 z-40 border border-[#cbd5e1]"></th>
               
-              {/* Asignaturas Base */}
-              {asignaturasBase.length > 0 && (
-                <th colSpan={asignaturasBase.length} className="px-4 py-2 border border-[#cbd5e1] text-center bg-[#dbeafe] text-[#1e40af]">Horas Docencia Aula</th>
+              {(colsBase.length > 0 || colsJec.length > 0) && (
+                <th colSpan={(colsBase.length > 0 ? colsBase.length + 1 : 0) + (colsJec.length > 0 ? colsJec.length + 1 : 0) + 2} className="px-4 py-1 border border-[#cbd5e1] text-center bg-blue-50 text-blue-900 border-r-2 border-r-slate-300 font-bold">
+                  65% HORAS LECTIVAS
+                </th>
               )}
-              <th className="px-2 py-2 border border-[#cbd5e1] text-center bg-[#bfdbfe] text-[#1e40af]" rowSpan={2}>TOTAL HORAS<br/>DOCENCIA AULA</th>
 
-              {/* JEC */}
-              {asignaturasJec.length > 0 && (
-                <th colSpan={asignaturasJec.length} className="px-4 py-2 border border-[#cbd5e1] text-center bg-[#dcfce7] text-[#166534]">Talleres JEC</th>
+              <th colSpan={colsAnl.length + 2} className="px-4 py-1 border border-[#cbd5e1] text-center bg-amber-50 text-amber-900 border-r-2 border-r-slate-300 font-bold">
+                35% HORAS NO LECTIVAS
+              </th>
+
+              <th className="bg-[#e2e8f0] border border-[#cbd5e1] border-b-0"></th>
+
+              {colsExt.length > 0 && (
+                <th colSpan={colsExt.length + 1} className="px-4 py-1 border border-[#cbd5e1] text-center bg-purple-50 text-purple-900 border-r-2 border-r-slate-300 font-bold">
+                  ACTIVIDADES EXTRACURRICULARES
+                </th>
               )}
-              <th className="px-2 py-2 border border-[#cbd5e1] text-center bg-[#bbf7d0] text-[#166534]" rowSpan={2}>TOTAL<br/>HORAS JEC</th>
 
-              {/* Total Aula */}
-              <th className="px-2 py-2 border border-[#cbd5e1] text-center bg-[#93c5fd] text-[#1e3a8a] font-bold" rowSpan={2}>TOTAL HORAS<br/>AULA</th>
-
-              {/* ANLs */}
-              {anlColumnas.length > 0 && (
-                <th colSpan={anlColumnas.length} className="px-4 py-2 border border-[#cbd5e1] text-center bg-[#fef3c7] text-[#d97706]">35% Horas No Lectivas</th>
-              )}
-              <th className="px-2 py-2 border border-[#cbd5e1] text-center bg-[#fde68a] text-[#b45309] font-bold" rowSpan={2}>TOTAL HRS.<br/>NO LECTIVAS</th>
-
-              {/* Balance */}
-              <th className="px-2 py-2 border border-[#cbd5e1] text-center bg-[#e2e8f0] text-gray-700" rowSpan={2}>Faltan/<br/>Sobran (Ped.)</th>
+              <th colSpan={2} className="bg-gray-300 border border-[#cbd5e1]"></th>
             </tr>
             <tr>
-              {asignaturasBase.map(asig => (
-                <th key={asig.cod} className="px-2 py-2 border border-[#cbd5e1] bg-white text-center font-semibold text-[10px] w-20 whitespace-normal align-bottom" title={asig.desc}>
-                  <div className="w-16 mx-auto truncate">{asig.desc}</div>
-                </th>
-              ))}
+              <th className="px-4 py-2 border border-[#cbd5e1] bg-[#e2e8f0] sticky left-0 z-30" rowSpan={2}>Docente</th>
+              <th className="px-2 py-2 border border-[#cbd5e1] text-center bg-[#e2e8f0] sticky left-[250px] z-30" rowSpan={2}>Hrs.<br/>Contrato</th>
+              <th className="px-2 py-2 border border-[#cbd5e1] text-center bg-[#e2e8f0] sticky left-[320px] z-30" rowSpan={2}>Derecho<br/>Colacin</th>
               
-              {asignaturasJec.map(asig => (
-                <th key={asig.cod} className="px-2 py-2 border border-[#cbd5e1] bg-white text-center font-semibold text-[10px] w-20 whitespace-normal align-bottom" title={asig.desc}>
-                  <div className="w-16 mx-auto truncate">{asig.desc}</div>
+              {colsBase.length > 0 && <th colSpan={colsBase.length} className="px-4 py-1 border border-[#cbd5e1] text-center bg-white text-blue-700">PLAN DE ESTUDIO</th>}
+              {colsBase.length > 0 && <th className="px-2 py-1 border border-[#cbd5e1] text-center bg-blue-100 text-blue-800" rowSpan={2}>TOTAL<br/>AULA</th>}
+
+              {colsJec.length > 0 && <th colSpan={colsJec.length} className="px-4 py-1 border border-[#cbd5e1] text-center bg-white text-emerald-700">TALLERES JEC</th>}
+              {colsJec.length > 0 && <th className="px-2 py-1 border border-[#cbd5e1] text-center bg-emerald-100 text-emerald-800" rowSpan={2}>TOTAL<br/>JEC</th>}
+              {(colsBase.length > 0 || colsJec.length > 0) && <th className="px-2 py-1 border border-[#cbd5e1] text-center bg-teal-100 text-teal-800 font-bold" rowSpan={2}>TOTAL<br/>LECTIVAS</th>}
+              {(colsBase.length > 0 || colsJec.length > 0) && <th className="px-2 py-1 border border-[#cbd5e1] text-center bg-teal-50 text-teal-900 border-r-2 border-r-slate-300" rowSpan={2}>RECREOS<br/>(Crono)</th>}
+
+              <th className="px-2 py-1 border border-[#cbd5e1] text-center bg-orange-50 text-orange-800" rowSpan={2}>HRS. NL<br/>(Marco Legal)</th>
+              {colsAnl.length > 0 && <th colSpan={colsAnl.length} className="px-4 py-1 border border-[#cbd5e1] text-center bg-white text-amber-700">HRS. NO LECTIVAS</th>}
+              <th className="px-2 py-1 border border-[#cbd5e1] text-center bg-amber-100 text-amber-800 border-r-2 border-r-slate-300" rowSpan={2}>TOTAL<br/>NO LECTIVAS</th>
+
+              <th className="px-2 py-1 border border-[#cbd5e1] text-center bg-slate-200 font-bold text-slate-800 border-r-2 border-r-slate-400" rowSpan={2}>TOTAL JORNADA<br/>SEMANAL (Crono)</th>
+
+              {colsExt.length > 0 && <th colSpan={colsExt.length} className="px-4 py-1 border border-[#cbd5e1] text-center bg-white text-purple-700">ACTIVIDADES EXTRACURRICULARES</th>}
+              {colsExt.length > 0 && <th className="px-2 py-1 border border-[#cbd5e1] text-center bg-purple-100 text-purple-800 border-r-2 border-r-slate-300" rowSpan={2}>TOTAL<br/>EXTRA</th>}
+
+              <th className="px-2 py-1 border border-[#cbd5e1] text-center bg-gray-300 font-bold" rowSpan={2}>TOTAL ASIGNADO<br/>(Crono)</th>
+              <th className="px-2 py-1 border border-[#cbd5e1] text-center bg-gray-300" rowSpan={2}>BALANCE<br/>(Faltan/Sobran)</th>
+            </tr>
+            <tr>
+              {colsBase.map(c => <th key={c.key} className="px-1 py-1 border border-[#cbd5e1] bg-white text-center w-8 align-bottom" title={c.desc}><div className="[writing-mode:vertical-rl] rotate-180 max-h-32 m-auto text-[11px] font-semibold text-gray-700 py-2 truncate">{c.desc}</div></th>)}
+              {colsJec.map(c => <th key={c.key} className="px-1 py-1 border border-[#cbd5e1] bg-white text-center w-8 align-bottom" title={c.desc}><div className="[writing-mode:vertical-rl] rotate-180 max-h-32 m-auto text-[11px] font-semibold text-gray-700 py-2 truncate">{c.desc}</div></th>)}
+              {colsAnl.map(c => (
+                <th key={c.key} className="px-1 py-1 border border-[#cbd5e1] bg-white text-center w-8 align-bottom" title={c.desc}>
+                  <div className="flex flex-col items-center justify-end h-32">
+                    <div className="[writing-mode:vertical-rl] rotate-180 flex-1 text-[11px] font-semibold text-gray-700 truncate">{c.desc}</div>
+                    <div className="text-[8px] bg-amber-100 mt-2 px-1 rounded truncate w-full" title={c.finan}>{c.finan.substring(0, 3)}</div>
+                  </div>
                 </th>
               ))}
-
-              {anlColumnas.map(anl => (
-                <th key={anl.cod} className="px-2 py-2 border border-[#cbd5e1] bg-amber-50 text-center font-semibold text-[10px] w-20 whitespace-normal align-bottom" title={`${anl.desc} (${anl.finan})`}>
-                  <div className="w-16 mx-auto truncate">{anl.desc}</div>
-                  <div className="text-[8px] text-amber-700 bg-amber-100 rounded mt-1">{anl.finan}</div>
+              {colsExt.map(c => (
+                <th key={c.key} className="px-1 py-1 border border-[#cbd5e1] bg-white text-center w-8 align-bottom" title={c.desc}>
+                  <div className="flex flex-col items-center justify-end h-32">
+                    <div className="[writing-mode:vertical-rl] rotate-180 flex-1 text-[11px] font-semibold text-gray-700 truncate">{c.desc}</div>
+                    <div className="text-[8px] bg-purple-100 mt-2 px-1 rounded truncate w-full" title={c.finan}>{c.finan.substring(0, 3)}</div>
+                  </div>
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {docentesArray.map((doc, idx) => {
-              let sumBase = 0;
-              asignaturasBase.forEach(a => sumBase += (doc.asignaturas[a.cod] || 0));
-              let sumJec = 0;
-              asignaturasJec.forEach(a => sumJec += (doc.asignaturas[a.cod] || 0));
+            {docentesArray.map(doc => {
+              let sumBase = 0; colsBase.forEach(c => sumBase += doc.asignaturasBase[c.key] || 0);
+              let sumJec = 0; colsJec.forEach(c => sumJec += doc.asignaturasJec[c.key] || 0);
               
-              const totalAula = sumBase + sumJec;
-              const totalNoLectivas = doc.noLectivas;
-              const totalAsignadoPedagogico = totalAula + totalNoLectivas;
+              const totalAulaPed = sumBase + sumJec;
+              const totalAnlCrono = doc.totalAnlCrono;
+              const totalExtCrono = doc.totalExtraCrono;
+
               
-              const maxPed = Math.floor(doc.horasTitular * (60/45));
-              const diferencia = maxPed - totalAsignadoPedagogico;
-              const tieneCarga = totalAsignadoPedagogico > 0;
-              
+              let anlMarcoCrono: number | string = '-';
+              let recreoCrono: number | string = '-';
+              let recreoDecimal = 0;
+              if (totalAulaPed > 0) {
+                const row = tablaConversion.find(r => r.lectivasPedagogicas === totalAulaPed);
+                if (row) {
+                  anlMarcoCrono = Math.round(parseCronoToDecimal(row.noLectivasCronologicas));
+                  recreoCrono = Math.round(parseCronoToDecimal(row.recreoCronologicas));
+                  recreoDecimal = parseCronoToDecimal(row.recreoCronologicas);
+                  }
+                }
+
+                const totalJornadaSemanalCrono = Math.round((totalAulaPed * 45 / 60) + recreoDecimal) + totalAnlCrono;
+                const asignadoCronoTotal = Math.round((totalAulaPed * 45 / 60) + recreoDecimal) + totalAnlCrono + totalExtCrono + doc.colacion;
+                const balance = doc.contrato - asignadoCronoTotal;
+                const hasData = asignadoCronoTotal > doc.colacion;
+
               return (
-                <tr key={doc.id} className={`bg-white hover:bg-[#f1f5f9] transition-colors ${!tieneCarga ? 'opacity-50' : ''}`}>
-                  <td className="px-4 py-2 border border-[#e2e8f0] sticky left-0 bg-white z-10 whitespace-nowrap">
-                    <div className="font-bold text-[#0f172a]">{doc.apellidos}, {doc.nombres}</div>
-                    <div className="text-[10px] text-gray-500 font-mono">{doc.rut}</div>
+                <tr key={doc.id} className={`bg-white hover:bg-gray-50 border-b border-[#e2e8f0] ${!hasData ? 'opacity-40' : ''}`}>
+                  <td className="px-4 py-2 sticky left-0 bg-white z-10 border-r border-[#e2e8f0] min-w-[250px]">
+                    <div className="font-bold text-gray-800">{doc.apellidos}, {doc.nombres}</div>
+                    <div className="text-[10px] text-gray-500">{doc.rut}</div>
                   </td>
-                  <td className="px-3 py-2 border border-[#e2e8f0] text-center font-bold sticky left-[250px] bg-white z-10">
-                    {doc.horasTitular}
-                  </td>
+                  <td className="px-2 py-2 text-center font-bold sticky left-[250px] bg-white z-10 border-r">{doc.contrato}</td>
+                  <td className="px-2 py-2 text-center text-gray-500 sticky left-[320px] bg-white z-10 border-r bg-gray-50">{doc.colacion}</td>
                   
-                  {asignaturasBase.map(asig => {
-                    const horas = doc.asignaturas[asig.cod] || 0;
-                    return <td key={asig.cod} className={`px-2 py-2 border border-[#e2e8f0] text-center ${horas > 0 ? 'font-bold text-[#016098] bg-[#f0f9ff]' : 'text-gray-300'}`}>{horas > 0 ? horas : '-'}</td>;
-                  })}
-                  <td className="px-2 py-2 border border-[#e2e8f0] text-center font-bold bg-[#bfdbfe] text-[#1e40af]">{sumBase > 0 ? sumBase : '-'}</td>
+                  {colsBase.map(c => <td key={c.key} className="px-1 py-2 text-center border-r text-[#016098] font-medium">{doc.asignaturasBase[c.key] ? Math.round(doc.asignaturasBase[c.key]) : '-'}</td>)}
+                  {colsBase.length > 0 && <td className="px-2 py-2 text-center font-bold bg-white text-blue-700 border-r">{sumBase ? Math.round(sumBase) : '-'}</td>}
 
-                  {asignaturasJec.map(asig => {
-                    const horas = doc.asignaturas[asig.cod] || 0;
-                    return <td key={asig.cod} className={`px-2 py-2 border border-[#e2e8f0] text-center ${horas > 0 ? 'font-bold text-[#166534] bg-[#dcfce7]' : 'text-gray-300'}`}>{horas > 0 ? horas : '-'}</td>;
-                  })}
-                  <td className="px-2 py-2 border border-[#e2e8f0] text-center font-bold bg-[#bbf7d0] text-[#166534]">{sumJec > 0 ? sumJec : '-'}</td>
-                  
-                  <td className="px-2 py-2 border border-[#e2e8f0] text-center font-bold bg-[#93c5fd] text-[#1e3a8a] text-base">{totalAula > 0 ? totalAula : '-'}</td>
+                  {colsJec.map(c => <td key={c.key} className="px-1 py-2 text-center border-r text-[#166534] font-medium">{doc.asignaturasJec[c.key] ? Math.round(doc.asignaturasJec[c.key]) : '-'}</td>)}
+                  {colsJec.length > 0 && <td className="px-2 py-2 text-center font-bold bg-emerald-100 text-emerald-800 border-r">{sumJec ? Math.round(sumJec) : '-'}</td>}
+                  {(colsBase.length > 0 || colsJec.length > 0) && <td className="px-2 py-2 text-center font-bold bg-teal-50 text-teal-800 border-r">{totalAulaPed ? Math.round(totalAulaPed) : '-'}</td>}
+                  {(colsBase.length > 0 || colsJec.length > 0) && <td className="px-2 py-2 text-center font-bold bg-teal-50 text-teal-900 border-r-2 border-r-slate-300 border-r">{recreoCrono}</td>}
 
-                  {anlColumnas.map(anl => {
-                    const horas = doc.anls[anl.cod] || 0;
-                    return <td key={anl.cod} className={`px-2 py-2 border border-[#e2e8f0] text-center ${horas > 0 ? 'font-bold text-[#d97706] bg-[#fef3c7]' : 'text-amber-200 bg-amber-50/20'}`}>{horas > 0 ? horas : '-'}</td>;
-                  })}
-                  <td className="px-2 py-2 border border-[#e2e8f0] text-center font-bold bg-[#fde68a] text-[#b45309]">{totalNoLectivas > 0 ? totalNoLectivas : '-'}</td>
-                  
-                  <td className={`px-2 py-2 border border-[#e2e8f0] text-center font-bold ${
-                    diferencia === 0 ? 'text-green-600' : 
-                    diferencia > 0 ? 'text-orange-500' : 'text-red-600'
-                  }`}>
-                    {diferencia === 0 ? 'OK' : (diferencia > 0 ? `Faltan ${diferencia}` : `Sobran ${Math.abs(diferencia)}`)}
+                  <td className="px-2 py-2 text-center font-bold text-orange-700 border-r bg-orange-50">{anlMarcoCrono}</td>
+                  {colsAnl.map(c => <td key={c.key} className="px-1 py-2 text-center border-r text-[#d97706] font-medium">{doc.anls[c.key] ? Math.round(doc.anls[c.key]) : '-'}</td>)}
+                  <td className="px-2 py-2 text-center font-bold bg-white text-amber-700 border-r">{totalAnlCrono ? Math.round(totalAnlCrono) : '-'}</td>
+
+                  <td className="px-2 py-2 text-center font-bold bg-slate-100 text-slate-800 border-r border-r-slate-400">{totalJornadaSemanalCrono ? Math.round(totalJornadaSemanalCrono) : '-'}</td>
+
+                  {colsExt.map(c => <td key={c.key} className="px-1 py-2 text-center border-r text-[#7e22ce] font-medium">{doc.extras[c.key] ? Math.round(doc.extras[c.key]) : '-'}</td>)}
+                  {colsExt.length > 0 && <td className="px-2 py-2 text-center font-bold bg-white text-purple-700 border-r">{totalExtCrono ? Math.round(totalExtCrono) : '-'}</td>}
+
+                  <td className="px-2 py-2 text-center font-bold text-gray-800 bg-gray-100 border-r">{Math.round(asignadoCronoTotal)}</td>
+                  <td className={`px-2 py-2 text-center font-bold ${balance === 0 ? 'text-green-600' : balance > 0 ? 'text-orange-500' : 'text-red-600'}`}>
+                    {balance === 0 ? 'OK' : balance > 0 ? `Faltan ${Math.round(balance)}` : `Sobran ${Math.abs(balance)}`}
                   </td>
                 </tr>
               );
             })}
           </tbody>
-</table>
-        {cargas.length === 0 && (
-          <div className="p-12 text-center text-gray-500">
-            Aún no hay asignaturas ni cargas configuradas en este establecimiento para construir la matriz.
-          </div>
-        )}
+        </table>
       </div>
     </div>
   );

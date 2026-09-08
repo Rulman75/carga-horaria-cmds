@@ -1,13 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getActividadesNoLectivas, createActividadNoLectiva, deleteActividadNoLectiva, updateActividadNoLectiva } from '../../actions';
+import { getActividadesExtracurriculares, createActividadExtracurricular, deleteActividadExtracurricular } from '../../actions';
 
 export default function MantenedorANLPage() {
   const [actividades, setActividades] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [nuevaDesc, setNuevaDesc] = useState('');
-  const [esPlanificacion, setEsPlanificacion] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -15,7 +14,7 @@ export default function MantenedorANLPage() {
 
   const loadData = async () => {
     setLoading(true);
-    const data = await getActividadesNoLectivas();
+    const data = await getActividadesExtracurriculares();
     setActividades(data);
     setLoading(false);
   };
@@ -24,9 +23,8 @@ export default function MantenedorANLPage() {
     e.preventDefault();
     if (!nuevaDesc.trim()) return;
     try {
-      await createActividadNoLectiva(nuevaDesc.trim(), esPlanificacion);
+      await createActividadExtracurricular(nuevaDesc.trim());
       setNuevaDesc('');
-      setEsPlanificacion(false);
       loadData();
     } catch (e) {
       alert('Error al crear. Es posible que ya exista.');
@@ -35,7 +33,7 @@ export default function MantenedorANLPage() {
 
   const handleDelete = async (id: number) => {
     if (confirm('¿Eliminar esta actividad? Las cargas asignadas a ella se perderán.')) {
-      await deleteActividadNoLectiva(id);
+      await deleteActividadExtracurricular(id);
       loadData();
     }
   };
@@ -43,7 +41,7 @@ export default function MantenedorANLPage() {
   return (
     <div className="flex flex-col gap-6 h-full max-w-4xl mx-auto">
       <div>
-        <h1 className="text-2xl font-semibold text-[#016098]">Mantenedor Actividades No Lectivas</h1>
+        <h1 className="text-2xl font-semibold text-[#016098]">Mantenedor Actividades Extracurriculares</h1>
         <p className="text-sm text-gray-500 mt-1">Administra el catálogo de actividades como Planificación, Talleres Técnicos, etc.</p>
       </div>
 
@@ -58,10 +56,6 @@ export default function MantenedorANLPage() {
               value={nuevaDesc}
               onChange={(e) => setNuevaDesc(e.target.value)}
             />
-          </div>
-          <div className="flex items-center gap-2 mb-2">
-            <input type="checkbox" id="plan" checked={esPlanificacion} onChange={e => setEsPlanificacion(e.target.checked)} className="w-4 h-4 text-[#016098]" />
-            <label htmlFor="plan" className="text-sm text-gray-700 font-medium">¿Es Planificación (tope 40%)?</label>
           </div>
           <button 
             type="submit"
@@ -81,7 +75,6 @@ export default function MantenedorANLPage() {
               <tr>
                 <th className="px-6 py-4">ID</th>
                 <th className="px-6 py-4">Descripción</th>
-                <th className="px-6 py-4 text-center">¿Planificación?</th>
                 <th className="px-6 py-4 text-right">Acciones</th>
               </tr>
             </thead>
@@ -90,17 +83,6 @@ export default function MantenedorANLPage() {
                 <tr key={act.id} className="border-b border-[#e2e8f0] hover:bg-gray-50">
                   <td className="px-6 py-4 text-gray-500">{act.id}</td>
                   <td className="px-6 py-4 font-medium text-gray-900">{act.descripcion}</td>
-                  <td className="px-6 py-4 text-center">
-                    <input 
-                      type="checkbox" 
-                      checked={act.esPlanificacion} 
-                      onChange={async (e) => {
-                        await updateActividadNoLectiva(act.id, e.target.checked);
-                        loadData();
-                      }}
-                      className="w-4 h-4 text-[#016098] cursor-pointer"
-                    />
-                  </td>
                   <td className="px-6 py-4 text-right">
                     <button 
                       onClick={() => handleDelete(act.id)}

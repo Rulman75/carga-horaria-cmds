@@ -150,16 +150,7 @@ export default function SidebarLayout({
                           }`}
                         >Asignación de Horas</Link>
                       </li>
-                      <li>
-                        <Link 
-                          href="/carga/matriz" 
-                          className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                            isActive('/carga/matriz') 
-                            ? 'bg-[#016098] text-white' 
-                            : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
-                          }`}
-                        >Sábana de Carga (Por Grados)</Link>
-                      </li>
+                      
                       <li>
                         <Link 
                           href="/carga/matriz-clasica" 
@@ -267,6 +258,16 @@ export default function SidebarLayout({
                     </li>
                     <li>
                       <Link 
+                        href="/config/extracurriculares"
+                        className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                          pathname === '/config/extracurriculares' 
+                          ? 'bg-[#016098] text-white' 
+                          : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
+                        }`}
+                      >Act. Extracurriculares</Link>
+                    </li>
+                    <li>
+                      <Link 
                         href="/config/planes" 
                         className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
                           isActive('/config/planes') 
@@ -299,7 +300,7 @@ export default function SidebarLayout({
       </aside>
 
       {/* Contenido Principal */}
-      <main className="flex-1 overflow-auto h-screen bg-[#f8fafc]">
+      <main className="flex-1 overflow-auto h-screen bg-[#f8fafc] p-6 md:p-8">
         {children}
       </main>
     </div>

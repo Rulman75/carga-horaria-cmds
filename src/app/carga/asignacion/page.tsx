@@ -288,22 +288,32 @@ export default function AsignacionCargaPage() {
     const totalJornadaSema = Math.round(horasLectivasAsignadas * 45 / 60) + recreoDecimal + horasNoLectivasAsignadas;
     const asigTotal = totalJornadaSema + horasExtraAsignadas + colacion;
     
+    const formatTime = (cronoDecimal: number) => {
+      if (!cronoDecimal) return '0 H';
+      const h = Math.floor(cronoDecimal);
+      const m = Math.round((cronoDecimal - h) * 60);
+      if (h > 0 && m > 0) return h + ' H ' + m + ' MIN';
+      if (h > 0) return h + ' H';
+      if (m > 0) return m + ' MIN';
+      return '0 H';
+    };
+
     const html = `
     <html>
       <head>
         <title>Certificado - ${docenteSeleccionadoObj.apellidos}</title>
         <style>
           body { font-family: 'Arial', sans-serif; padding: 40px; line-height: 1.5; color: #000; }
-          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-          th, td { border: 1px solid #000; padding: 10px; font-size: 14px; text-align: left; }
+          table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
+          th, td { border: 1px solid #000; padding: 10px; font-size: 13px; text-align: left; }
           th { background-color: #f3f4f6; }
           .center { text-align: center; }
+          .font-bold { font-weight: bold; }
           .title { font-size: 18px; font-weight: bold; text-align: center; text-transform: uppercase; text-decoration: underline; margin-bottom: 5px; }
           .subtitle { font-size: 16px; font-weight: bold; text-align: center; margin-bottom: 30px; }
           .section { font-weight: bold; font-size: 16px; margin-top: 30px; margin-bottom: 10px; text-decoration: underline; }
           .flex { display: flex; justify-content: space-between; margin-top: 100px; }
           .signature { width: 40%; text-align: center; border-top: 1px solid #000; padding-top: 5px; font-size: 14px; }
-          ul { margin-top: 0; padding-left: 20px; font-size: 13px; }
           @media print { @page { margin: 20mm; } }
         </style>
       </head>
@@ -330,61 +340,66 @@ export default function AsignacionCargaPage() {
 
         <div class="section">II. Detalle de Carga Horaria (Año Escolar 2027)</div>
         <p style="font-size: 14px;">Se detalla a continuación la distribución de las horas cronológicas asignadas para el presente periodo escolar, de acuerdo con la normativa vigente:</p>
+        
         <table>
-          <tr>
-            <th class="center">Ítem</th>
-            <th class="center">Horas Pedagógicas</th>
-            <th class="center">Horas Cronológicas</th>
+          <tr><th colspan="3" class="center">DESCRIPCIÓN HORAS LECTIVAS</th></tr>
+          <tr style="background-color: #fff;">
+            <td class="center font-bold" width="20%">CURSO</td>
+            <td class="center font-bold">ASIGNATURA</td>
+            <td class="center font-bold" width="20%">HORAS</td>
           </tr>
-          <tr>
-            <td>
-              <strong>Docencia de Aula (Plan Base + JEC)</strong>
-              <ul>
-                ${cargasVivas.filter(c => c.tipoCarga === 'LECTIVA').map(c => "<li>" + c.nombre + " (" + c.horas + " hrs)" + (c.letraCurso ? " - Letra " + c.letraCurso : "") + "</li>").join('')}
-              </ul>
-            </td>
-            <td class="center" style="vertical-align: top; padding-top: 20px;">${Math.round(horasLectivasAsignadas)}</td>
-            <td class="center" style="vertical-align: top; padding-top: 20px;">${Math.round(horasLectivasAsignadas * 45 / 60)}</td>
-          </tr>
-          <tr>
-            <td><strong>Recreos Legales Asociados</strong></td>
-            <td class="center">-</td>
-            <td class="center">${Math.round(recreoDecimal)}</td>
-          </tr>
-          <tr>
-            <td>
-              <strong>Actividades No Lectivas</strong>
-              <ul>
-                ${cargasVivas.filter(c => c.tipoCarga === 'NO_LECTIVA').map(c => "<li>" + c.nombre + " (" + c.horas + " hrs)</li>").join('')}
-              </ul>
-            </td>
-            <td class="center">-</td>
-            <td class="center" style="vertical-align: top; padding-top: 20px;">${Math.round(horasNoLectivasAsignadas)}</td>
+          ` + cargasVivas.filter(c => c.tipoCarga === 'LECTIVA').map(c => 
+            "<tr><td class='center'>" + getGradoNombre(c.tienCod, c.grteCod) + (c.letraCurso ? " " + c.letraCurso : "") + "</td>" +
+            "<td class='center'>" + (todasAsignaturas.find(a => a.asigCod === c.codAsignatura)?.asigDescripcion || c.nombre) + "</td>" +
+            "<td class='center'>" + c.horas + "</td></tr>"
+          ).join('') + `
+          <tr style="background-color: #f3f4f6; font-weight: bold;">
+            <td colspan="2" style="text-align: right;">HORAS PEDAGÓGICAS (LECTIVAS / AULA)</td>
+            <td class="center">${Math.round(horasLectivasAsignadas)}</td>
           </tr>
           <tr style="background-color: #f3f4f6; font-weight: bold;">
-            <td>Subtotal Jornada Semanal (Ley)</td>
-            <td class="center">${Math.round(horasLectivasAsignadas)}</td>
-            <td class="center">${Math.round(totalJornadaSema)}</td>
+            <td colspan="2" style="text-align: right;">HORAS CRONOLÓGICAS LECTIVAS</td>
+            <td class="center">${formatTime(horasLectivasAsignadas * 45 / 60)}</td>
+          </tr>
+        </table>
+
+        <table>
+          <tr><th colspan="2" class="center">DESCRIPCIÓN HORAS NO LECTIVAS</th></tr>
+          ` + cargasVivas.filter(c => c.tipoCarga === 'NO_LECTIVA').map(c => 
+            "<tr><td>" + c.nombre + "</td>" +
+            "<td class='center' width='30%'>" + formatTime(c.horas) + "</td></tr>"
+          ).join('') + `
+          <tr style="background-color: #f3f4f6; font-weight: bold;">
+            <td style="text-align: right;">TOTAL HORAS NO LECTIVAS</td>
+            <td class="center" width="30%">${formatTime(horasNoLectivasAsignadas)}</td>
+          </tr>
+        </table>
+
+        <table>
+          <tr><th colspan="2" class="center">CÁLCULO HORAS CRONOLÓGICAS CONTRATO</th></tr>
+          <tr>
+            <td>HORAS CRONOLÓGICAS LECTIVAS</td>
+            <td class="center" width="30%">${formatTime(horasLectivasAsignadas * 45 / 60)}</td>
+          </tr>
+          ` + cargasVivas.filter(c => c.tipoCarga === 'EXTRACURRICULAR').map(c => 
+            "<tr><td>HORAS CRONOLÓGICAS " + c.nombre.toUpperCase() + "</td>" +
+            "<td class='center'>" + formatTime(c.horas) + "</td></tr>"
+          ).join('') + `
+          <tr>
+            <td>HORAS CRONOLÓGICAS RECREO</td>
+            <td class="center">${formatTime(recreoDecimal)}</td>
           </tr>
           <tr>
-            <td>
-              <strong>Actividades Extracurriculares</strong>
-              <ul>
-                ${cargasVivas.filter(c => c.tipoCarga === 'EXTRACURRICULAR').map(c => "<li>" + c.nombre + " (" + c.horas + " hrs)</li>").join('')}
-              </ul>
-            </td>
-            <td class="center">-</td>
-            <td class="center" style="vertical-align: top; padding-top: 20px;">${Math.round(horasExtraAsignadas)}</td>
+            <td>HORAS CRONOLÓGICAS NO LECTIVAS</td>
+            <td class="center">${formatTime(horasNoLectivasAsignadas)}</td>
           </tr>
-          <tr>
-            <td><strong>Derecho a Colación</strong></td>
-            <td class="center">-</td>
-            <td class="center">${colacion}</td>
-          </tr>
+          ` + (colacion > 0 ? `<tr>
+            <td>DERECHO A COLACIÓN</td>
+            <td class="center">${formatTime(colacion)}</td>
+          </tr>` : '') + `
           <tr style="background-color: #e5e7eb; font-weight: bold;">
-            <td>TOTAL ASIGNADO</td>
-            <td class="center">-</td>
-            <td class="center">${Math.round(asigTotal)}</td>
+            <td style="text-align: right;">TOTAL HORAS CONTRATO</td>
+            <td class="center">${formatTime(asigTotal)}</td>
           </tr>
         </table>
 
@@ -598,7 +613,11 @@ export default function AsignacionCargaPage() {
                            onChange={e => setAsignaturaSeleccionada(e.target.value)}
                          >
                            <option value="">-- Seleccionar Asignatura --</option>
-                           {todasAsignaturas.map(a => (
+                           {Array.from(new Set(todosLosDetalles.map(d => d.codAsignatura)))
+                             .map(cod => todasAsignaturas.find(a => a.asigCod === cod))
+                             .filter(Boolean)
+                             .sort((a, b) => a.asigDescripcion.localeCompare(b.asigDescripcion))
+                             .map(a => (
                              <option key={a.asigCod} value={a.asigCod}>{a.asigDescripcion}</option>
                            ))}
                          </select>

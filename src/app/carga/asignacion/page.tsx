@@ -11,7 +11,9 @@ import {
   getTablaConversion,
   getActividadesExtracurriculares,
   getConfiguracionGlobal,
-  getEstablecimientoConfig
+  getEstablecimientoConfig,
+  getTodasAsignaturas,
+  getTodosDetallesPlanEstablecimiento
 } from '../../actions';
 
 interface CargaEnUI {
@@ -23,6 +25,7 @@ interface CargaEnUI {
   tienCod?: number;
   grteCod?: number;
   codAsignatura?: string;
+  letraCurso?: string;
   
   // No Lectiva
   actividadNoLectivaId?: number;
@@ -48,7 +51,12 @@ export default function AsignacionCargaPage() {
   const [tablaConversion, setTablaConversion] = useState<any[]>([]);
   const [configGlobal, setConfigGlobal] = useState<any>(null);
   const [todasCargas, setTodasCargas] = useState<any[]>([]);
+  const [todosLosDetalles, setTodosLosDetalles] = useState<any[]>([]);
   
+  const [modoAsignacion, setModoAsignacion] = useState<'GENERALISTA' | 'ESPECIALISTA'>('GENERALISTA');
+  const [todasAsignaturas, setTodasAsignaturas] = useState<any[]>([]);
+  const [asignaturaSeleccionada, setAsignaturaSeleccionada] = useState('');
+
   const [docenteSeleccionado, setDocenteSeleccionado] = useState('');
   
   const [tipoEnsenanzaSeleccionado, setTipoEnsenanzaSeleccionado] = useState('');
@@ -74,7 +82,9 @@ export default function AsignacionCargaPage() {
     getActividadesExtracurriculares().then(setActividadesExt);
     getTablaConversion().then(setTablaConversion);
     getConfiguracionGlobal().then(setConfigGlobal);
-      getEstablecimientoConfig(Number(estId)).then(setEstConfig);
+    getEstablecimientoConfig(Number(estId)).then(setEstConfig);
+    getTodasAsignaturas().then(setTodasAsignaturas);
+    getTodosDetallesPlanEstablecimiento(Number(estId)).then(setTodosLosDetalles);
   }, []);
 
   const loadTodasCargas = () => {
@@ -108,6 +118,7 @@ export default function AsignacionCargaPage() {
           actividadNoLectivaId: c.actividadNoLectivaId || undefined,
           actividadExtracurricularId: c.actividadExtracurricularId || undefined,
           financiamiento: c.financiamiento || undefined,
+          letraCurso: c.letraCurso || undefined,
           nombre: nombre,
           horas: c.horasAllocadas,
           tipoCarga: (c.tipoCarga as any) || 'LECTIVA'
@@ -168,15 +179,20 @@ export default function AsignacionCargaPage() {
     .map(tienCod => grados.find(g => g.tienCod === tienCod)?.tipoEnsenanza)
     .filter(Boolean);
 
-  const handleAsignarLectiva = (det: any) => {
+  const getLetras = (cantidad: number) => {
+    return Array.from({ length: cantidad }, (_, i) => String.fromCharCode(65 + i));
+  };
+
+  const handleAsignarLectiva = (det: any, letra?: string) => {
     setCargas([...cargas, {
       id: Math.random().toString(),
       planEstablecimientoId: det.planEstablecimientoId,
       tienCod: det.tienCod,
       grteCod: det.grteCod,
       codAsignatura: det.codAsignatura,
+      letraCurso: letra,
       financiamiento: finanSeleccionado === 'Normal' ? undefined : finanSeleccionado,
-      nombre: det.asignatura?.asigDescripcion + (finanSeleccionado !== 'Normal' ? ` (${finanSeleccionado})` : ''),
+      nombre: det.asignatura?.asigDescripcion + (letra ? ` (${letra})` : '') + (finanSeleccionado !== 'Normal' ? ` [${finanSeleccionado}]` : ''),
       horas: det.horas,
       tipoCarga: 'LECTIVA'
     }]);
@@ -287,6 +303,7 @@ export default function AsignacionCargaPage() {
           .section { font-weight: bold; font-size: 16px; margin-top: 30px; margin-bottom: 10px; text-decoration: underline; }
           .flex { display: flex; justify-content: space-between; margin-top: 100px; }
           .signature { width: 40%; text-align: center; border-top: 1px solid #000; padding-top: 5px; font-size: 14px; }
+          ul { margin-top: 0; padding-left: 20px; font-size: 13px; }
           @media print { @page { margin: 20mm; } }
         </style>
       </head>
@@ -320,19 +337,29 @@ export default function AsignacionCargaPage() {
             <th class="center">Horas Cronológicas</th>
           </tr>
           <tr>
-            <td>Docencia de Aula (Plan Base + JEC)</td>
-            <td class="center">${Math.round(horasLectivasAsignadas)}</td>
-            <td class="center">${Math.round(horasLectivasAsignadas * 45 / 60)}</td>
+            <td>
+              <strong>Docencia de Aula (Plan Base + JEC)</strong>
+              <ul>
+                ${cargasVivas.filter(c => c.tipoCarga === 'LECTIVA').map(c => "<li>" + c.nombre + " (" + c.horas + " hrs)" + (c.letraCurso ? " - Letra " + c.letraCurso : "") + "</li>").join('')}
+              </ul>
+            </td>
+            <td class="center" style="vertical-align: top; padding-top: 20px;">${Math.round(horasLectivasAsignadas)}</td>
+            <td class="center" style="vertical-align: top; padding-top: 20px;">${Math.round(horasLectivasAsignadas * 45 / 60)}</td>
           </tr>
           <tr>
-            <td>Recreos Legales Asociados</td>
+            <td><strong>Recreos Legales Asociados</strong></td>
             <td class="center">-</td>
             <td class="center">${Math.round(recreoDecimal)}</td>
           </tr>
           <tr>
-            <td>Actividades No Lectivas</td>
+            <td>
+              <strong>Actividades No Lectivas</strong>
+              <ul>
+                ${cargasVivas.filter(c => c.tipoCarga === 'NO_LECTIVA').map(c => "<li>" + c.nombre + " (" + c.horas + " hrs)</li>").join('')}
+              </ul>
+            </td>
             <td class="center">-</td>
-            <td class="center">${Math.round(horasNoLectivasAsignadas)}</td>
+            <td class="center" style="vertical-align: top; padding-top: 20px;">${Math.round(horasNoLectivasAsignadas)}</td>
           </tr>
           <tr style="background-color: #f3f4f6; font-weight: bold;">
             <td>Subtotal Jornada Semanal (Ley)</td>
@@ -340,12 +367,17 @@ export default function AsignacionCargaPage() {
             <td class="center">${Math.round(totalJornadaSema)}</td>
           </tr>
           <tr>
-            <td>Actividades Extracurriculares</td>
+            <td>
+              <strong>Actividades Extracurriculares</strong>
+              <ul>
+                ${cargasVivas.filter(c => c.tipoCarga === 'EXTRACURRICULAR').map(c => "<li>" + c.nombre + " (" + c.horas + " hrs)</li>").join('')}
+              </ul>
+            </td>
             <td class="center">-</td>
-            <td class="center">${Math.round(horasExtraAsignadas)}</td>
+            <td class="center" style="vertical-align: top; padding-top: 20px;">${Math.round(horasExtraAsignadas)}</td>
           </tr>
           <tr>
-            <td>Derecho a Colación</td>
+            <td><strong>Derecho a Colación</strong></td>
             <td class="center">-</td>
             <td class="center">${colacion}</td>
           </tr>
@@ -363,12 +395,13 @@ export default function AsignacionCargaPage() {
 
         <div class="flex">
           <div class="signature">
-            <strong>Firma del Docente</strong><br/>
+            <strong>${docenteSeleccionadoObj.nombres} ${docenteSeleccionadoObj.apellidos}</strong><br/>
+            Docente<br/>
             RUT: ${docenteSeleccionadoObj.rut}
           </div>
           <div class="signature">
-            <strong>Firma Director(a)</strong><br/>
-            ${directorName}<br/>
+            <strong>${directorName}</strong><br/>
+            Director(a)<br/>
             Timbre Institucional
           </div>
         </div>
@@ -502,97 +535,225 @@ export default function AsignacionCargaPage() {
               {activeTab === 'LECTIVA' && (
                 <>
                   <div className="p-4 border-b border-gray-100 bg-[#f8fafc] grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-600 mb-1">
-                        Tipo de Enseñanza {grados.length === 0 ? '(0 grados)' : `(${ensenanzasUnicas.length} tipos)`}
-                      </label>
-                      <select 
-                        className="w-full border border-gray-300 rounded p-1.5 text-sm"
-                        value={tipoEnsenanzaSeleccionado}
-                        onChange={e => {
-                          setTipoEnsenanzaSeleccionado(e.target.value);
-                          setGradoSeleccionado('');
-                        }}
-                      >
-                        <option value="">-- Seleccionar --</option>
-                        {ensenanzasUnicas.map(e => e && e.tienCod ? (
-                          <option key={e.tienCod} value={e.tienCod}>{e.tienDescripcion}</option>
-                        ) : null)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-600 mb-1">Grado</label>
-                      <select 
-                        className="w-full border border-gray-300 rounded p-1.5 text-sm"
-                        value={gradoSeleccionado}
-                        onChange={e => setGradoSeleccionado(e.target.value)}
-                        disabled={!tipoEnsenanzaSeleccionado}
-                      >
-                        <option value="">-- Seleccionar --</option>
-                        {grados.filter(g => g && g.tienCod && g.tienCod.toString() === tipoEnsenanzaSeleccionado).map(g => (
-                          <option key={`${g.tienCod}-${g.grteCod}`} value={`${g.tienCod}-${g.grteCod}`}>
-                            {g.grteDescrip || 'Grado'}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                     {/* Toggle Mode */}
+                     <div className="col-span-2 flex justify-center mb-2">
+                       <div className="bg-white border rounded-lg p-1 inline-flex shadow-sm">
+                         <button 
+                           onClick={() => { setModoAsignacion('GENERALISTA'); setAsignaturaSeleccionada(''); setGradoSeleccionado(''); setTipoEnsenanzaSeleccionado(''); }}
+                           className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${modoAsignacion === 'GENERALISTA' ? 'bg-[#016098] text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+                         >
+                           Modo Generalista
+                         </button>
+                         <button 
+                           onClick={() => { setModoAsignacion('ESPECIALISTA'); setAsignaturaSeleccionada(''); setGradoSeleccionado(''); setTipoEnsenanzaSeleccionado(''); }}
+                           className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${modoAsignacion === 'ESPECIALISTA' ? 'bg-[#016098] text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+                         >
+                           Modo Especialista
+                         </button>
+                       </div>
+                     </div>
+                     {modoAsignacion === 'GENERALISTA' ? (
+                       <>
+                          <div>
+                            <label className="block text-xs font-semibold text-gray-600 mb-1">
+                              Tipo de Enseñanza {grados.length === 0 ? '(0 grados)' : `(${ensenanzasUnicas.length} tipos)`}
+                            </label>
+                            <select 
+                              className="w-full border border-gray-300 rounded p-1.5 text-sm"
+                              value={tipoEnsenanzaSeleccionado}
+                              onChange={e => {
+                                setTipoEnsenanzaSeleccionado(e.target.value);
+                                setGradoSeleccionado('');
+                              }}
+                            >
+                              <option value="">-- Seleccionar --</option>
+                              {ensenanzasUnicas.map(e => e && e.tienCod ? (
+                                <option key={e.tienCod} value={e.tienCod}>{e.tienDescripcion}</option>
+                              ) : null)}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-gray-600 mb-1">Grado</label>
+                            <select 
+                              className="w-full border border-gray-300 rounded p-1.5 text-sm"
+                              value={gradoSeleccionado}
+                              onChange={e => setGradoSeleccionado(e.target.value)}
+                              disabled={!tipoEnsenanzaSeleccionado}
+                            >
+                              <option value="">-- Seleccionar --</option>
+                              {grados.filter(g => g && g.tienCod && g.tienCod.toString() === tipoEnsenanzaSeleccionado).map(g => (
+                                <option key={`${g.tienCod}-${g.grteCod}`} value={`${g.tienCod}-${g.grteCod}`}>
+                                  {g.grteDescrip || 'Grado'}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                       </>
+                     ) : (
+                       <div className="col-span-2">
+                         <label className="block text-xs font-semibold text-gray-600 mb-1">Asignatura</label>
+                         <select
+                           className="w-full border border-gray-300 rounded p-1.5 text-sm"
+                           value={asignaturaSeleccionada}
+                           onChange={e => setAsignaturaSeleccionada(e.target.value)}
+                         >
+                           <option value="">-- Seleccionar Asignatura --</option>
+                           {todasAsignaturas.map(a => (
+                             <option key={a.asigCod} value={a.asigCod}>{a.asigDescripcion}</option>
+                           ))}
+                         </select>
+                       </div>
+                     )}
                   </div>
 
                   <div className="flex-1 overflow-auto p-4 custom-scrollbar">
-                    {detallesPlan.length === 0 ? (
-                      <div className="text-center text-[#94a3b8] mt-10">Seleccione un grado para ver el plan de estudio.</div>
-                    ) : (
-                      <div className="space-y-3">
-                        {detallesPlan.map(det => {
-                          const gInfo = grados.find(g => g.tienCod === det.tienCod && g.grteCod === det.grteCod);
-                          const cursos = gInfo?.cantidadCursos || 1;
-                          const totalDisp = det.horas * cursos;
-                          
-                          const tomadasGlobal = todasCargas.filter(c => 
-                            c.planEstablecimientoId === det.planEstablecimientoId &&
-                            c.tienCod === det.tienCod &&
-                            c.grteCod === det.grteCod &&
-                            c.asignaturaCod === det.codAsignatura
-                          ).reduce((sum, c) => sum + c.horasAllocadas, 0);
+                    {modoAsignacion === 'GENERALISTA' ? (
+                      detallesPlan.length === 0 ? (
+                        <div className="text-center text-[#94a3b8] mt-10">Seleccione un grado para ver el plan de estudio.</div>
+                      ) : (
+                        <div className="space-y-3">
+                          {detallesPlan.map(det => {
+                            const gInfo = grados.find(g => g.tienCod === det.tienCod && g.grteCod === det.grteCod);
+                            const cursos = gInfo?.cantidadCursos || 1;
+                            const totalDisp = det.horas * cursos;
+                            const letras = getLetras(cursos);
+                            
+                            const tomadasGlobal = todasCargas.filter(c => 
+                              c.planEstablecimientoId === det.planEstablecimientoId &&
+                              c.tienCod === det.tienCod &&
+                              c.grteCod === det.grteCod &&
+                              c.asignaturaCod === det.codAsignatura
+                            ).reduce((sum, c) => sum + c.horasAllocadas, 0);
 
-                          const asignadasEsteDocente = cargasVivas.filter(c => 
-                            c.planEstablecimientoId === det.planEstablecimientoId &&
-                            c.tienCod === det.tienCod &&
-                            c.grteCod === det.grteCod &&
-                            c.codAsignatura === det.codAsignatura
-                          ).reduce((sum, c) => sum + c.horas, 0);
+                            const asignadasEsteDocente = cargasVivas.filter(c => 
+                              c.planEstablecimientoId === det.planEstablecimientoId &&
+                              c.tienCod === det.tienCod &&
+                              c.grteCod === det.grteCod &&
+                              c.codAsignatura === det.codAsignatura
+                            ).reduce((sum, c) => sum + c.horas, 0);
 
-                          const tomadasOtros = tomadasGlobal - todasCargas.filter(c => 
-                            c.docenteId.toString() === docenteSeleccionado &&
-                            c.planEstablecimientoId === det.planEstablecimientoId &&
-                            c.tienCod === det.tienCod &&
-                            c.grteCod === det.grteCod &&
-                            c.asignaturaCod === det.codAsignatura
-                          ).reduce((sum, c) => sum + c.horasAllocadas, 0);
+                            const tomadasOtros = tomadasGlobal - todasCargas.filter(c => 
+                              c.docenteId.toString() === docenteSeleccionado &&
+                              c.planEstablecimientoId === det.planEstablecimientoId &&
+                              c.tienCod === det.tienCod &&
+                              c.grteCod === det.grteCod &&
+                              c.asignaturaCod === det.codAsignatura
+                            ).reduce((sum, c) => sum + c.horasAllocadas, 0);
 
-                          const tomadasReal = tomadasOtros + asignadasEsteDocente;
-                          const restantes = totalDisp - tomadasReal;
+                            const tomadasReal = tomadasOtros + asignadasEsteDocente;
+                            const restantes = totalDisp - tomadasReal;
 
-                          return (
-                            <div key={det.id} className="flex justify-between items-center p-3 border border-[#e2e8f0] rounded-lg hover:border-[#016098] transition-colors">
-                              <div>
-                                <p className="font-medium text-[#1e293b] text-sm">{det.asignatura?.asigDescripcion}</p>
-                                <p className="text-xs text-[#64748b]">{det.horas} Pedagógicas/curso • {det.formacion}</p>
-                                <div className="mt-1 text-xs font-bold text-[#016098]">
-                                  Disp: {restantes} / {totalDisp} hrs ped
+                            return (
+                              <div key={det.id} className="flex justify-between items-center p-3 border border-[#e2e8f0] rounded-lg hover:border-[#016098] transition-colors bg-white shadow-sm">
+                                <div>
+                                  <p className="font-medium text-[#1e293b] text-sm">{det.asignatura?.asigDescripcion}</p>
+                                  <p className="text-xs text-[#64748b]">{det.horas} Pedagógicas/curso • {det.formacion}</p>
+                                  <div className="mt-1 text-xs font-bold text-[#016098]">
+                                    Disp: {restantes} / {totalDisp} hrs ped
+                                  </div>
+                                </div>
+                                <div className="flex gap-1 flex-wrap justify-end max-w-[200px]">
+                                  {letras.map(l => {
+                                    const assignedToMe = cargasVivas.some(c => 
+                                      c.codAsignatura === det.codAsignatura && 
+                                      c.tienCod === det.tienCod && 
+                                      c.grteCod === det.grteCod && 
+                                      c.letraCurso === l
+                                    );
+                                    
+                                    return (
+                                      <button 
+                                        key={l}
+                                        onClick={() => handleAsignarLectiva(det, l)}
+                                        disabled={!docenteSeleccionado || restantes < det.horas || assignedToMe}
+                                        className={`px-2 py-1 rounded text-xs font-bold transition-colors ${assignedToMe ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700 hover:bg-[#016098] hover:text-white disabled:opacity-50 disabled:hover:bg-gray-100 disabled:hover:text-gray-700'}`}
+                                        title={assignedToMe ? "Ya asignado a este docente" : "Asignar"}
+                                      >
+                                        Asignar {l}
+                                      </button>
+                                    );
+                                  })}
                                 </div>
                               </div>
-                              <button 
-                                onClick={() => handleAsignarLectiva(det)}
-                                disabled={!docenteSeleccionado || restantes < det.horas}
-                                className="text-[#016098] hover:bg-[#e0f2fe] px-3 py-1 rounded text-sm font-medium transition-colors disabled:opacity-50"
-                              >
-                                Asignar {det.horas} ped
-                              </button>
-                            </div>
-                          );
-                        })}
-                      </div>
+                            );
+                          })}
+                        </div>
+                      )
+                    ) : (
+                      !asignaturaSeleccionada ? (
+                        <div className="text-center text-[#94a3b8] mt-10">Seleccione una asignatura para ver los cursos.</div>
+                      ) : (
+                        <div className="space-y-3">
+                          {todosLosDetalles
+                            .filter(d => d.codAsignatura === asignaturaSeleccionada)
+                            .map(det => {
+                            const gInfo = grados.find(g => g.tienCod === det.tienCod && g.grteCod === det.grteCod);
+                            if (!gInfo) return null;
+                            const cursos = gInfo.cantidadCursos || 1;
+                            const totalDisp = det.horas * cursos;
+                            const letras = getLetras(cursos);
+                            
+                            const tomadasGlobal = todasCargas.filter(c => 
+                              c.planEstablecimientoId === det.planEstablecimientoId &&
+                              c.tienCod === det.tienCod &&
+                              c.grteCod === det.grteCod &&
+                              c.asignaturaCod === det.codAsignatura
+                            ).reduce((sum, c) => sum + c.horasAllocadas, 0);
+
+                            const asignadasEsteDocente = cargasVivas.filter(c => 
+                              c.planEstablecimientoId === det.planEstablecimientoId &&
+                              c.tienCod === det.tienCod &&
+                              c.grteCod === det.grteCod &&
+                              c.codAsignatura === det.codAsignatura
+                            ).reduce((sum, c) => sum + c.horas, 0);
+
+                            const tomadasOtros = tomadasGlobal - todasCargas.filter(c => 
+                              c.docenteId.toString() === docenteSeleccionado &&
+                              c.planEstablecimientoId === det.planEstablecimientoId &&
+                              c.tienCod === det.tienCod &&
+                              c.grteCod === det.grteCod &&
+                              c.asignaturaCod === det.codAsignatura
+                            ).reduce((sum, c) => sum + c.horasAllocadas, 0);
+
+                            const tomadasReal = tomadasOtros + asignadasEsteDocente;
+                            const restantes = totalDisp - tomadasReal;
+
+                            return (
+                              <div key={det.id} className="flex justify-between items-center p-3 border border-[#e2e8f0] rounded-lg hover:border-[#016098] transition-colors bg-white shadow-sm">
+                                <div>
+                                  <p className="font-medium text-[#1e293b] text-sm">{gInfo.grteDescrip} ({gInfo.tipoEnsenanza?.tienDescripcion})</p>
+                                  <p className="text-xs text-[#64748b]">{det.horas} Pedagógicas/curso • {det.formacion}</p>
+                                  <div className="mt-1 text-xs font-bold text-[#016098]">
+                                    Disp: {restantes} / {totalDisp} hrs ped
+                                  </div>
+                                </div>
+                                <div className="flex gap-1 flex-wrap justify-end max-w-[200px]">
+                                  {letras.map(l => {
+                                    const assignedToMe = cargasVivas.some(c => 
+                                      c.codAsignatura === det.codAsignatura && 
+                                      c.tienCod === det.tienCod && 
+                                      c.grteCod === det.grteCod && 
+                                      c.letraCurso === l
+                                    );
+                                    
+                                    return (
+                                      <button 
+                                        key={l}
+                                        onClick={() => handleAsignarLectiva(det, l)}
+                                        disabled={!docenteSeleccionado || restantes < det.horas || assignedToMe}
+                                        className={`px-2 py-1 rounded text-xs font-bold transition-colors ${assignedToMe ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700 hover:bg-[#016098] hover:text-white disabled:opacity-50 disabled:hover:bg-gray-100 disabled:hover:text-gray-700'}`}
+                                        title={assignedToMe ? "Ya asignado a este docente" : "Asignar"}
+                                      >
+                                        Asignar {l}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )
                     )}
                   </div>
                 </>

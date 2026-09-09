@@ -239,6 +239,8 @@ model CargaHoraria {
   actividadExtracurricularId Int?
   actividadExtracurricular   ActividadExtracurricular? @relation(fields: [actividadExtracurricularId], references: [id])
   
+  letraCurso            String? // Para indicar a qué letra del curso se asigna (ej. 'A', 'B')
+  
   financiamiento        String? // 'SEP', 'PIE', null
 
   horasAllocadas        Int      

@@ -407,8 +407,9 @@ export async function saveCargasHorarias(docenteId: number, cargas: any[]) {
         grteCod: c.grteCod || null,
         asignaturaCod: c.codAsignatura || null,
         actividadNoLectivaId: c.actividadNoLectivaId || null,
-          actividadExtracurricularId: c.actividadExtracurricularId || null,
-          financiamiento: c.financiamiento || null,
+        actividadExtracurricularId: c.actividadExtracurricularId || null,
+        financiamiento: c.financiamiento || null,
+        letraCurso: c.letraCurso || null,
         horasAllocadas: c.horas,
         tipoCarga: c.tipoCarga,
         observacion: ''
@@ -766,4 +767,55 @@ export async function getGlobalAnalytics() {
     topEfficient,
     schoolStats
   };
+}
+
+export async function getTodosDetallesPlanEstablecimiento(establecimientoId: number) {
+  return await prisma.planEstablecimientoDet.findMany({
+    where: { 
+      planEstablecimiento: { establecimientoId }
+    },
+    include: { 
+      asignatura: true,
+      planEstablecimiento: true
+    }
+  });
+}
+
+// --- USUARIOS ---
+export async function getUsuarios() {
+  return await prisma.usuario.findMany({
+    orderBy: { nombre: 'asc' },
+    include: { establecimiento: true }
+  });
+}
+
+export async function createUsuario(data: any) {
+  return await prisma.usuario.create({
+    data: {
+      email: data.email,
+      nombre: data.nombre,
+      password: data.password,
+      rol: data.rol,
+      establecimientoId: data.establecimientoId || null
+    }
+  });
+}
+
+export async function updateUsuario(id: number, data: any) {
+  return await prisma.usuario.update({
+    where: { id },
+    data: {
+      email: data.email,
+      nombre: data.nombre,
+      password: data.password,
+      rol: data.rol,
+      establecimientoId: data.establecimientoId || null
+    }
+  });
+}
+
+export async function deleteUsuario(id: number) {
+  return await prisma.usuario.delete({
+    where: { id }
+  });
 }

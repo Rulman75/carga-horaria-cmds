@@ -1,0 +1,100 @@
+{activeTab === 'LECTIVA' && (
+                <>
+                  <div className="p-4 border-b border-gray-100 bg-[#f8fafc] grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">
+                        Tipo de Enseñanza {grados.length === 0 ? '(0 grados)' : `(${ensenanzasUnicas.length} tipos)`}
+                      </label>
+                      <select 
+                        className="w-full border border-gray-300 rounded p-1.5 text-sm"
+                        value={tipoEnsenanzaSeleccionado}
+                        onChange={e => {
+                          setTipoEnsenanzaSeleccionado(e.target.value);
+                          setGradoSeleccionado('');
+                        }}
+                      >
+                        <option value="">-- Seleccionar --</option>
+                        {ensenanzasUnicas.map(e => e && e.tienCod ? (
+                          <option key={e.tienCod} value={e.tienCod}>{e.tienDescripcion}</option>
+                        ) : null)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">Grado</label>
+                      <select 
+                        className="w-full border border-gray-300 rounded p-1.5 text-sm"
+                        value={gradoSeleccionado}
+                        onChange={e => setGradoSeleccionado(e.target.value)}
+                        disabled={!tipoEnsenanzaSeleccionado}
+                      >
+                        <option value="">-- Seleccionar --</option>
+                        {grados.filter(g => g && g.tienCod && g.tienCod.toString() === tipoEnsenanzaSeleccionado).map(g => (
+                          <option key={`${g.tienCod}-${g.grteCod}`} value={`${g.tienCod}-${g.grteCod}`}>
+                            {g.grteDescrip || 'Grado'}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="flex-1 overflow-auto p-4 custom-scrollbar">
+                    {detallesPlan.length === 0 ? (
+                      <div className="text-center text-[#94a3b8] mt-10">Seleccione un grado para ver el plan de estudio.</div>
+                    ) : (
+                      <div className="space-y-3">
+                        {detallesPlan.map(det => {
+                          const gInfo = grados.find(g => g.tienCod === det.tienCod && g.grteCod === det.grteCod);
+                          const cursos = gInfo?.cantidadCursos || 1;
+                          const totalDisp = det.horas * cursos;
+                          
+                          const tomadasGlobal = todasCargas.filter(c => 
+                            c.planEstablecimientoId === det.planEstablecimientoId &&
+                            c.tienCod === det.tienCod &&
+                            c.grteCod === det.grteCod &&
+                            c.asignaturaCod === det.codAsignatura
+                          ).reduce((sum, c) => sum + c.horasAllocadas, 0);
+
+                          const asignadasEsteDocente = cargasVivas.filter(c => 
+                            c.planEstablecimientoId === det.planEstablecimientoId &&
+                            c.tienCod === det.tienCod &&
+                            c.grteCod === det.grteCod &&
+                            c.codAsignatura === det.codAsignatura
+                          ).reduce((sum, c) => sum + c.horas, 0);
+
+                          const tomadasOtros = tomadasGlobal - todasCargas.filter(c => 
+                            c.docenteId.toString() === docenteSeleccionado &&
+                            c.planEstablecimientoId === det.planEstablecimientoId &&
+                            c.tienCod === det.tienCod &&
+                            c.grteCod === det.grteCod &&
+                            c.asignaturaCod === det.codAsignatura
+                          ).reduce((sum, c) => sum + c.horasAllocadas, 0);
+
+                          const tomadasReal = tomadasOtros + asignadasEsteDocente;
+                          const restantes = totalDisp - tomadasReal;
+
+                          return (
+                            <div key={det.id} className="flex justify-between items-center p-3 border border-[#e2e8f0] rounded-lg hover:border-[#016098] transition-colors">
+                              <div>
+                                <p className="font-medium text-[#1e293b] text-sm">{det.asignatura?.asigDescripcion}</p>
+                                <p className="text-xs text-[#64748b]">{det.horas} Pedagógicas/curso • {det.formacion}</p>
+                                <div className="mt-1 text-xs font-bold text-[#016098]">
+                                  Disp: {restantes} / {totalDisp} hrs ped
+                                </div>
+                              </div>
+                              <button 
+                                onClick={() => handleAsignarLectiva(det)}
+                                disabled={!docenteSeleccionado || restantes < det.horas}
+                                className="text-[#016098] hover:bg-[#e0f2fe] px-3 py-1 rounded text-sm font-medium transition-colors disabled:opacity-50"
+                              >
+                                Asignar {det.horas} ped
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+
+              

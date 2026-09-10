@@ -225,10 +225,12 @@ export default function PlanEstablecimientoDetallePage() {
   const selectedMatrixForForm = matricesPorTipo.find(m => m.tipo.tienCod === asigTienCod);
   const availableGradesForForm = selectedMatrixForForm ? selectedMatrixForForm.columnas : [];
 
-  const filteredAsignaturas = todasAsignaturas.filter(a => 
-    a.asigDescripcion.toLowerCase().includes(searchAsig.toLowerCase()) || 
-    a.asigCod.toLowerCase().includes(searchAsig.toLowerCase())
-  ).slice(0, 50);
+  const normalize = (str: string) => str.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  
+  const filteredAsignaturas = todasAsignaturas.filter(a => {
+    const term = normalize(searchAsig);
+    return normalize(a.asigDescripcion).includes(term) || a.asigCod.toLowerCase().includes(searchAsig.toLowerCase());
+  }).slice(0, 150);
 
   return (
     <div className="flex flex-col gap-6 w-full">
@@ -696,7 +698,7 @@ export default function PlanEstablecimientoDetallePage() {
                                 checked={asigCod === a.asigCod}
                                 onChange={() => setAsigCod(a.asigCod)}
                               />
-                              <span className="text-sm text-gray-800 font-medium">{a.asigDescripcion}</span>
+                              <span className="text-sm text-gray-800 font-medium"><span className="text-gray-400 font-mono text-xs mr-2">[{a.asigCod}]</span>{a.asigDescripcion}</span>
                               <span className="text-xs text-gray-400 ml-auto">Cód: {a.asigCod}</span>
                             </label>
                           ))}

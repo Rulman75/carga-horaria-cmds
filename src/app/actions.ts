@@ -354,6 +354,7 @@ export async function getAsignaturasPropiasPorGrado(establecimientoId: number, t
 export async function getDocentesEstablecimiento(establecimientoId: number) {
   return await prisma.docente.findMany({ 
     where: { establecimientos: { some: { establecimientoId } } },
+    include: { establecimientos: { where: { establecimientoId } } },
     orderBy: { apellidos: 'asc' } 
   });
 }
@@ -392,7 +393,7 @@ export async function getCargasEstablecimiento(establecimientoId: number) {
   });
 }
 
-export async function saveCargasHorarias(docenteId: number, cargas: any[]) {
+export async function saveCargasHorarias(docenteId: number, cargas: any[], establecimientoId?: number, observacionCarga?: string) {
   // Replace all assignments for this teacher
   await prisma.cargaHoraria.deleteMany({
     where: { docenteId }
@@ -414,6 +415,13 @@ export async function saveCargasHorarias(docenteId: number, cargas: any[]) {
         tipoCarga: c.tipoCarga,
         observacion: ''
       }))
+    });
+  }
+
+  if (establecimientoId) {
+    await prisma.docenteEstablecimiento.update({
+      where: { docenteId_establecimientoId: { docenteId, establecimientoId } },
+      data: { observacionCarga: observacionCarga || null }
     });
   }
 }
@@ -635,6 +643,34 @@ export async function getSchoolAnalytics(establecimientoId: number) {
     include: { asignatura: true, actividadExtracurricular: true }
   });
 
+  const planesDetalles = await prisma.planEstablecimientoDet.findMany({
+    where: { planEstablecimiento: { establecimientoId } },
+    include: { 
+      asignatura: true, 
+      grado: { 
+        include: { establecimientoGrados: { where: { establecimientoId } } } 
+      } 
+    }
+  });
+
+  const subjectNeed: Record<string, { needed: number, assigned: number, name: string }> = {};
+
+  planesDetalles.forEach(det => {
+    const asig = det.asignatura?.asigDescripcion || 'Desconocida';
+    const gInfo = det.grado?.establecimientoGrados?.[0];
+    const cursos = gInfo?.cantidadCursos || 1;
+    if (!subjectNeed[det.codAsignatura]) subjectNeed[det.codAsignatura] = { needed: 0, assigned: 0, name: asig };
+    subjectNeed[det.codAsignatura].needed += (det.horas * cursos);
+  });
+
+  cargas.forEach(c => {
+    if (c.tipoCarga === 'LECTIVA' && c.asignaturaCod && subjectNeed[c.asignaturaCod]) {
+       subjectNeed[c.asignaturaCod].assigned += c.horasAllocadas;
+    }
+  });
+
+  const subjectProgress = Object.values(subjectNeed).sort((a, b) => b.needed - a.needed);
+
   // Calculate metrics
   let totalHorasContrato = 0;
   let totalHorasAsignadas = 0;
@@ -667,36 +703,38 @@ export async function getSchoolAnalytics(establecimientoId: number) {
       }
     });
 
-    
     const colacion = contrato >= 30 ? 2 : 1;
     let recreoDecimal = 0;
     if (lectivasPed > 0) {
       const row = tablaConversion.find(r => r.lectivasPedagogicas === lectivasPed);
-      if (row) recreoDecimal = parseCronoToDecimal(row.recreoCronologicas);
+      if (row) {
+         const [h, m] = row.recreoCronologicas.split(':').map(Number);
+         recreoDecimal = h + (m / 60);
+      }
     }
     
     let asigTotal = 0;
     if (lectivasPed > 0 || anlCrono > 0 || extraCrono > 0) {
-      asigTotal = Math.round((lectivasPed * 45 / 60) + recreoDecimal) + anlCrono + extraCrono + colacion;
+      asigTotal = (lectivasPed * 45 / 60) + recreoDecimal + anlCrono + extraCrono + colacion;
     }
  
     totalHorasAsignadas += asigTotal;
     
-    // If they have any assignment
-    if (asigTotal > 0) docentesAsignados++;
+    if (docCargas.length > 0) docentesAsignados++;
   }
 
-  const chartExtra = Object.keys(extraDistribution).map(name => ({ name, value: extraDistribution[name] }));
+  const chartExtra = Object.entries(extraDistribution).map(([name, value]) => ({ name, value }));
 
   return {
     totalDocentes: rels.length,
     docentesAsignados,
-    totalHorasContrato,
-    totalHorasAsignadas,
-    horasOciosas: totalHorasContrato - totalHorasAsignadas, // Note: this ignores colacion/recreo exact match for now, just an indicator
-    totalJecAsignadas,
+    totalHorasContrato: Math.round(totalHorasContrato),
+    totalHorasAsignadas: Math.round(totalHorasAsignadas),
+    horasOciosas: Math.round(totalHorasContrato - totalHorasAsignadas),
     totalBaseAsignadas,
-    chartExtra
+    totalJecAsignadas,
+    chartExtra,
+    subjectProgress
   };
 }
 

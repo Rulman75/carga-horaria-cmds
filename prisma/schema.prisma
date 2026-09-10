@@ -137,6 +137,8 @@ model DocenteEstablecimiento {
   establecimientoId Int
   docente           Docente @relation(fields: [docenteId], references: [id])
   establecimiento   Establecimiento @relation(fields: [establecimientoId], references: [esedSec])
+  
+  observacionCarga  String? 
 
   @@id([docenteId, establecimientoId])
 }

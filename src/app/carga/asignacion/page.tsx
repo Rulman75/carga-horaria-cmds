@@ -58,6 +58,7 @@ export default function AsignacionCargaPage() {
   const [asignaturaSeleccionada, setAsignaturaSeleccionada] = useState('');
 
   const [docenteSeleccionado, setDocenteSeleccionado] = useState('');
+  const [observacionCarga, setObservacionCarga] = useState('');
   
   const [tipoEnsenanzaSeleccionado, setTipoEnsenanzaSeleccionado] = useState('');
   const [gradoSeleccionado, setGradoSeleccionado] = useState('');
@@ -102,6 +103,8 @@ export default function AsignacionCargaPage() {
 
   useEffect(() => {
     if (docenteSeleccionado) {
+      const doc = docentes.find(d => d && d.id && d.id.toString() === docenteSeleccionado);
+      setObservacionCarga(doc?.establecimientos?.[0]?.observacionCarga || '');
       const dbCargas = todasCargas.filter(c => c && c.docenteId && c.docenteId.toString() === docenteSeleccionado);
       setCargas(dbCargas.map(c => {
         let nombre = '';
@@ -280,7 +283,7 @@ export default function AsignacionCargaPage() {
     setSaving(true);
     try {
       const payloads = cargas.filter(c => !c.eliminada);
-      await saveCargasHorarias(Number(docenteSeleccionado), payloads);
+      await saveCargasHorarias(Number(docenteSeleccionado), payloads, ESTABLECIMIENTO_ID || undefined, observacionCarga);
       alert('Carga guardada correctamente');
       loadTodasCargas();
     } catch (e) {
@@ -389,8 +392,13 @@ export default function AsignacionCargaPage() {
           </tr>
         </table>
 
-        <table>
-          <tr><th colspan="2" class="center">CÁLCULO HORAS CRONOLÓGICAS CONTRATO</th></tr>
+
+          ` + (observacionCarga ? `
+          <div class="section" style="margin-top: 15px;">III. Observaciones</div>
+          <p style="font-size: 14px; margin-bottom: 20px;">${observacionCarga}</p>
+          ` : '') + `
+          <table>
+            <tr><th colspan="2" class="center">CÁLCULO HORAS CRONOLÓGICAS CONTRATO</th></tr>
           <tr>
             <td>HORAS CRONOLÓGICAS LECTIVAS</td>
             <td class="center" width="30%">${formatTime(horasLectivasAsignadas * 45 / 60)}</td>
@@ -907,7 +915,17 @@ export default function AsignacionCargaPage() {
             <div className="p-4 border-b border-[#e2e8f0] bg-[#f8fafc]">
               <h3 className="font-semibold text-[#1e293b]">Carga Actual del Docente</h3>
             </div>
-            <div className="flex-1 overflow-auto p-4 custom-scrollbar">
+            <div className="p-4 bg-gray-50 border-b border-gray-200">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Observaciones Globales (se imprimirán en el certificado)</label>
+                <textarea 
+                  className="w-full border border-gray-300 rounded-lg p-2.5 text-sm h-16 resize-none"
+                  placeholder="Ingrese observaciones..."
+                  value={observacionCarga}
+                  onChange={(e) => setObservacionCarga(e.target.value)}
+                  disabled={!docenteSeleccionado}
+                />
+              </div>
+              <div className="flex-1 overflow-auto p-4 custom-scrollbar">
               {!docenteSeleccionado ? (
                  <div className="text-center text-[#94a3b8] mt-10">Seleccione un docente primero.</div>
               ) : (

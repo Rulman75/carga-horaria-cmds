@@ -393,10 +393,6 @@ export default function AsignacionCargaPage() {
         </table>
 
 
-          ` + (observacionCarga ? `
-          <div class="section" style="margin-top: 15px;">III. Observaciones</div>
-          <p style="font-size: 14px; margin-bottom: 20px;">${observacionCarga}</p>
-          ` : '') + `
           <table>
             <tr><th colspan="2" class="center">CÁLCULO HORAS CRONOLÓGICAS CONTRATO</th></tr>
           <tr>

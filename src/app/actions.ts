@@ -57,8 +57,14 @@ export async function getPlanEstudio(codPlan: number) {
       detalles: {
         include: {
           asignatura: true,
-          tipoEnsenanza: true
-        }
+          tipoEnsenanza: true,
+          grado: true
+        },
+        orderBy: [
+          { tienCod: 'asc' },
+          { grteCod: 'asc' },
+          { codAsignatura: 'asc' }
+        ]
       }
     }
   });

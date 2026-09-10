@@ -186,7 +186,7 @@ export default function SabanaClasicaPage() {
                 </th>
               )}
 
-              <th colSpan={2} className="bg-gray-300 border border-[#cbd5e1]"></th>
+              <th colSpan={3} className="bg-gray-300 border border-[#cbd5e1]"></th>
             </tr>
             <tr>
               <th className="px-4 py-2 border border-[#cbd5e1] bg-[#e2e8f0] sticky left-0 z-30" rowSpan={2}>Docente</th>
@@ -211,7 +211,8 @@ export default function SabanaClasicaPage() {
               {colsExt.length > 0 && <th className="px-2 py-1 border border-[#cbd5e1] text-center bg-purple-100 text-purple-800 border-r-2 border-r-slate-300" rowSpan={2}>TOTAL<br/>EXTRA</th>}
 
               <th className="px-2 py-1 border border-[#cbd5e1] text-center bg-gray-300 font-bold" rowSpan={2}>TOTAL ASIGNADO<br/>(Crono)</th>
-              <th className="px-2 py-1 border border-[#cbd5e1] text-center bg-gray-300" rowSpan={2}>BALANCE<br/>(Faltan/Sobran)</th>
+              <th className="px-2 py-1 border border-[#cbd5e1] text-center bg-gray-300 border-r-2 border-r-slate-400" rowSpan={2}>BALANCE<br/>(Faltan/Sobran)</th>
+              <th className="px-4 py-1 border border-[#cbd5e1] text-left bg-gray-100" rowSpan={2}>OBSERVACIONES</th>
             </tr>
             <tr>
               {colsBase.map(c => <th key={c.key} className="px-1 py-1 border border-[#cbd5e1] bg-white text-center w-8 align-bottom" title={c.desc}><div className="[writing-mode:vertical-rl] rotate-180 max-h-32 m-auto text-[11px] font-semibold text-gray-700 py-2 truncate">{c.desc}</div></th>)}
@@ -288,8 +289,11 @@ export default function SabanaClasicaPage() {
                   {colsExt.length > 0 && <td className="px-2 py-2 text-center font-bold bg-white text-purple-700 border-r">{totalExtCrono ? Math.round(totalExtCrono) : '-'}</td>}
 
                   <td className="px-2 py-2 text-center font-bold text-gray-800 bg-gray-100 border-r">{Math.round(asignadoCronoTotal)}</td>
-                  <td className={`px-2 py-2 text-center font-bold ${balance === 0 ? 'text-green-600' : balance > 0 ? 'text-orange-500' : 'text-red-600'}`}>
+                  <td className={`px-2 py-2 text-center font-bold border-r-2 border-[#cbd5e1] ${balance === 0 ? 'text-green-600' : balance > 0 ? 'text-orange-500' : 'text-red-600'}`}>
                     {balance === 0 ? 'OK' : balance > 0 ? `Faltan ${Math.round(balance)}` : `Sobran ${Math.abs(balance)}`}
+                  </td>
+                  <td className="px-4 py-2 text-left text-[11px] text-gray-700 max-w-[200px] break-words whitespace-normal border-r border-[#cbd5e1]">
+                    {doc.establecimientos?.[0]?.observacionCarga || ''}
                   </td>
                 </tr>
               );

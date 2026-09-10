@@ -409,7 +409,7 @@ export default function AsignacionCargaPage() {
           </tr>` : '') + `
           <tr style="background-color: #e5e7eb; font-weight: bold;">
             <td style="text-align: right;">TOTAL HORAS CONTRATO</td>
-            <td class="center">${formatTime(asigTotal)}</td>
+            <td class="center">${Math.round(asigTotal)} H</td>
           </tr>
         </table>
 
@@ -524,7 +524,7 @@ export default function AsignacionCargaPage() {
                 <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">Total Asignado (Crono)</span>
                 <div className="flex items-baseline gap-2">
                   <span className={`text-2xl font-bold ${((horasLectivasAsignadas * 45 / 60) + recreoDecimal) + horasNoLectivasAsignadas + horasExtraAsignadas + colacion > totalHorasContrato ? 'text-red-500' : 'text-green-600'}`}>
-                    {formatCronoDecimal(((horasLectivasAsignadas * 45 / 60) + recreoDecimal) + horasNoLectivasAsignadas + horasExtraAsignadas + colacion)}
+                    {Math.round(((horasLectivasAsignadas * 45 / 60) + recreoDecimal) + horasNoLectivasAsignadas + horasExtraAsignadas + colacion)} H
                   </span>
                   <span className="text-xs font-medium text-gray-400">/ {totalHorasContrato} hrs</span>
                 </div>

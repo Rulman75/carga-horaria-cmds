@@ -105,7 +105,11 @@ export default function AsignacionCargaPage() {
       const dbCargas = todasCargas.filter(c => c && c.docenteId && c.docenteId.toString() === docenteSeleccionado);
       setCargas(dbCargas.map(c => {
         let nombre = '';
-        if (c.tipoCarga === 'LECTIVA') nombre = c.asignatura?.asigDescripcion || 'Lectiva';
+        if (c.tipoCarga === 'LECTIVA') {
+          nombre = c.asignatura?.asigDescripcion || 'Lectiva';
+          if (c.letraCurso) nombre += ` (${c.letraCurso})`;
+          if (c.financiamiento && c.financiamiento !== 'Normal') nombre += ` [${c.financiamiento}]`;
+        }
         else if (c.tipoCarga === 'NO_LECTIVA') nombre = c.actividadNoLectiva?.descripcion || 'No Lectiva';
         else if (c.tipoCarga === 'EXTRACURRICULAR') nombre = c.actividadExtracurricular?.descripcion || 'Extracurricular';
         
@@ -945,7 +949,7 @@ export default function AsignacionCargaPage() {
                             {carga.nombre}
                           </p>
                           <p className="text-xs opacity-75">
-                            {carga.tipoCarga === 'LECTIVA' ? getGradoNombre(carga.tienCod, carga.grteCod) : (carga.financiamiento ? `Financiamiento: ${carga.financiamiento}` : 'Global')}
+                            {carga.tipoCarga === 'LECTIVA' ? `${getGradoNombre(carga.tienCod, carga.grteCod)} ${carga.letraCurso || ''}`.trim() : (carga.financiamiento ? `Financiamiento: ${carga.financiamiento}` : 'Global')}
                           </p>
                           <div className="flex items-center gap-2 mt-1">
                             <div className="flex items-center gap-1 bg-white rounded px-1 py-0.5 border border-gray-200 shadow-sm">

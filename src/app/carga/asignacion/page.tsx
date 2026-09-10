@@ -129,6 +129,16 @@ export default function AsignacionCargaPage() {
     }
   }, [docenteSeleccionado, todasCargas]);
 
+  const formatCronoDecimal = (cronoDecimal: number) => {
+    if (!cronoDecimal) return '0 H';
+    const h = Math.floor(cronoDecimal);
+    const m = Math.round((cronoDecimal - h) * 60);
+    if (h > 0 && m > 0) return h + ' H ' + m + ' MIN';
+    if (h > 0) return h + ' H';
+    if (m > 0) return m + ' MIN';
+    return '0 H';
+  };
+
   const parseCronoToDecimal = (str: string) => {
     if (!str) return 0;
     const [h, m] = str.split(':').map(Number);
@@ -285,7 +295,7 @@ export default function AsignacionCargaPage() {
     const estName = estConfig?.esedDescripcion || 'Establecimiento Educativo';
     const directorName = estConfig?.nombreDirector || 'Director(a)';
     
-    const totalJornadaSema = Math.round(horasLectivasAsignadas * 45 / 60) + recreoDecimal + horasNoLectivasAsignadas;
+    const totalJornadaSema = (horasLectivasAsignadas * 45 / 60) + recreoDecimal + horasNoLectivasAsignadas;
     const asigTotal = totalJornadaSema + horasExtraAsignadas + colacion;
     
     const formatTime = (cronoDecimal: number) => {
@@ -514,9 +524,9 @@ export default function AsignacionCargaPage() {
                 <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">Total Asignado (Crono)</span>
                 <div className="flex items-baseline gap-2">
                   <span className={`text-2xl font-bold ${((horasLectivasAsignadas * 45 / 60) + recreoDecimal) + horasNoLectivasAsignadas + horasExtraAsignadas + colacion > totalHorasContrato ? 'text-red-500' : 'text-green-600'}`}>
-                    {Math.round(((horasLectivasAsignadas * 45 / 60) + recreoDecimal) + horasNoLectivasAsignadas + horasExtraAsignadas) + colacion} hrs
+                    {formatCronoDecimal(((horasLectivasAsignadas * 45 / 60) + recreoDecimal) + horasNoLectivasAsignadas + horasExtraAsignadas + colacion)}
                   </span>
-                  <span className="text-xs font-medium text-gray-400">/ {totalHorasContrato}</span>
+                  <span className="text-xs font-medium text-gray-400">/ {totalHorasContrato} hrs</span>
                 </div>
               </div>
             </div>

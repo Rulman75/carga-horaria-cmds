@@ -528,13 +528,29 @@ export default function AsignacionCargaPage() {
                 </div>
               </div>
 
-              <div className="w-1/4 border-l pl-6 border-gray-200 flex flex-col justify-center">
-                <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">Total Asignado (Crono)</span>
-                <div className="flex items-baseline gap-2">
-                  <span className={`text-2xl font-bold ${((horasLectivasAsignadas * 45 / 60) + recreoDecimal) + horasNoLectivasAsignadas + horasExtraAsignadas + colacion > totalHorasContrato ? 'text-red-500' : 'text-green-600'}`}>
-                    {Math.round(((horasLectivasAsignadas * 45 / 60) + recreoDecimal) + horasNoLectivasAsignadas + horasExtraAsignadas + colacion)} H
-                  </span>
-                  <span className="text-xs font-medium text-gray-400">/ {totalHorasContrato} hrs</span>
+              <div className="w-[35%] border-l pl-6 border-gray-200 flex flex-col justify-center">
+                <div className="flex flex-col xl:flex-row xl:items-center gap-4">
+                  <div className="shrink-0">
+                    <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1 block">Total Asignado (Aprox)</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className={`text-2xl font-bold ${((horasLectivasAsignadas * 45 / 60) + recreoDecimal) + horasNoLectivasAsignadas + horasExtraAsignadas + colacion > totalHorasContrato ? 'text-red-500' : 'text-green-600'}`}>
+                        {Math.round(((horasLectivasAsignadas * 45 / 60) + recreoDecimal) + horasNoLectivasAsignadas + horasExtraAsignadas + colacion)} H
+                      </span>
+                      <span className="text-xs font-medium text-gray-400">/ {totalHorasContrato} hrs</span>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-[#f8fafc] border border-gray-200 rounded p-2 text-[9px] text-gray-600 flex-1 w-full grid grid-cols-2 gap-x-2 gap-y-1">
+                    <div className="flex justify-between"><span>HA:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(horasLectivasAsignadas * 45 / 60)}</span></div>
+                    <div className="flex justify-between"><span>Recreo:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(recreoDecimal)}</span></div>
+                    {horasNoLectivasAsignadas > 0 && <div className="flex justify-between"><span>HNL:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(horasNoLectivasAsignadas)}</span></div>}
+                    {horasExtraAsignadas > 0 && <div className="flex justify-between"><span>HE:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(horasExtraAsignadas)}</span></div>}
+                    {colacion > 0 && <div className="flex justify-between"><span>Colación:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(colacion)}</span></div>}
+                    <div className="flex justify-between col-span-2 mt-1 pt-1 border-t border-gray-200 text-[#016098] font-bold">
+                      <span>TOTAL EXACTO:</span>
+                      <span>{formatCronoDecimal(((horasLectivasAsignadas * 45 / 60) + recreoDecimal) + horasNoLectivasAsignadas + horasExtraAsignadas + colacion)}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

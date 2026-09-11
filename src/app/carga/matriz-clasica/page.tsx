@@ -257,8 +257,8 @@ export default function SabanaClasicaPage() {
                   }
                 }
 
-                const totalJornadaSemanalCrono = Math.round((totalAulaPed * 45 / 60) + recreoDecimal) + totalAnlCrono;
-                const asignadoCronoTotal = Math.round((totalAulaPed * 45 / 60) + recreoDecimal) + totalAnlCrono + totalExtCrono + doc.colacion;
+                const totalJornadaSemanalCrono = Math.ceil((totalAulaPed * 45 / 60) + recreoDecimal + totalAnlCrono);
+                const asignadoCronoTotal = Math.ceil((totalAulaPed * 45 / 60) + recreoDecimal + totalAnlCrono + totalExtCrono + doc.colacion);
                 const balance = doc.contrato - asignadoCronoTotal;
                 const hasData = asignadoCronoTotal > doc.colacion;
 
@@ -283,12 +283,12 @@ export default function SabanaClasicaPage() {
                   {colsAnl.map(c => <td key={c.key} className="px-1 py-2 text-center border-r text-[#d97706] font-medium">{doc.anls[c.key] ? Math.round(doc.anls[c.key]) : '-'}</td>)}
                   <td className="px-2 py-2 text-center font-bold bg-white text-amber-700 border-r">{totalAnlCrono ? Math.round(totalAnlCrono) : '-'}</td>
 
-                  <td className="px-2 py-2 text-center font-bold bg-slate-100 text-slate-800 border-r border-r-slate-400">{totalJornadaSemanalCrono ? Math.round(totalJornadaSemanalCrono) : '-'}</td>
+                  <td className="px-2 py-2 text-center font-bold bg-slate-100 text-slate-800 border-r border-r-slate-400">{totalJornadaSemanalCrono ? Math.ceil(totalJornadaSemanalCrono) : '-'}</td>
 
                   {colsExt.map(c => <td key={c.key} className="px-1 py-2 text-center border-r text-[#7e22ce] font-medium">{doc.extras[c.key] ? Math.round(doc.extras[c.key]) : '-'}</td>)}
                   {colsExt.length > 0 && <td className="px-2 py-2 text-center font-bold bg-white text-purple-700 border-r">{totalExtCrono ? Math.round(totalExtCrono) : '-'}</td>}
 
-                  <td className="px-2 py-2 text-center font-bold text-gray-800 bg-gray-100 border-r">{Math.round(asignadoCronoTotal)}</td>
+                  <td className="px-2 py-2 text-center font-bold text-gray-800 bg-gray-100 border-r">{Math.ceil(asignadoCronoTotal)}</td>
                   <td className={`px-2 py-2 text-center font-bold border-r-2 border-[#cbd5e1] ${balance === 0 ? 'text-green-600' : balance > 0 ? 'text-orange-500' : 'text-red-600'}`}>
                     {balance === 0 ? 'OK' : balance > 0 ? `Faltan ${Math.round(balance)}` : `Sobran ${Math.abs(balance)}`}
                   </td>

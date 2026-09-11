@@ -734,9 +734,9 @@ export async function getSchoolAnalytics(establecimientoId: number) {
   return {
     totalDocentes: rels.length,
     docentesAsignados,
-    totalHorasContrato: Math.round(totalHorasContrato),
-    totalHorasAsignadas: Math.round(totalHorasAsignadas),
-    horasOciosas: Math.round(totalHorasContrato - totalHorasAsignadas),
+    totalHorasContrato: Math.ceil(totalHorasContrato),
+    totalHorasAsignadas: Math.ceil(totalHorasAsignadas),
+    horasOciosas: Math.ceil(totalHorasContrato - totalHorasAsignadas),
     totalBaseAsignadas,
     totalJecAsignadas,
     chartExtra,
@@ -783,7 +783,7 @@ export async function getGlobalAnalytics() {
       }
       
       if (lectPed > 0 || noLect > 0 || extra > 0) {
-        estAsignado += Math.round((lectPed * 45 / 60) + recreoDecimal) + noLect + extra + colacion;
+        estAsignado += Math.ceil((lectPed * 45 / 60) + recreoDecimal + noLect + extra + colacion);
       }
 
     });

@@ -479,8 +479,8 @@ export default function AsignacionCargaPage() {
       <div className="flex-1 flex flex-col gap-6">
         
         {/* Header Docente */}
-        <div className="bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4 flex items-center gap-4">
-          <div className="w-1/3">
+        <div className="bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4 flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6">
+          <div className="w-full lg:w-1/4 xl:w-[20%] shrink-0">
             <label className="block text-sm font-semibold text-gray-700 mb-1">Seleccionar Docente</label>
             <select 
               className="w-full border border-gray-300 rounded-lg p-2.5 text-sm"
@@ -499,14 +499,14 @@ export default function AsignacionCargaPage() {
           </div>
           
           {docenteSeleccionadoObj && (
-            <div className="flex-1 flex gap-6 ml-4 border-l pl-4 border-gray-200">
-              <div className="flex flex-col justify-center min-w-[120px]">
+            <div className="flex-1 flex flex-col md:flex-row gap-4 md:gap-6 lg:border-l lg:pl-6 border-gray-200 w-full">
+              <div className="flex flex-col justify-center min-w-[120px] shrink-0">
                 <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Horas Contrato</span>
                 <span className="text-lg font-bold text-[#016098] leading-none mb-1">{totalHorasContrato} hrs crono</span>
                 <span className="text-[10px] text-gray-500 font-medium">Titularidad: {docenteSeleccionadoObj.horasTitular || 0} hrs</span>
               </div>
               
-              <div className="flex-1 border-l pl-6 border-gray-200 flex flex-col justify-center gap-3">
+              <div className="flex-1 md:border-l md:pl-6 border-gray-200 flex flex-col justify-center gap-3">
                 <div>
                   <div className="flex justify-between text-xs mb-1">
                     <span className="font-medium text-[#39BABD]">Aula + JEC (Máx: {maxLectivasPedagogicas} ped)</span>
@@ -528,8 +528,8 @@ export default function AsignacionCargaPage() {
                 </div>
               </div>
 
-              <div className="w-[35%] border-l pl-6 border-gray-200 flex flex-col justify-center">
-                <div className="flex flex-col xl:flex-row xl:items-center gap-4">
+              <div className="w-full md:w-auto xl:w-[40%] shrink-0 md:border-l md:pl-6 border-gray-200 flex flex-col justify-center">
+                <div className="flex flex-col sm:flex-row xl:items-center gap-4">
                   <div className="shrink-0">
                     <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1 block">Total Asignado (Aprox)</span>
                     <div className="flex items-baseline gap-2">

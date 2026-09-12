@@ -540,13 +540,13 @@ export default function AsignacionCargaPage() {
                     </div>
                   </div>
                   
-                  <div className="bg-[#f8fafc] border border-gray-200 rounded p-2 text-[9px] text-gray-600 flex-1 w-full grid grid-cols-2 gap-x-2 gap-y-1">
-                    <div className="flex justify-between"><span>HA:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(horasLectivasAsignadas * 45 / 60)}</span></div>
-                    <div className="flex justify-between"><span>Recreo:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(recreoDecimal)}</span></div>
-                    {horasNoLectivasAsignadas > 0 && <div className="flex justify-between"><span>HNL:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(horasNoLectivasAsignadas)}</span></div>}
-                    {horasExtraAsignadas > 0 && <div className="flex justify-between"><span>HE:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(horasExtraAsignadas)}</span></div>}
-                    {colacion > 0 && <div className="flex justify-between"><span>Colación:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(colacion)}</span></div>}
-                    <div className="flex justify-between col-span-2 mt-1 pt-1 border-t border-gray-200 text-[#016098] font-bold">
+                  <div className="bg-[#f8fafc] border border-gray-200 rounded text-[9px] text-gray-600 flex-1 w-full flex flex-col">
+                    <div className="flex justify-between border-b border-gray-100 p-1.5 px-2"><span>HA:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(horasLectivasAsignadas * 45 / 60)}</span></div>
+                    <div className="flex justify-between border-b border-gray-100 p-1.5 px-2"><span>Recreo:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(recreoDecimal)}</span></div>
+                    {horasNoLectivasAsignadas > 0 && <div className="flex justify-between border-b border-gray-100 p-1.5 px-2"><span>HNL:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(horasNoLectivasAsignadas)}</span></div>}
+                    {horasExtraAsignadas > 0 && <div className="flex justify-between border-b border-gray-100 p-1.5 px-2"><span>HE:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(horasExtraAsignadas)}</span></div>}
+                    {colacion > 0 && <div className="flex justify-between border-b border-gray-100 p-1.5 px-2"><span>Colación:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(colacion)}</span></div>}
+                    <div className="flex justify-between p-1.5 px-2 bg-gray-50 text-[#016098] font-bold rounded-b">
                       <span>TOTAL EXACTO:</span>
                       <span>{formatCronoDecimal(((horasLectivasAsignadas * 45 / 60) + recreoDecimal) + horasNoLectivasAsignadas + horasExtraAsignadas + colacion)}</span>
                     </div>

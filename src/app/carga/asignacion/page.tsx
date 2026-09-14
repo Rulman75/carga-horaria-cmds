@@ -177,7 +177,7 @@ export default function AsignacionCargaPage() {
   const pctNoLectivas = Math.min(100, (horasNoLectivasAsignadas / maxNoLectivasDecimal) * 100) || 0;
 
   // Planificación rule
-  const maxPlanificacionDecimal = maxNoLectivasDecimal * 0.4;
+  const minPlanificacionDecimal = maxNoLectivasDecimal * 0.4;
   const planificacionActual = cargasVivas
     .filter(c => c.tipoCarga === 'NO_LECTIVA')
     .filter(c => {
@@ -220,8 +220,8 @@ export default function AsignacionCargaPage() {
     const anlInfo = actividadesNL.find(a => a.id.toString() === anlSeleccionada);
     
     if (anlInfo?.esPlanificacion) {
-      if (planificacionActual + horasManual > maxPlanificacionDecimal) {
-        alert(`No puedes exceder el 40% de horas de planificación. Límite: ${maxPlanificacionDecimal.toFixed(1)} hrs. Actual: ${planificacionActual}`);
+      if (planificacionActual + horasManual < minPlanificacionDecimal) {
+        alert(`Por ley, la planificación debe ser al menos el 40% de las horas no lectivas. La cantidad mínima que debes asignar en total es ${minPlanificacionDecimal.toFixed(1)} hrs.`);
         return;
       }
     }

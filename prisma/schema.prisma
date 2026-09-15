@@ -208,6 +208,7 @@ model PlanEstablecimientoDet {
   obligatoria           String?
   formacion             String?
   esPropio              Boolean   @default(false) // True si el colegio la agregó manualmente, False si viene del Plan Base
+  categoria             String    @default("BASE") // "BASE", "ELECTIVA", "JEC"
 }
 
 

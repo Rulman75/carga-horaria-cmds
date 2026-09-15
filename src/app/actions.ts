@@ -311,7 +311,8 @@ export async function agregarAsignaturaIndividualPropio(
   planPropioId: number, 
   tienCod: number, 
   grteCod: number, 
-  codAsignatura: string
+  codAsignatura: string,
+  categoria: string = 'BASE'
 ) {
   // Check if exists
   const existe = await prisma.planEstablecimientoDet.findFirst({

@@ -725,6 +725,20 @@ export default function PlanEstablecimientoDetallePage() {
                       )}
                     </div>
                   </div>
+                  
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Categoría de Asignatura</label>
+                    <select 
+                      className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-[#016098]"
+                      value={categoria}
+                      onChange={(e) => setCategoria(e.target.value)}
+                    >
+                      <option value="BASE">Plan Base (Adicional / Electiva)</option>
+                      <option value="JEC">Horas de Libre Disposición (JEC)</option>
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">Sirve para ordenar visualmente la matriz del plan.</p>
+                  </div>
+
                 </div>
               )}
             </div>

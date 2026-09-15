@@ -190,13 +190,17 @@ export default function PlanEstablecimientoDetallePage() {
       });
       const columnas = Array.from(gradosMap.values()).sort((a, b) => a.grteCod - b.grteCod);
 
-      const asigMap = new Map<string, any>();
-      detallesTipo.forEach((d: any) => {
-        if (!asigMap.has(d.codAsignatura) && d.asignatura) {
-          asigMap.set(d.codAsignatura, d.asignatura);
-        }
-      });
-      const filas = Array.from(asigMap.values()).sort((a, b) => a.asigDescripcion.localeCompare(b.asigDescripcion));
+        const asigMap = new Map<string, any>();
+        detallesTipo.forEach((d: any) => {
+          if (!asigMap.has(d.codAsignatura) && d.asignatura) {
+            asigMap.set(d.codAsignatura, {
+              ...d.asignatura,
+              _categoria: d.categoria,
+              _esPropio: d.esPropio
+            });
+          }
+        });
+        const filas = Array.from(asigMap.values()).sort((a, b) => a.asigDescripcion.localeCompare(b.asigDescripcion));
 
       const matrizDatos = new Map<string, any>();
       detallesTipo.forEach((d: any) => {

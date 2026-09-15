@@ -385,6 +385,44 @@ export default function PlanEstablecimientoDetallePage() {
                                   </tr>
                                 );
                               })}
+                              <tr className="bg-gray-100/80 border-t border-b-2 border-b-gray-300/50 font-bold text-gray-600 text-xs shadow-inner">
+                                <td className="px-4 py-2 border-r border-[#e2e8f0] text-right uppercase sticky left-0 z-10 bg-gray-100/90 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                  Subtotal {titulo}
+                                </td>
+                                {matriz.columnas.map((col: any) => {
+                                  let sumaCol = 0;
+                                  filasGrupo.forEach((f: any) => {
+                                    const cData = matriz.matrizDatos.get(`${f.asigCod}-${col.grteCod}`);
+                                    if (cData) sumaCol += cData.horas;
+                                  });
+                                  return (
+                                    <td key={col.grteCod} className="border-r border-[#e2e8f0] text-center p-2 text-sm text-gray-600">
+                                      {sumaCol > 0 ? sumaCol : '-'}
+                                    </td>
+                                  );
+                                })}
+                                {(() => {
+                                  let sumTotal = 0;
+                                  filasGrupo.forEach((f: any) => {
+                                    matriz.columnas.forEach((col: any) => {
+                                      const cData = matriz.matrizDatos.get(`${f.asigCod}-${col.grteCod}`);
+                                      if (cData && (col.grteCod > 40 || isEspecialistaAsig(f))) {
+                                        sumTotal += (cData.horas * (col.cantidadCursos || 0));
+                                      }
+                                    });
+                                  });
+                                  return (
+                                    <>
+                                      <td className="px-4 py-2 border-l-2 border-l-[#016098] border-r border-[#e2e8f0] text-center bg-gray-200/50 text-gray-700">
+                                        {sumTotal > 0 ? sumTotal : '-'}
+                                      </td>
+                                      <td className="px-4 py-2 border-r border-[#e2e8f0] text-center bg-gray-200/50 text-gray-700">
+                                        {sumTotal > 0 ? (sumTotal / 28.6).toFixed(1) : '-'}
+                                      </td>
+                                    </>
+                                  );
+                                })()}
+                              </tr>
                             </>
                           );
                         };
@@ -403,7 +441,7 @@ export default function PlanEstablecimientoDetallePage() {
                   <tfoot className="bg-[#f1f5f9] font-bold text-[#1e293b]">
                     <tr>
                       <td className="px-4 py-3 border-r border-[#e2e8f0] text-right sticky left-0 bg-[#f1f5f9] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
-                        Horas del Plan Base (Por Nivel)
+                        Total Horas (Por Nivel)
                       </td>
                       {matriz.columnas.map(col => {
                         let sumaColumna = 0;
@@ -419,7 +457,7 @@ export default function PlanEstablecimientoDetallePage() {
                         );
                       })}
                       <td colSpan={2} className="px-4 py-3 border-l-2 border-l-[#016098] border-[#e2e8f0] text-center bg-[#e0f2fe] text-[#0369a1] text-xl">
-                        {totalHorasNivel} hrs base
+                        {totalHorasNivel} hrs totales
                       </td>
                     </tr>
                     

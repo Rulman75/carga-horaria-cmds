@@ -111,6 +111,10 @@ export async function clonarPlanEstudioBase(establecimientoId: number, codPlanBa
     return true;
   });
 
+  if (detallesFiltrados.length === 0) {
+    throw new Error("El decreto seleccionado no contiene asignaturas para los Tipos de Enseñanza que tu colegio tiene autorizados.");
+  }
+
   // Crear la cabecera del plan propio
   const planPropio = await prisma.planEstablecimiento.create({
     data: {
@@ -281,6 +285,7 @@ export async function importarPlanBaseAPropio(planPropioId: number, codPlanBase:
   });
   const tiposPermitidos = new Set(tiposAutorizados.map((t: any) => t.tienCod));
 
+  let insertados = 0;
   // Insertar cada detalle nuevo
   for (const det of planBase.detalles) {
     // Filtrar automáticamente: si el colegio tiene tipos configurados, solo clonamos los que le corresponden.
@@ -310,7 +315,12 @@ export async function importarPlanBaseAPropio(planPropioId: number, codPlanBase:
           esPropio: false
         }
       });
+      insertados++;
     }
+  }
+
+  if (insertados === 0) {
+    throw new Error("No se importó ninguna asignatura. Es posible que el decreto no aplique para los Tipos de Enseñanza autorizados en tu colegio, o que las asignaturas ya existieran.");
   }
 }
 

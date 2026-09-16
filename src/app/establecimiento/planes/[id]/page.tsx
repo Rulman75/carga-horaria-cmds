@@ -127,8 +127,8 @@ export default function PlanEstablecimientoDetallePage() {
       await importarPlanBaseAPropio(parseInt(id as string), parseInt(planBaseSeleccionado));
       setShowModal(false);
       await loadData();
-    } catch (error) {
-      alert("Error al importar el decreto.");
+    } catch (error: any) {
+      alert(error.message || "Error al importar el decreto.");
       console.error(error);
     }
     setImportando(false);
@@ -583,7 +583,7 @@ export default function PlanEstablecimientoDetallePage() {
 
         {matricesPorTipo.length === 0 && (
           <div className="bg-white p-10 rounded-xl border border-[#e2e8f0] text-center text-gray-500">
-            El plan clonado no contenía ninguna asignatura.
+            El plan ha sido clonado pero no existe cantidad de cursos asignados a los respectivos grados.
           </div>
         )}
 

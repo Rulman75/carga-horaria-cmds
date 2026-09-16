@@ -48,16 +48,16 @@ export default function MisPlanesPage() {
       return;
     }
     setClonando(true);
-    try {
-      await clonarPlanEstudioBase(establecimientoId!, parseInt(planBaseSeleccionado), nuevoNombre);
-      setShowModal(false);
-      setNuevoNombre('');
-      setPlanBaseSeleccionado('');
-      await loadData();
-    } catch (error) {
-      console.error(error);
-      alert('Error al clonar el plan.');
-    }
+      try {
+        await clonarPlanEstudioBase(establecimientoId!, parseInt(planBaseSeleccionado), nuevoNombre);
+        setShowModal(false);
+        setNuevoNombre('');
+        setPlanBaseSeleccionado('');
+        await loadData();
+      } catch (error: any) {
+        console.error(error);
+        alert(error.message || 'Error al clonar el plan.');
+      }
     setClonando(false);
   };
 

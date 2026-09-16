@@ -178,7 +178,7 @@ export default function PlanEstablecimientoDetallePage() {
       }
     });
 
-    const result = Array.from(tipos.values()).map(tipo => {
+    const result = Array.from(tipos.values()).flatMap(tipo => {
       const detallesTipo = plan.detalles.filter((d: any) => d.tienCod === tipo.tienCod);
       
       const gradosMap = new Map<number, any>();
@@ -188,7 +188,14 @@ export default function PlanEstablecimientoDetallePage() {
           gradosMap.set(d.grteCod, { ...d.grado, cantidadCursos: dot ? dot.cantidadCursos : 0 });
         }
       });
-      const columnas = Array.from(gradosMap.values()).sort((a, b) => a.grteCod - b.grteCod);
+      
+      // FILTRO: Solo dejamos los grados que tienen 1 o más cursos
+      const columnas = Array.from(gradosMap.values())
+        .filter(g => g.cantidadCursos > 0)
+        .sort((a, b) => a.grteCod - b.grteCod);
+
+      // Si después de filtrar no queda ninguna columna, no retornamos esta matriz
+      if (columnas.length === 0) return [];
 
         const asigMap = new Map<string, any>();
         detallesTipo.forEach((d: any) => {
@@ -211,17 +218,17 @@ export default function PlanEstablecimientoDetallePage() {
       // Un bloque es generalista si TODOS sus grados son <= 40
       const esGeneralista = columnas.length > 0 && columnas.every((c: any) => c.grteCod <= 40);
 
-      return {
+      return [{
         tipo,
         columnas,
         filas,
         matrizDatos,
         esGeneralista
-      };
+      }];
     });
 
-    return result.sort((a, b) => a.tipo.tienCod - b.tipo.tienCod);
-  }, [plan]);
+    return result.sort((a: any, b: any) => a.tipo.tienCod - b.tipo.tienCod);
+    }, [plan]);
 
 
   if (loading) return <div className="p-10 text-center text-gray-500">Cargando malla del plan...</div>;
@@ -278,7 +285,7 @@ export default function PlanEstablecimientoDetallePage() {
                       <th className="px-4 py-3 font-bold border-b border-r border-[#e2e8f0] bg-white sticky left-0 z-10 w-64 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
                         Asignatura
                       </th>
-                      {matriz.columnas.map(col => (
+                      {matriz.columnas.map((col: any) => (
                         <th key={col.grteCod} className="px-4 py-3 font-semibold border-b border-r border-[#e2e8f0] text-center min-w-[100px] group relative">
                           <div className="flex flex-col items-center justify-center gap-1">
                             <span>{col.grteDescrip}</span>
@@ -443,9 +450,9 @@ export default function PlanEstablecimientoDetallePage() {
                       <td className="px-4 py-3 border-r border-[#e2e8f0] text-right sticky left-0 bg-[#f1f5f9] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
                         Total Horas (Por Nivel)
                       </td>
-                      {matriz.columnas.map(col => {
+                      {matriz.columnas.map((col: any) => {
                         let sumaColumna = 0;
-                        matriz.filas.forEach(f => {
+                        matriz.filas.forEach((f: any) => {
                           const cData = matriz.matrizDatos.get(`${f.asigCod}-${col.grteCod}`);
                           if (cData) sumaColumna += cData.horas;
                         });
@@ -465,7 +472,7 @@ export default function PlanEstablecimientoDetallePage() {
                       <td className="px-4 py-2 border-r border-[#e2e8f0] text-right sticky left-0 bg-[#f8fafc] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
                         Dotación de Cursos
                       </td>
-                      {matriz.columnas.map(col => (
+                      {matriz.columnas.map((col: any) => (
                         <td key={`dot-${col.grteCod}`} className="px-4 py-2 border-r border-[#e2e8f0] text-center">
                           x {col.cantidadCursos} cursos
                         </td>
@@ -477,9 +484,9 @@ export default function PlanEstablecimientoDetallePage() {
                       <td className="px-4 py-4 border-r border-[#016098] text-right uppercase tracking-wider text-xs sticky left-0 bg-[#016098] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
                         Total Horas Docentes Requeridas
                       </td>
-                      {matriz.columnas.map(col => {
+                      {matriz.columnas.map((col: any) => {
                         let sumaColumna = 0;
-                        matriz.filas.forEach(f => {
+                        matriz.filas.forEach((f: any) => {
                           const cData = matriz.matrizDatos.get(`${f.asigCod}-${col.grteCod}`);
                           if (cData) sumaColumna += cData.horas;
                         });

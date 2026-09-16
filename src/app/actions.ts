@@ -170,8 +170,8 @@ export async function updateEstablecimientoConfig(establecimientoId: number, esJ
     data: { esJec }
   });
 
-  for (const g of gradosData) {
-    await prisma.establecimientoGrado.upsert({
+  await Promise.all(gradosData.map(g => 
+    prisma.establecimientoGrado.upsert({
       where: {
         establecimientoId_tienCod_grteCod: {
           establecimientoId,
@@ -186,8 +186,8 @@ export async function updateEstablecimientoConfig(establecimientoId: number, esJ
         grteCod: g.grteCod,
         cantidadCursos: g.cantidadCursos
       }
-    });
-  }
+    })
+  ));
 
   // Si cambió la bandera JEC, recalcular las horas de todos los planes propios asociados a este establecimiento
   if (estabOld && estabOld.esJec !== esJec) {
@@ -199,6 +199,7 @@ export async function updateEstablecimientoConfig(establecimientoId: number, esJ
       }
     });
 
+    const updates: Promise<any>[] = [];
     for (const plan of planesPropios) {
       for (const detPropio of plan.detalles) {
         const baseDet = plan.planBase.detalles.find(d => 
@@ -210,14 +211,15 @@ export async function updateEstablecimientoConfig(establecimientoId: number, esJ
         if (baseDet) {
           const nuevasHoras = esJec ? (baseDet.horasCJ || 0) : (baseDet.horasSJ || 0);
           if (nuevasHoras !== detPropio.horas) {
-            await prisma.planEstablecimientoDet.update({
+            updates.push(prisma.planEstablecimientoDet.update({
               where: { id: detPropio.id },
               data: { horas: nuevasHoras }
-            });
+            }));
           }
         }
       }
     }
+    await Promise.all(updates);
   }
 }
 

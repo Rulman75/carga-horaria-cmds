@@ -98,6 +98,19 @@ export async function clonarPlanEstudioBase(establecimientoId: number, codPlanBa
   const estab = await prisma.establecimiento.findUnique({ where: { esedSec: establecimientoId } });
   const esJec = estab?.esJec || false;
 
+  // Obtener tipos de enseñanza autorizados
+  const tiposAutorizados = await prisma.establecimientoTipoEnsenanza.findMany({
+    where: { establecimientoId }
+  });
+  const tiposPermitidos = new Set(tiposAutorizados.map((t: any) => t.tienCod));
+
+  const detallesFiltrados = planBase.detalles.filter((det: any) => {
+    if (tiposPermitidos.size > 0 && !tiposPermitidos.has(det.tienCod)) {
+      return false;
+    }
+    return true;
+  });
+
   // Crear la cabecera del plan propio
   const planPropio = await prisma.planEstablecimiento.create({
     data: {
@@ -105,7 +118,7 @@ export async function clonarPlanEstudioBase(establecimientoId: number, codPlanBa
       codPlanBase,
       nombre,
       detalles: {
-        create: planBase.detalles.map(det => ({
+        create: detallesFiltrados.map((det: any) => ({
           tienCod: det.tienCod,
           grteCod: det.grteCod,
           codAsignatura: det.codAsignatura,
@@ -260,8 +273,18 @@ export async function importarPlanBaseAPropio(planPropioId: number, codPlanBase:
   
   const esJec = planPropio.establecimiento.esJec || false;
 
+  // Obtener los Tipos de Enseñanza autorizados para este colegio
+  const tiposAutorizados = await prisma.establecimientoTipoEnsenanza.findMany({
+    where: { establecimientoId: planPropio.establecimiento.esedSec }
+  });
+  const tiposPermitidos = new Set(tiposAutorizados.map((t: any) => t.tienCod));
+
   // Insertar cada detalle nuevo
   for (const det of planBase.detalles) {
+    // Filtrar automáticamente: si el colegio tiene tipos configurados, solo clonamos los que le corresponden.
+    if (tiposPermitidos.size > 0 && !tiposPermitidos.has(det.tienCod)) {
+      continue;
+    }
     // Verificar si ya existe para no duplicar (por asignatura y grado)
     const existe = await prisma.planEstablecimientoDet.findFirst({
       where: {

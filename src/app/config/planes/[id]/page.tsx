@@ -69,13 +69,15 @@ export default function PlanEstudioDetallePage() {
               );
             }
 
-            // Group by Grado
-            const grouped = new Map<string, any[]>();
-            plan.detalles.forEach((det: any) => {
-              const gradoStr = det.grado ? det.grado.grteDescrip : 'Sin Grado';
-              if (!grouped.has(gradoStr)) grouped.set(gradoStr, []);
-              grouped.get(gradoStr)!.push(det);
-            });
+              // Group by Tipo Enseñanza and Grado
+              const grouped = new Map<string, any[]>();
+              plan.detalles.forEach((det: any) => {
+                const tipoStr = det.tipoEnsenanza ? det.tipoEnsenanza.tienDescripcion : 'Sin Tipo';
+                const gradoStr = det.grado ? det.grado.grteDescrip : 'Sin Grado';
+                const groupKey = `${tipoStr} | ${gradoStr}`;
+                if (!grouped.has(groupKey)) grouped.set(groupKey, []);
+                grouped.get(groupKey)!.push(det);
+              });
 
             return Array.from(grouped.entries()).map(([gradoName, asignaturas]) => (
               <div key={gradoName} className="mb-8 bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">

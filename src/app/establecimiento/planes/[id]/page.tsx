@@ -123,14 +123,18 @@ export default function PlanEstablecimientoDetallePage() {
     }
     
     setImportando(true);
-    try {
-      await importarPlanBaseAPropio(parseInt(id as string), parseInt(planBaseSeleccionado));
-      setShowModal(false);
-      await loadData();
-    } catch (error: any) {
-      alert(error.message || "Error al importar el decreto.");
-      console.error(error);
-    }
+      try {
+        const res: any = await importarPlanBaseAPropio(parseInt(id as string), parseInt(planBaseSeleccionado));
+        if (res && res.error) {
+          alert(res.error);
+        } else {
+          setShowModal(false);
+          await loadData();
+        }
+      } catch (error: any) {
+        alert("Error al importar el decreto.");
+        console.error(error);
+      }
     setImportando(false);
   };
 

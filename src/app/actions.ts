@@ -92,7 +92,7 @@ export async function clonarPlanEstudioBase(establecimientoId: number, codPlanBa
     include: { detalles: true }
   });
 
-  if (!planBase) throw new Error("Plan base no encontrado");
+  if (!planBase) return { error: "Plan base no encontrado" };
 
   // Obtener si el colegio es JEC
   const estab = await prisma.establecimiento.findUnique({ where: { esedSec: establecimientoId } });
@@ -112,7 +112,7 @@ export async function clonarPlanEstudioBase(establecimientoId: number, codPlanBa
   });
 
   if (detallesFiltrados.length === 0) {
-    throw new Error("El decreto seleccionado no contiene asignaturas para los Tipos de Enseñanza que tu colegio tiene autorizados.");
+    return { error: "El decreto seleccionado no contiene asignaturas para los Tipos de Enseñanza que tu colegio tiene autorizados." };
   }
 
   // Crear la cabecera del plan propio
@@ -136,7 +136,7 @@ export async function clonarPlanEstudioBase(establecimientoId: number, codPlanBa
     }
   });
 
-  return planPropio;
+  return { success: true, planPropio };
 }
 
 export async function getPlanesPropios(establecimientoId: number) {
@@ -267,7 +267,7 @@ export async function importarPlanBaseAPropio(planPropioId: number, codPlanBase:
     include: { detalles: true }
   });
 
-  if (!planBase) throw new Error("Plan base no encontrado");
+  if (!planBase) return { error: "Plan base no encontrado" };
 
   // Obtener si el colegio es JEC para saber qué horas traer
   const planPropio = await prisma.planEstablecimiento.findUnique({
@@ -275,7 +275,7 @@ export async function importarPlanBaseAPropio(planPropioId: number, codPlanBase:
     include: { establecimiento: true }
   });
   
-  if (!planPropio) throw new Error("Plan propio no encontrado");
+  if (!planPropio) return { error: "Plan propio no encontrado" };
   
   const esJec = planPropio.establecimiento.esJec || false;
 
@@ -320,8 +320,9 @@ export async function importarPlanBaseAPropio(planPropioId: number, codPlanBase:
   }
 
   if (insertados === 0) {
-    throw new Error("No se importó ninguna asignatura. Es posible que el decreto no aplique para los Tipos de Enseñanza autorizados en tu colegio, o que las asignaturas ya existieran.");
+    return { error: "No se importó ninguna asignatura. Es posible que el decreto no aplique para los Tipos de Enseñanza autorizados en tu colegio, o que las asignaturas ya existieran." };
   }
+  return { success: true };
 }
 
 export async function eliminarPlanPropio(planId: number) {

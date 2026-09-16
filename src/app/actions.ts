@@ -357,7 +357,8 @@ export async function agregarAsignaturaIndividualPropio(
         horas: 0, // Starts at 0 so they can edit it in the matrix
         obligatoria: 'NO',
         formacion: 'General',
-        esPropio: true
+        esPropio: true,
+        categoria // ADDED CATEGORIA
       }
     });
   }

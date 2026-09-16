@@ -63,10 +63,10 @@ export default function ConfigEstablecimientoPage() {
   const handleGuardar = async () => {
     setGuardando(true);
     try {
-      const payload = gradosDotacion.filter(g => g.cantidadCursos > 0).map(g => ({
+      const payload = gradosDotacion.map(g => ({
         tienCod: g.tienCod,
         grteCod: g.grteCod,
-        cantidadCursos: g.cantidadCursos
+        cantidadCursos: g.cantidadCursos || 0
       }));
       // Enviar array vacio de tiposData porque ya no lo actualizamos acá
       await updateEstablecimientoConfig(establecimientoId!, esJec, payload, []);

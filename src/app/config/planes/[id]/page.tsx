@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getPlanEstudio } from '../../../actions';
+import { getPlanEstudio, updatePlanBaseDetHoras } from '../../../actions';
 
 export default function PlanEstudioDetallePage() {
   const { id } = useParams();
@@ -10,6 +10,29 @@ export default function PlanEstudioDetallePage() {
   
   const [plan, setPlan] = useState<any>(null);
   const [cargando, setCargando] = useState(true);
+
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editForm, setEditForm] = useState({ horasCJ: 0, horasSJ: 0 });
+
+  const startEdit = (det: any) => {
+    setEditingId(det.id);
+    setEditForm({ horasCJ: det.horasCJ || 0, horasSJ: det.horasSJ || 0 });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+  };
+
+  const saveEdit = async (detId: number) => {
+    try {
+      await updatePlanBaseDetHoras(detId, editForm.horasCJ, editForm.horasSJ);
+      setEditingId(null);
+      const data = await getPlanEstudio(Number(id));
+      setPlan(data);
+    } catch (e) {
+      alert("Error guardando horas.");
+    }
+  };
 
   useEffect(() => {
     if (id) {
@@ -85,34 +108,74 @@ export default function PlanEstudioDetallePage() {
                   <h4 className="font-bold text-[#1e293b]">{gradoName}</h4>
                 </div>
                 <table className="w-full text-sm text-left">
-                  <thead className="text-xs text-[#64748b] uppercase bg-white border-b border-[#e2e8f0]">
-                    <tr>
-                      <th className="px-6 py-3">Cód. Asig</th>
-                      <th className="px-6 py-3">Nombre Asignatura</th>
-                      <th className="px-6 py-3">Formación</th>
-                      <th className="px-6 py-3 text-center">Obligatoria</th>
-                      <th className="px-6 py-3 text-right">Horas CJ</th>
-                      <th className="px-6 py-3 text-right">Horas SJ</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {asignaturas.map((det: any) => (
-                      <tr key={det.id} className="border-b border-[#e2e8f0] last:border-0 hover:bg-[#f8fafc] transition-colors">
-                        <td className="px-6 py-3 font-mono text-[#64748b] text-xs w-24">{det.codAsignatura}</td>
-                        <td className="px-6 py-3 font-bold text-[#1e293b]">{det.asignatura?.asigDescripcion || 'Desconocida'}</td>
-                        <td className="px-6 py-3 text-[#64748b] w-32">{det.formacion}</td>
-                        <td className="px-6 py-3 text-center w-24">
-                          {det.obligatoria === 'SI' ? (
-                            <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs font-bold">SÍ</span>
-                          ) : (
-                            <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs font-bold">{det.obligatoria || 'NO'}</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-3 text-right font-bold text-[#016098] w-24">{det.horasCJ}</td>
-                        <td className="px-6 py-3 text-right font-bold text-[#016098] w-24">{det.horasSJ}</td>
+                    <thead className="text-xs text-[#64748b] uppercase bg-white border-b border-[#e2e8f0]">
+                      <tr>
+                        <th className="px-6 py-3">Cód. Asig</th>
+                        <th className="px-6 py-3">Nombre Asignatura</th>
+                        <th className="px-6 py-3">Formación</th>
+                        <th className="px-6 py-3 text-center">Obligatoria</th>
+                        <th className="px-6 py-3 text-right">Horas CJ</th>
+                        <th className="px-6 py-3 text-right">Horas SJ</th>
+                        <th className="px-6 py-3 text-center">Acciones</th>
                       </tr>
-                    ))}
-                  </tbody>
+                    </thead>
+                    <tbody>
+                      {asignaturas.map((det: any) => {
+                        const isEditing = editingId === det.id;
+                        return (
+                          <tr key={det.id} className="border-b border-[#e2e8f0] last:border-0 hover:bg-[#f8fafc] transition-colors">
+                            <td className="px-6 py-3 font-mono text-[#64748b] text-xs w-24">{det.codAsignatura}</td>
+                            <td className="px-6 py-3 font-bold text-[#1e293b]">{det.asignatura?.asigDescripcion || 'Desconocida'}</td>
+                            <td className="px-6 py-3 text-[#64748b] w-32">{det.formacion}</td>
+                            <td className="px-6 py-3 text-center w-24">
+                              {det.obligatoria === 'SI' ? (
+                                <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs font-bold">Sí</span>
+                              ) : (
+                                <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs font-bold">{det.obligatoria || 'NO'}</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-3 text-right font-bold text-[#016098] w-24">
+                              {isEditing ? (
+                                <input 
+                                  type="number" 
+                                  step="0.5"
+                                  className="w-16 p-1 text-right border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-[#016098]"
+                                  value={editForm.horasCJ}
+                                  onChange={e => setEditForm({...editForm, horasCJ: parseFloat(e.target.value) || 0})}
+                                />
+                              ) : (
+                                det.horasCJ
+                              )}
+                            </td>
+                            <td className="px-6 py-3 text-right font-bold text-[#016098] w-24">
+                              {isEditing ? (
+                                <input 
+                                  type="number" 
+                                  step="0.5"
+                                  className="w-16 p-1 text-right border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-[#016098]"
+                                  value={editForm.horasSJ}
+                                  onChange={e => setEditForm({...editForm, horasSJ: parseFloat(e.target.value) || 0})}
+                                />
+                              ) : (
+                                det.horasSJ
+                              )}
+                            </td>
+                            <td className="px-6 py-3 text-center w-28">
+                              {isEditing ? (
+                                <div className="flex justify-center gap-2">
+                                  <button onClick={() => saveEdit(det.id)} className="text-green-600 hover:text-green-800 text-xs font-bold bg-green-50 px-2 py-1 rounded">Guardar</button>
+                                  <button onClick={cancelEdit} className="text-gray-500 hover:text-gray-700 text-xs bg-gray-100 px-2 py-1 rounded">Cancelar</button>
+                                </div>
+                              ) : (
+                                <button onClick={() => startEdit(det)} className="text-[#016098] hover:text-blue-800 text-xs font-bold bg-blue-50 px-2 py-1 rounded">
+                                  Editar
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
                 </table>
               </div>
             ));

@@ -905,3 +905,5 @@ export async function deleteUsuario(id: number) {
     where: { id }
   });
 }
+
+export async function updatePlanBaseDetHoras(detalleId: number, horasCJ: number, horasSJ: number) { return await prisma.planEstudioDet.update({ where: { id: detalleId }, data: { horasCJ, horasSJ } }); }

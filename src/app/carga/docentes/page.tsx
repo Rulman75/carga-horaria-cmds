@@ -140,12 +140,6 @@ export default function DocentesPage() {
                 <th className="px-4 py-3 text-center">Contrato</th>
                 <th className="px-4 py-3 text-center">Hrs Titular</th>
                 <th className="px-4 py-3 text-center">Hrs Contrato</th>
-                <th className="px-4 py-3 text-center">Hrs Extensión</th>
-                <th className="px-4 py-3 text-center">Hrs PIE</th>
-                <th className="px-4 py-3 text-center">Hrs SEP</th>
-                <th className="px-4 py-3 text-center">Hrs Gremial</th>
-                <th className="px-4 py-3 text-center">Hrs SIPPE</th>
-                <th className="px-4 py-3 text-center">Hrs Extrescolar</th>
                 <th className="px-4 py-3 text-center">Total Jornada</th>
                 <th className="px-4 py-3 text-center">Acciones</th>
               </tr>
@@ -178,12 +172,6 @@ export default function DocentesPage() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-center text-gray-600">{docente.horasContrato || '-'}</td>
-                  <td className="px-4 py-3 text-center text-gray-600">{docente.horasExtension || '-'}</td>
-                  <td className="px-4 py-3 text-center text-gray-600">{docente.horasPie || '-'}</td>
-                  <td className="px-4 py-3 text-center text-gray-600">{docente.horasSep || '-'}</td>
-                  <td className="px-4 py-3 text-center text-gray-600">{docente.horasGremial || '-'}</td>
-                  <td className="px-4 py-3 text-center text-gray-600">{docente.horasSippe || '-'}</td>
-                  <td className="px-4 py-3 text-center text-gray-600">{docente.horasExtraescolar || '-'}</td>
                   <td className="px-4 py-3 text-center font-bold text-[#39BABD]">{docente.totalJornada || '-'}</td>
                   <td className="px-4 py-3 text-center w-48">
                     <div className="flex justify-center items-center gap-2">

@@ -60,9 +60,7 @@ export default function ConfigEstablecimientoPage() {
 
   const handleGlobalJecChange = (checked: boolean) => {
     setEsJec(checked);
-    if (checked) {
-      setGradosDotacion(gradosDotacion.map(g => ({ ...g, esJec: true })));
-    }
+    setGradosDotacion(gradosDotacion.map(g => ({ ...g, esJec: checked })));
   };
 
   const handleCursoChange = (tienCod: number, grteCod: number, value: string) => {

@@ -980,3 +980,87 @@ export async function deleteUsuario(id: number) {
 }
 
 export async function updatePlanBaseDetHoras(detalleId: number, horasCJ: number, horasSJ: number) { return await prisma.planEstudioDet.update({ where: { id: detalleId }, data: { horasCJ, horasSJ } }); }
+
+export async function createOrUpdateDocente(establecimientoId: number, data: { rut: string; nombres: string; apellidoPaterno: string; apellidoMaterno: string; horasTitular: number; contrato: string }) {
+  let doc = await prisma.docente.findUnique({ where: { rut: data.rut } });
+  if (!doc) {
+    doc = await prisma.docente.create({
+      data: {
+        rut: data.rut,
+        nombres: data.nombres,
+        apellidos: `${data.apellidoPaterno} ${data.apellidoMaterno}`.trim(),
+        apellidoPaterno: data.apellidoPaterno,
+        apellidoMaterno: data.apellidoMaterno,
+        horasTitular: data.horasTitular,
+        contrato: data.contrato
+      }
+    });
+  } else {
+    doc = await prisma.docente.update({
+      where: { rut: data.rut },
+      data: {
+        nombres: data.nombres,
+        apellidos: `${data.apellidoPaterno} ${data.apellidoMaterno}`.trim(),
+        apellidoPaterno: data.apellidoPaterno,
+        apellidoMaterno: data.apellidoMaterno,
+        horasTitular: data.horasTitular,
+        contrato: data.contrato
+      }
+    });
+  }
+  
+  await prisma.docenteEstablecimiento.upsert({
+    where: {
+      docenteId_establecimientoId: {
+        docenteId: doc.id,
+        establecimientoId
+      }
+    },
+    update: {},
+    create: {
+      docenteId: doc.id,
+      establecimientoId
+    }
+  });
+  
+  return doc;
+}
+
+export async function deleteDocente(docenteId: number, establecimientoId: number) {
+  const cargas = await prisma.cargaHoraria.findFirst({
+    where: { 
+      docenteId,
+      planEstablecimiento: { establecimientoId } 
+    }
+  });
+  
+  if (cargas) {
+    return { error: 'El docente tiene carga horaria asignada en este establecimiento. Debe removerla antes de eliminarlo.' };
+  }
+  
+  await prisma.docenteEstablecimiento.delete({
+    where: {
+      docenteId_establecimientoId: {
+        docenteId,
+        establecimientoId
+      }
+    }
+  });
+  
+  return { success: true };
+}
+
+export async function getCargaDocenteUnico(docenteId: number, establecimientoId: number) {
+  return await prisma.cargaHoraria.findMany({
+    where: {
+      docenteId,
+      planEstablecimiento: { establecimientoId }
+    },
+    include: {
+      asignatura: true,
+      actividadNoLectiva: true,
+      actividadExtracurricular: true
+    }
+  });
+}
+

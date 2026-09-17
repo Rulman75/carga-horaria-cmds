@@ -1,10 +1,26 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getDocentesEstablecimiento, updateDocenteHoras, createOrUpdateDocente, deleteDocente, getCargaDocenteUnico } from '../../actions';
+import { getDocentesEstablecimiento, updateDocenteHoras, createOrUpdateDocente, deleteDocente, getCargaDocenteUnico, getTablaConversion } from '../../actions';
 import * as XLSX from 'xlsx';
 
 export default function DocentesPage() {
+const parseCronoToDecimal = (cronoVal: string | number) => {
+  if (!cronoVal) return 0;
+  if (typeof cronoVal === 'number') return cronoVal;
+  const parts = cronoVal.toString().split(':');
+  if (parts.length === 2) {
+    return parseInt(parts[0], 10) + parseInt(parts[1], 10) / 60;
+  }
+  return Number(cronoVal);
+};
+
+const formatCronoDecimal = (decimal: number) => {
+  const horas = Math.floor(decimal);
+  const mins = Math.round((decimal - horas) * 60);
+  if (mins === 60) return `${horas + 1}:00`;
+  return `${horas}:${mins.toString().padStart(2, '0')}`;
+};
   const [docentes, setDocentes] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editHoras, setEditHoras] = useState<number>(0);
@@ -17,11 +33,15 @@ export default function DocentesPage() {
   const [showCargaModal, setShowCargaModal] = useState(false);
   const [cargaDocente, setCargaDocente] = useState<any[]>([]);
   const [docenteSeleccionado, setDocenteSeleccionado] = useState<any>(null);
+  
+  const [tablaConversion, setTablaConversion] = useState<any[]>([]);
+  const [docenteCargaObs, setDocenteCargaObs] = useState('');
 
   useEffect(() => {
     const estId = Number(localStorage.getItem('selectedEstablecimientoId')) || 2;
     setEstablecimientoId(estId);
     loadDocentes(estId);
+    getTablaConversion().then(setTablaConversion);
   }, []);
 
   const loadDocentes = (estId: number = establecimientoId) => {
@@ -73,6 +93,10 @@ export default function DocentesPage() {
 
   const handleVerCarga = async (doc: any) => {
     setDocenteSeleccionado(doc);
+    const estRels = doc.establecimientos || [];
+    const rel = estRels.find((r: any) => r.establecimientoId === establecimientoId);
+    setDocenteCargaObs(rel?.observacionCarga || '');
+    
     const cargas = await getCargaDocenteUnico(doc.id, establecimientoId);
     setCargaDocente(cargas);
     setShowCargaModal(true);
@@ -89,12 +113,6 @@ export default function DocentesPage() {
       'TERMINO CONTRATO': d.terminoContrato ? new Date(d.terminoContrato).toLocaleDateString('es-CL') : '',
       'HRS TITULAR': d.horasTitular,
       'HRS CONTRATO': d.horasContrato,
-      'HRS EXTENSION': d.horasExtension,
-      'HRS PIE': d.horasPie,
-      'HRS SEP': d.horasSep,
-      'HRS GREMIAL': d.horasGremial,
-      'HRS SIPPE': d.horasSippe,
-      'HRS EXTRAESCOLAR': d.horasExtraescolar,
       'TOTAL JORNADA': d.totalJornada
     }));
 
@@ -103,6 +121,42 @@ export default function DocentesPage() {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Docentes");
     XLSX.writeFile(workbook, "Listado_Docentes.xlsx");
   };
+
+  let horasLectivasAsignadas = 0;
+  let horasNoLectivasAsignadas = 0;
+  let horasExtraAsignadas = 0;
+  
+  let maxLectivasPedagogicas = 0;
+  let maxNoLectivasStr = '0:00';
+  let maxNoLectivasDecimal = 0;
+  let recreoDecimal = 0;
+  let pctLectivas = 0;
+  let pctNoLectivas = 0;
+  
+  let totalHorasContrato = 0;
+  let colacion = 0;
+  
+  if (showCargaModal && docenteSeleccionado) {
+    horasLectivasAsignadas = cargaDocente.filter(c => c.tipoCarga === 'LECTIVA').reduce((sum, c) => sum + (c.horasAllocadas || c.horas || 0), 0);
+    horasNoLectivasAsignadas = cargaDocente.filter(c => c.tipoCarga === 'NO_LECTIVA').reduce((sum, c) => sum + (c.horasAllocadas || c.horas || 0), 0);
+    horasExtraAsignadas = cargaDocente.filter(c => c.tipoCarga === 'EXTRACURRICULAR').reduce((sum, c) => sum + (c.horasAllocadas || c.horas || 0), 0);
+    
+    totalHorasContrato = docenteSeleccionado?.totalDefinitivo || docenteSeleccionado?.totalJornada || docenteSeleccionado?.horasTitular || 0;
+    colacion = totalHorasContrato >= 30 ? 2 : 1;
+    const baseAsignable = Math.max(0, totalHorasContrato - colacion);
+    
+    const conversionData = tablaConversion.find((t: any) => t.jornadaSemanal === baseAsignable);
+    
+    maxLectivasPedagogicas = conversionData ? conversionData.lectivasPedagogicas : Math.floor(baseAsignable * (65/45));
+    maxNoLectivasStr = conversionData ? conversionData.noLectivasCronologicas : `${Math.floor(baseAsignable*0.35)}:00`;
+    maxNoLectivasDecimal = parseCronoToDecimal(maxNoLectivasStr);
+
+    const currentConversionData = tablaConversion.find((t: any) => t.lectivasPedagogicas === horasLectivasAsignadas);
+    recreoDecimal = currentConversionData ? parseCronoToDecimal(currentConversionData.recreoCronologicas) : 0;
+    
+    pctLectivas = Math.min(100, (horasLectivasAsignadas / maxLectivasPedagogicas) * 100) || 0;
+    pctNoLectivas = Math.min(100, (horasNoLectivasAsignadas / maxNoLectivasDecimal) * 100) || 0;
+  }
 
   return (
     <div className="flex flex-col gap-6 h-full">
@@ -246,39 +300,108 @@ export default function DocentesPage() {
 
       {showCargaModal && docenteSeleccionado && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-2xl p-6 w-[600px] max-h-[80vh] flex flex-col">
-            <div className="flex justify-between items-start mb-4">
+          <div className="bg-white rounded-xl shadow-2xl p-6 w-[800px] max-h-[90vh] flex flex-col">
+            <div className="flex justify-between items-start mb-4 border-b pb-3">
               <div>
-                <h2 className="text-xl font-bold text-[#016098]">Carga Asignada</h2>
+                <h2 className="text-xl font-bold text-[#016098]">Resumen de Carga Horaria</h2>
                 <p className="text-sm text-gray-600">{docenteSeleccionado.nombres} {docenteSeleccionado.apellidos}</p>
               </div>
               <button onClick={() => setShowCargaModal(false)} className="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
             </div>
             
-            <div className="overflow-y-auto flex-1 border rounded-lg bg-gray-50 p-2">
-              {cargaDocente.length === 0 ? (
-                <p className="text-center text-sm text-gray-500 py-8">No tiene carga asignada en este establecimiento.</p>
-              ) : (
-                <ul className="flex flex-col gap-2">
-                  {cargaDocente.map(c => (
-                    <li key={c.id} className="bg-white p-3 border rounded shadow-sm flex justify-between items-center">
-                      <div>
-                        {c.tipoCarga === 'LECTIVA' && (
-                          <span className="text-sm font-medium text-[#1e293b]">📚 {c.asignatura?.asigDescripcion || 'Asignatura'}</span>
-                        )}
-                        {c.tipoCarga === 'NO_LECTIVA' && (
-                          <span className="text-sm font-medium text-amber-700">📝 {c.actividadNoLectiva?.descripcion || 'No Lectiva'}</span>
-                        )}
-                        {c.tipoCarga === 'EXTRACURRICULAR' && (
-                          <span className="text-sm font-medium text-emerald-700">⭐ {c.actividadExtracurricular?.descripcion || 'Extracurricular'}</span>
-                        )}
-                        <p className="text-xs text-gray-500 mt-1 uppercase">Origen: {c.financiamientoOrigen || 'Normal'}</p>
+            <div className="overflow-y-auto flex-1 flex flex-col gap-4 p-1">
+              
+              <div className="flex flex-col md:flex-row gap-6 p-4 border rounded-xl bg-white shadow-sm">
+                <div className="flex-1 flex flex-col justify-center gap-3">
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="font-medium text-[#39BABD]">Aula + JEC (Mx: {maxLectivasPedagogicas} ped)</span>
+                      <span className={`font-bold ${horasLectivasAsignadas > maxLectivasPedagogicas ? 'text-red-500' : 'text-[#64748b]'}`}>{Math.round(horasLectivasAsignadas)} / {Math.round(maxLectivasPedagogicas)}</span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                      <div className={`h-1.5 rounded-full transition-all duration-500 ${horasLectivasAsignadas > maxLectivasPedagogicas ? 'bg-red-500' : 'bg-[#39BABD]'}`} style={{ width: `${Math.min(100, pctLectivas)}%` }}></div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="font-medium text-[#F59E0B]">No Lectivas (Max Crono: {maxNoLectivasStr})</span>
+                      <span className={`font-bold ${horasNoLectivasAsignadas > maxNoLectivasDecimal ? 'text-red-500' : 'text-[#64748b]'}`}>{horasNoLectivasAsignadas} / {maxNoLectivasDecimal.toFixed(1)} hrs</span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                      <div className={`h-1.5 rounded-full transition-all duration-500 ${horasNoLectivasAsignadas > maxNoLectivasDecimal ? 'bg-red-500' : 'bg-[#F59E0B]'}`} style={{ width: `${Math.min(100, pctNoLectivas)}%` }}></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="w-full md:w-auto xl:w-[45%] shrink-0 md:border-l md:pl-6 border-gray-200 flex flex-col justify-center">
+                  <div className="flex flex-col sm:flex-row xl:items-center gap-4">
+                    <div className="shrink-0">
+                      <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1 block">Total Asignado (Aprox)</span>
+                      <div className="flex items-baseline gap-2">
+                        <span className={`text-2xl font-bold ${((horasLectivasAsignadas * 45 / 60) + recreoDecimal) + horasNoLectivasAsignadas + horasExtraAsignadas + colacion > totalHorasContrato ? 'text-red-500' : 'text-green-600'}`}>
+                          {Math.ceil(((horasLectivasAsignadas * 45 / 60) + recreoDecimal) + horasNoLectivasAsignadas + horasExtraAsignadas + colacion)} H
+                        </span>
+                        <span className="text-xs font-medium text-gray-400">/ {totalHorasContrato} hrs</span>
                       </div>
-                      <span className="bg-gray-100 px-2 py-1 rounded font-bold text-[#016098] text-xs">{c.horasAllocadas} Hrs</span>
-                    </li>
-                  ))}
-                </ul>
+                    </div>
+                    
+                    <div className="bg-[#f8fafc] border border-gray-200 rounded text-[9px] text-gray-600 flex-1 w-full flex flex-col">
+                      <div className="flex justify-between border-b border-gray-100 p-1.5 px-2"><span>HA:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(horasLectivasAsignadas * 45 / 60)}</span></div>
+                      <div className="flex justify-between border-b border-gray-100 p-1.5 px-2"><span>Recreo:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(recreoDecimal)}</span></div>
+                      {horasNoLectivasAsignadas > 0 && <div className="flex justify-between border-b border-gray-100 p-1.5 px-2"><span>HNL:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(horasNoLectivasAsignadas)}</span></div>}
+                      {horasExtraAsignadas > 0 && <div className="flex justify-between border-b border-gray-100 p-1.5 px-2"><span>HE:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(horasExtraAsignadas)}</span></div>}
+                      {colacion > 0 && <div className="flex justify-between border-b border-gray-100 p-1.5 px-2"><span>Colacin:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(colacion)}</span></div>}
+                      <div className="flex justify-between p-1.5 px-2 bg-gray-50 text-[#016098] font-bold rounded-b">
+                        <span>TOTAL EXACTO:</span>
+                        <span>{formatCronoDecimal(((horasLectivasAsignadas * 45 / 60) + recreoDecimal) + horasNoLectivasAsignadas + horasExtraAsignadas + colacion)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {docenteCargaObs && (
+                <div className="bg-amber-50 border border-amber-200 rounded p-3">
+                  <span className="text-xs font-bold text-amber-800 uppercase block mb-1">Observaciones / Nombramientos:</span>
+                  <p className="text-sm text-amber-900 whitespace-pre-wrap">{docenteCargaObs}</p>
+                </div>
               )}
+
+              <div className="border rounded-lg bg-gray-50 p-2">
+                <h3 className="text-sm font-bold text-[#1e293b] mb-2 px-1">Detalle de Asignaciones</h3>
+                {cargaDocente.length === 0 ? (
+                  <p className="text-center text-sm text-gray-500 py-8">No tiene carga asignada en este establecimiento.</p>
+                ) : (
+                  <ul className="flex flex-col gap-2">
+                    {cargaDocente.map(c => {
+                       let text = '';
+                       let horas = c.horas || c.horasAllocadas || 0;
+                       if (c.tipoCarga === 'LECTIVA') text = c.asignatura?.asigDescripcion || 'Asignatura';
+                       if (c.tipoCarga === 'NO_LECTIVA') text = c.actividadNoLectiva?.descripcion || 'No Lectiva';
+                       if (c.tipoCarga === 'EXTRACURRICULAR') text = c.actividadExtracurricular?.descripcion || 'Extracurricular';
+                       
+                       return (
+                        <li key={c.id} className="bg-white p-3 border rounded shadow-sm flex justify-between items-center">
+                          <div>
+                            {c.tipoCarga === 'LECTIVA' && (
+                              <span className="text-sm font-medium text-[#1e293b]">📚 {text} - {c.grado?.grado?.grteDescrip || ''} {c.letraCurso || ''}</span>
+                            )}
+                            {c.tipoCarga === 'NO_LECTIVA' && (
+                              <span className="text-sm font-medium text-amber-700">📝 {text}</span>
+                            )}
+                            {c.tipoCarga === 'EXTRACURRICULAR' && (
+                              <span className="text-sm font-medium text-emerald-700">⭐ {text}</span>
+                            )}
+                            <p className="text-xs text-gray-500 mt-1 uppercase">Origen: {c.financiamientoOrigen || 'Normal'}</p>
+                          </div>
+                          <span className="bg-gray-100 px-2 py-1 rounded font-bold text-[#016098] text-xs">{horas} Hrs</span>
+                        </li>
+                       );
+                    })}
+                  </ul>
+                )}
+              </div>
             </div>
           </div>
         </div>

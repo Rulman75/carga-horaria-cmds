@@ -891,6 +891,52 @@ export async function getTodosDetallesPlanEstablecimiento(establecimientoId: num
   });
 }
 
+export async function sincronizarHorasDecreto(codPlanBase: number) {
+  const planBase = await prisma.planEstudioEnc.findUnique({
+    where: { codPlan: codPlanBase },
+    include: { detalles: true }
+  });
+  if (!planBase) return { error: 'Plan base no encontrado' };
+
+  const ests = await prisma.establecimiento.findMany();
+  const estMap = new Map(ests.map((e: any) => [e.esedSec, e.esJec]));
+  
+  const eGrados = await prisma.establecimientoGrado.findMany();
+  const jecMap = new Map();
+  for (const g of eGrados) {
+     jecMap.set(`${g.establecimientoId}-${g.tienCod}-${g.grteCod}`, g.esJec);
+  }
+
+  let actualizados = 0;
+  for (const detBase of planBase.detalles) {
+    const childDetails = await prisma.planEstablecimientoDet.findMany({
+      where: {
+        tienCod: detBase.tienCod,
+        grteCod: detBase.grteCod,
+        codAsignatura: detBase.codAsignatura,
+        esPropio: false
+      },
+      include: { planEstablecimiento: true }
+    });
+
+    for (const cDet of childDetails) {
+      const estId = cDet.planEstablecimiento.establecimientoId;
+      const key = `${estId}-${cDet.tienCod}-${cDet.grteCod}`;
+      const esGradoJec = jecMap.has(key) ? jecMap.get(key) : (estMap.get(estId) || false);
+      const nuevasHoras = esGradoJec ? (detBase.horasCJ || 0) : (detBase.horasSJ || 0);
+      
+      if (cDet.horas !== nuevasHoras) {
+        await prisma.planEstablecimientoDet.update({
+          where: { id: cDet.id },
+          data: { horas: nuevasHoras }
+        });
+        actualizados++;
+      }
+    }
+  }
+  return { success: true, actualizados };
+}
+
 // --- USUARIOS ---
 export async function getUsuarios() {
   return await prisma.usuario.findMany({

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getPlanEstudio, updatePlanBaseDetHoras } from '../../../actions';
+import { getPlanEstudio, updatePlanBaseDetHoras, sincronizarHorasDecreto } from '../../../actions';
 
 export default function PlanEstudioDetallePage() {
   const { id } = useParams();
@@ -10,6 +10,7 @@ export default function PlanEstudioDetallePage() {
   
   const [plan, setPlan] = useState<any>(null);
   const [cargando, setCargando] = useState(true);
+  const [sincronizando, setSincronizando] = useState(false);
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState({ horasCJ: 0, horasSJ: 0 });
@@ -32,6 +33,24 @@ export default function PlanEstudioDetallePage() {
     } catch (e) {
       alert("Error guardando horas.");
     }
+  };
+
+  const handleSincronizar = async () => {
+    const confirm = window.confirm("¿Estás seguro? Esto actualizará las horas de esta malla en TODOS los colegios que la estén utilizando (respetando si cada curso es JEC o no).");
+    if (!confirm) return;
+    
+    setSincronizando(true);
+    try {
+      const res: any = await sincronizarHorasDecreto(Number(id));
+      if (res && res.error) {
+        alert(res.error);
+      } else {
+        alert(`Sincronización exitosa. Se actualizaron ${res.actualizados} asignaturas en los establecimientos.`);
+      }
+    } catch (e) {
+      alert("Error al sincronizar.");
+    }
+    setSincronizando(false);
   };
 
   useEffect(() => {
@@ -65,6 +84,15 @@ export default function PlanEstudioDetallePage() {
           </button>
           <h1 className="text-2xl font-semibold text-[#016098]">Decreto {plan.codPlan}</h1>
           <h2 className="text-lg text-gray-600">{plan.nombrePlan}</h2>
+        </div>
+        <div>
+          <button
+            onClick={handleSincronizar}
+            disabled={sincronizando}
+            className="flex items-center gap-2 bg-[#016098] hover:bg-[#014d7a] text-white px-4 py-2 rounded-lg shadow-sm font-semibold transition-colors disabled:opacity-50"
+          >
+            {sincronizando ? 'Sincronizando...' : '🔄 Sincronizar a Colegios'}
+          </button>
         </div>
       </div>
 

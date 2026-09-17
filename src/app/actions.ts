@@ -438,9 +438,18 @@ export async function getGradosEstablecimiento(establecimientoId: number) {
       { grteCod: 'asc' }
     ]
   });
-  // We need to return an object similar to what Grado model returns, 
-  // but also including cantidadCursos could be useful.
-  return estGrados.map(eg => ({
+
+  const planesDet = await prisma.planEstablecimientoDet.findMany({
+    where: { planEstablecimiento: { establecimientoId } },
+    select: { tienCod: true, grteCod: true }
+  });
+  
+  const tieneHorasSet = new Set(planesDet.map(p => `${p.tienCod}-${p.grteCod}`));
+
+  // Filter those that have cursos > 0 OR have hours assigned in some PlanEstablecimiento
+  const filtrados = estGrados.filter(eg => eg.cantidadCursos > 0 || tieneHorasSet.has(`${eg.tienCod}-${eg.grteCod}`));
+
+  return filtrados.map(eg => ({
     ...eg.grado,
     cantidadCursos: eg.cantidadCursos
   }));

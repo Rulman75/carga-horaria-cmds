@@ -15,7 +15,7 @@ export default function SidebarLayout({
   const [menuConfigOpen, setMenuConfigOpen] = useState(true);
   const [menuEstablecimientoOpen, setMenuEstablecimientoOpen] = useState(true);
 
-  const [userData, setUserData] = useState<{ nombre?: string, rol?: string }>({});
+  const [userData, setUserData] = useState<{ nombre?: string, rol?: string, establecimientoNombre?: string }>({});
   const [establecimientos, setEstablecimientos] = useState<any[]>([]);
   const [selectedRbd, setSelectedRbd] = useState<string>('');
 
@@ -25,7 +25,11 @@ export default function SidebarLayout({
     if (userStr) {
       try {
         const u = JSON.parse(userStr);
-        setUserData({ nombre: u.nombre || u.username, rol: u.rol });
+        setUserData({ 
+          nombre: u.nombre || u.username, 
+          rol: u.rol,
+          establecimientoNombre: u.establecimientoNombre
+        });
         rol = u.rol;
       } catch(e){}
     }
@@ -50,6 +54,16 @@ export default function SidebarLayout({
 
   // Mostrar menú de establecimiento/carga si es colegio, o si es admin y ya seleccionó uno
   const showColegioMenus = !isAdmin || (isAdmin && selectedRbd && selectedRbd !== '');
+
+  let nombreColegioVisible = "Global (Administración)";
+  if (isAdmin) {
+    if (selectedRbd) {
+      const found = establecimientos.find(e => e.esedSec.toString() === selectedRbd);
+      if (found) nombreColegioVisible = found.esedDescripcion;
+    }
+  } else {
+    nombreColegioVisible = userData.establecimientoNombre || "Establecimiento no asignado";
+  }
 
   return (
     <div className="flex h-screen bg-[#f8fafc] font-sans overflow-hidden">
@@ -88,6 +102,11 @@ export default function SidebarLayout({
         </div>
         
         <div className="px-4 py-4 bg-blue-50 border-b border-[#e2e8f0]">
+          <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Establecimiento</p>
+          <p className="text-sm font-bold text-[#016098] truncate mb-3" title={nombreColegioVisible}>
+            {nombreColegioVisible}
+          </p>
+
           <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Usuario Activo</p>
           <p className="text-sm font-bold text-[#016098] truncate">{userData.nombre || 'Cargando...'}</p>
           <span className="inline-block mt-1 px-2 py-0.5 bg-[#39BABD] text-white text-[10px] font-bold rounded">

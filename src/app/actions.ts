@@ -471,11 +471,15 @@ export async function saveCargasHorarias(docenteId: number, cargas: any[], estab
 }
 export async function loginUsuario(email: string, pass: string) {
   const user = await prisma.usuario.findUnique({
-    where: { email }
+    where: { email },
+    include: { establecimiento: true }
   });
   if (user && user.password === pass) {
-    const { password, ...safeUser } = user;
-    return safeUser;
+    const { password, establecimiento, ...safeUser } = user;
+    return {
+      ...safeUser,
+      establecimientoNombre: establecimiento?.esedDescripcion || null
+    };
   }
   return null;
 }

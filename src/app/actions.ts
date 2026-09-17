@@ -439,15 +439,9 @@ export async function getGradosEstablecimiento(establecimientoId: number) {
     ]
   });
 
-  const planesDet = await prisma.planEstablecimientoDet.findMany({
-    where: { planEstablecimiento: { establecimientoId } },
-    select: { tienCod: true, grteCod: true }
-  });
-  
-  const tieneHorasSet = new Set(planesDet.map(p => `${p.tienCod}-${p.grteCod}`));
-
-  // Filter those that have cursos > 0 OR have hours assigned in some PlanEstablecimiento
-  const filtrados = estGrados.filter(eg => eg.cantidadCursos > 0 || tieneHorasSet.has(`${eg.tienCod}-${eg.grteCod}`));
+  // Filtrar estrictamente solo los grados que tienen dotación de cursos asignada.
+  // Si no hay cursos (cantidadCursos = 0), el grado no existe en la realidad del colegio este año.
+  const filtrados = estGrados.filter(eg => eg.cantidadCursos > 0);
 
   return filtrados.map(eg => ({
     ...eg.grado,

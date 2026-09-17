@@ -14,43 +14,55 @@ export default function ConfigEstablecimientoPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadData();
+    const estId = Number(localStorage.getItem('selectedEstablecimientoId')) || 2;
+    setEstablecimientoId(estId);
   }, []);
+
+  useEffect(() => {
+    if (establecimientoId !== null) {
+      loadData();
+    }
+  }, [establecimientoId]);
 
   const loadData = async () => {
     setLoading(true);
-    const estId = Number(localStorage.getItem('selectedEstablecimientoId')) || 2;
-    setEstablecimientoId(estId);
-
-    const config = await getEstablecimientoConfig(estId);
-    const g = await getGrados();
-
-    setTodosGrados(g);
     
+    const config = await getEstablecimientoConfig(establecimientoId!);
+    const g = await getGrados();
+    
+    setTodosGrados(g);
+
     if (config) {
       setEsJec(config.esJec);
       
-      // El director solo ve los tipos de enseñanza que el Admin le asignó
       const tipos = config.tiposEnsenanza.map((te: any) => te.tipoEnsenanza);
       setTiposPermitidos(tipos);
       
       const prevGrados = config.grados.map((cg: any) => ({
         tienCod: cg.tienCod,
         grteCod: cg.grteCod,
-        cantidadCursos: cg.cantidadCursos
+        cantidadCursos: cg.cantidadCursos,
+        esJec: cg.esJec || false
       }));
 
-      // Merge de todos los grados posibles con los configurados
       const merged = g.map(grado => {
         const found = prevGrados.find((p: any) => p.tienCod === grado.tienCod && p.grteCod === grado.grteCod);
         return {
           ...grado,
-          cantidadCursos: found ? found.cantidadCursos : 0
+          cantidadCursos: found ? found.cantidadCursos : 0,
+          esJec: found ? found.esJec : config.esJec
         };
       });
       setGradosDotacion(merged);
     }
     setLoading(false);
+  };
+
+  const handleGlobalJecChange = (checked: boolean) => {
+    setEsJec(checked);
+    if (checked) {
+      setGradosDotacion(gradosDotacion.map(g => ({ ...g, esJec: true })));
+    }
   };
 
   const handleCursoChange = (tienCod: number, grteCod: number, value: string) => {
@@ -60,13 +72,20 @@ export default function ConfigEstablecimientoPage() {
     ));
   };
 
+  const handleJecGradoChange = (tienCod: number, grteCod: number, checked: boolean) => {
+    setGradosDotacion(gradosDotacion.map(g => 
+      (g.tienCod === tienCod && g.grteCod === grteCod) ? { ...g, esJec: checked } : g
+    ));
+  };
+
   const handleGuardar = async () => {
     setGuardando(true);
     try {
       const payload = gradosDotacion.map(g => ({
         tienCod: g.tienCod,
         grteCod: g.grteCod,
-        cantidadCursos: g.cantidadCursos || 0
+        cantidadCursos: g.cantidadCursos || 0,
+        esJec: g.esJec || false
       }));
       // Enviar array vacio de tiposData porque ya no lo actualizamos acá
       await updateEstablecimientoConfig(establecimientoId!, esJec, payload, []);
@@ -100,7 +119,7 @@ export default function ConfigEstablecimientoPage() {
           <input 
             type="checkbox" 
             checked={esJec} 
-            onChange={(e) => setEsJec(e.target.checked)}
+            onChange={(e) => handleGlobalJecChange(e.target.checked)}
             className="w-5 h-5 text-[#016098] border-gray-300 rounded focus:ring-[#016098]" 
           />
           <span className="text-lg font-medium text-[#1e293b]">Establecimiento Adscrito a Jornada Escolar Completa (JEC)</span>
@@ -127,20 +146,31 @@ export default function ConfigEstablecimientoPage() {
                 </div>
                 <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 bg-white">
                   {gradosTipo.map(g => (
-                    <div key={g.grteCod} className="flex flex-col gap-1 p-3 border border-gray-100 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                      <label className="text-xs font-semibold text-gray-600">{g.grteDescrip}</label>
-                      <div className="flex items-center gap-2">
-                        <input 
-                          type="number" 
-                          min="0"
-                          value={g.cantidadCursos || ''}
-                          onChange={(e) => handleCursoChange(g.tienCod, g.grteCod, e.target.value)}
-                          className="w-16 p-1.5 border border-gray-300 rounded text-center text-sm focus:outline-none focus:border-[#016098] focus:ring-1 focus:ring-[#016098]"
-                          placeholder="0"
-                        />
-                        <span className="text-xs text-gray-400">cursos</span>
+                      <div key={g.grteCod} className="flex flex-col gap-2 p-3 border border-gray-100 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                        <label className="text-xs font-semibold text-gray-600 leading-tight h-8 flex items-center">{g.grteDescrip}</label>
+                        <div className="flex flex-col gap-2 mt-auto">
+                          <div className="flex items-center gap-2">
+                            <input 
+                              type="number" 
+                              min="0"
+                              value={g.cantidadCursos || ''}
+                              onChange={(e) => handleCursoChange(g.tienCod, g.grteCod, e.target.value)}
+                              className="w-16 p-1.5 border border-gray-300 rounded text-center text-sm focus:outline-none focus:border-[#016098] focus:ring-1 focus:ring-[#016098]"
+                              placeholder="0"
+                            />
+                            <span className="text-xs text-gray-400">cursos</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <input 
+                              type="checkbox" 
+                              checked={g.esJec || false}
+                              onChange={(e) => handleJecGradoChange(g.tienCod, g.grteCod, e.target.checked)}
+                              className="w-4 h-4 text-[#016098] rounded border-gray-300 focus:ring-[#016098]"
+                            />
+                            <span className="text-xs text-gray-500 font-medium">¿Es JEC?</span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
                   ))}
                 </div>
               </div>

@@ -94,15 +94,20 @@ export async function clonarPlanEstudioBase(establecimientoId: number, codPlanBa
 
   if (!planBase) return { error: "Plan base no encontrado" };
 
-  // Obtener si el colegio es JEC
-  const estab = await prisma.establecimiento.findUnique({ where: { esedSec: establecimientoId } });
-  const esJec = estab?.esJec || false;
-
   // Obtener tipos de enseñanza autorizados
   const tiposAutorizados = await prisma.establecimientoTipoEnsenanza.findMany({
     where: { establecimientoId }
   });
   const tiposPermitidos = new Set(tiposAutorizados.map((t: any) => t.tienCod));
+
+  // Obtener la configuración de JEC por grado
+  const estabGrados = await prisma.establecimientoGrado.findMany({
+    where: { establecimientoId }
+  });
+  const isJecMap = new Map();
+  for (const g of estabGrados) {
+    isJecMap.set(`${g.tienCod}-${g.grteCod}`, g.esJec);
+  }
 
   const detallesFiltrados = planBase.detalles.filter((det: any) => {
     if (tiposPermitidos.size > 0 && !tiposPermitidos.has(det.tienCod)) {
@@ -116,22 +121,28 @@ export async function clonarPlanEstudioBase(establecimientoId: number, codPlanBa
   }
 
   // Crear la cabecera del plan propio
+  const estab = await prisma.establecimiento.findUnique({ where: { esedSec: establecimientoId } });
+
   const planPropio = await prisma.planEstablecimiento.create({
     data: {
       establecimientoId,
       codPlanBase,
       nombre,
       detalles: {
-        create: detallesFiltrados.map((det: any) => ({
-          tienCod: det.tienCod,
-          grteCod: det.grteCod,
-          codAsignatura: det.codAsignatura,
-          // La magia: si es JEC usa horasCJ, si no horasSJ
-          horas: esJec ? (det.horasCJ || 0) : (det.horasSJ || 0),
-          obligatoria: det.obligatoria,
-          formacion: det.formacion,
-          esPropio: false
-        }))
+        create: detallesFiltrados.map((det: any) => {
+          const key = `${det.tienCod}-${det.grteCod}`;
+          const esGradoJec = isJecMap.has(key) ? isJecMap.get(key) : (estab?.esJec || false);
+          return {
+            tienCod: det.tienCod,
+            grteCod: det.grteCod,
+            codAsignatura: det.codAsignatura,
+            // La magia: si el grado es JEC usa horasCJ, si no horasSJ
+            horas: esGradoJec ? (det.horasCJ || 0) : (det.horasSJ || 0),
+            obligatoria: det.obligatoria,
+            formacion: det.formacion,
+            esPropio: false
+          };
+        })
       }
     }
   });
@@ -164,7 +175,7 @@ export async function getEstablecimientoConfig(establecimientoId: number) {
   });
 }
 
-export async function updateEstablecimientoConfig(establecimientoId: number, esJec: boolean, gradosData: {tienCod: number, grteCod: number, cantidadCursos: number}[], tiposData: number[]) {
+export async function updateEstablecimientoConfig(establecimientoId: number, esJec: boolean, gradosData: {tienCod: number, grteCod: number, cantidadCursos: number, esJec: boolean}[], tiposData: number[]) {
   // Solo actualiza JEC y grados.
 
   const estabOld = await prisma.establecimiento.findUnique({ where: { esedSec: establecimientoId } });
@@ -183,12 +194,13 @@ export async function updateEstablecimientoConfig(establecimientoId: number, esJ
           grteCod: g.grteCod
         }
       },
-      update: { cantidadCursos: g.cantidadCursos },
+      update: { cantidadCursos: g.cantidadCursos, esJec: g.esJec },
       create: {
         establecimientoId,
         tienCod: g.tienCod,
         grteCod: g.grteCod,
-        cantidadCursos: g.cantidadCursos
+        cantidadCursos: g.cantidadCursos,
+        esJec: g.esJec
       }
     })
   ));
@@ -285,6 +297,15 @@ export async function importarPlanBaseAPropio(planPropioId: number, codPlanBase:
   });
   const tiposPermitidos = new Set(tiposAutorizados.map((t: any) => t.tienCod));
 
+  // Obtener la configuración de JEC por grado
+  const estabGrados = await prisma.establecimientoGrado.findMany({
+    where: { establecimientoId: planPropio.establecimiento.esedSec }
+  });
+  const isJecMap = new Map();
+  for (const g of estabGrados) {
+    isJecMap.set(`${g.tienCod}-${g.grteCod}`, g.esJec);
+  }
+
   let insertados = 0;
   // Insertar cada detalle nuevo
   for (const det of planBase.detalles) {
@@ -303,13 +324,16 @@ export async function importarPlanBaseAPropio(planPropioId: number, codPlanBase:
     });
 
     if (!existe) {
+      const key = `${det.tienCod}-${det.grteCod}`;
+      const esGradoJec = isJecMap.has(key) ? isJecMap.get(key) : (planPropio.establecimiento?.esJec || false);
+      
       await prisma.planEstablecimientoDet.create({
         data: {
           planEstablecimientoId: planPropioId,
           tienCod: det.tienCod,
           grteCod: det.grteCod,
           codAsignatura: det.codAsignatura,
-          horas: esJec ? (det.horasCJ || 0) : (det.horasSJ || 0),
+          horas: esGradoJec ? (det.horasCJ || 0) : (det.horasSJ || 0),
           obligatoria: det.obligatoria,
           formacion: det.formacion,
           esPropio: false

@@ -83,6 +83,7 @@ model EstablecimientoGrado {
   grado             Grado @relation(fields: [tienCod, grteCod], references: [tienCod, grteCod])
 
   cantidadCursos    Int   @default(1)
+  esJec             Boolean @default(false)
 
   @@id([establecimientoId, tienCod, grteCod])
 }

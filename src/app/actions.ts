@@ -1064,3 +1064,18 @@ export async function getCargaDocenteUnico(docenteId: number, establecimientoId:
   });
 }
 
+
+export async function resetPassword(id: number) {
+  return await prisma.usuario.update({
+    where: { id },
+    data: { password: 'Cmds2027', debeCambiarPassword: true }
+  });
+}
+
+export async function changePassword(id: number, newPass: string) {
+  return await prisma.usuario.update({
+    where: { id },
+    data: { password: newPass, debeCambiarPassword: false }
+  });
+}
+

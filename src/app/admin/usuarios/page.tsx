@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { getUsuarios, createUsuario, updateUsuario, deleteUsuario, getEstablecimientosConTipos } from '../../actions';
+import { getUsuarios, createUsuario, updateUsuario, deleteUsuario, getEstablecimientosConTipos, resetPassword } from '../../actions';
 
 export default function UsuariosPage() {
   const [usuarios, setUsuarios] = useState<any[]>([]);
@@ -63,6 +63,13 @@ export default function UsuariosPage() {
     if(confirm('¿Está seguro de eliminar este usuario?')) {
       await deleteUsuario(id);
       loadData();
+    }
+  };
+
+  const handleResetPassword = async (id: number) => {
+    if(confirm('¿Está seguro de resetear la contraseña a "Cmds2027"? El usuario deberá cambiarla al ingresar.')) {
+      await resetPassword(id);
+      alert('Contraseña reseteada correctamente.');
     }
   };
 
@@ -177,7 +184,13 @@ export default function UsuariosPage() {
                       <td className="p-3 text-sm text-gray-600">
                         {u.establecimiento ? u.establecimiento.esedDescripcion : '-'}
                       </td>
-                      <td className="p-3 text-center space-x-2">
+                      <td className="px-4 py-3 flex gap-2 justify-end">
+                        <button 
+                          onClick={() => handleResetPassword(u.id)}
+                          className="text-amber-600 hover:bg-amber-50 px-2 py-1 rounded text-xs font-bold transition-colors"
+                        >
+                          Reset Pass
+                        </button>
                         <button 
                           onClick={() => handleEdit(u)}
                           className="text-[#016098] hover:bg-blue-50 px-2 py-1 rounded text-xs font-bold transition-colors"

@@ -15,6 +15,7 @@ model Usuario {
   rol               String   @default("USER") // ADMIN o ESTABLECIMIENTO
   establecimientoId Int?     // Si es nulo, es admin global. Si tiene ID, está restringido.
   establecimiento   Establecimiento? @relation(fields: [establecimientoId], references: [esedSec])
+  debeCambiarPassword Boolean @default(true)
   
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt

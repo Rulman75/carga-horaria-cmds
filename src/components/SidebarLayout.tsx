@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { logoutUsuario } from '../app/actions';
 import { usePathname } from 'next/navigation';
 import { getEstablecimientos } from '../app/actions';
 
@@ -320,6 +321,10 @@ export default function SidebarLayout({
               localStorage.removeItem('user');
               localStorage.removeItem('token');
               localStorage.removeItem('selectedEstablecimientoId');
+              logoutUsuario().then(() => {
+                window.location.href = '/login';
+              });
+              return;
               window.location.href = '/login';
             }}
           >

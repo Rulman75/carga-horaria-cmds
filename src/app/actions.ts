@@ -1,4 +1,8 @@
 'use server';
+import bcrypt from 'bcryptjs';
+import * as jose from 'jose';
+import { cookies } from 'next/headers';
+
 
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
@@ -501,8 +505,19 @@ export async function loginUsuario(email: string, pass: string) {
     where: { email },
     include: { establecimiento: true }
   });
-  if (user && user.password === pass) {
+  if (user && await bcrypt.compare(pass, user.password)) {
     const { password, establecimiento, ...safeUser } = user;
+    
+    // Generar JWT seguro
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'cmds2026_super_secret_key');
+    const token = await new jose.SignJWT({ id: user.id, rol: user.rol, establecimientoId: user.establecimientoId })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setExpirationTime('12h')
+      .sign(secret);
+    
+    const cookieStore = await cookies();
+    cookieStore.set('token', token, { httpOnly: true, path: '/' });
+
     return {
       ...safeUser,
       establecimientoNombre: establecimiento?.esedDescripcion || null
@@ -1079,3 +1094,8 @@ export async function changePassword(id: number, newPass: string) {
   });
 }
 
+
+export async function logoutUsuario() {
+  const cookieStore = await cookies();
+  cookieStore.delete('token');
+}

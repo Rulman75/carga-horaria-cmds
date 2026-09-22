@@ -337,7 +337,7 @@ export default function AsignacionCargaPage() {
       
       <body>
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
-          <img src="${window.location.origin}/logo.png" alt="Logo CMDS" style="height: 70px; object-fit: contain;" />
+          <img src="${window.location.origin}/logo-oficial.png" alt="Logo CMDS" style="height: 70px; object-fit: contain;" />
           <div style="text-align: right; font-size: 12px; color: #666; font-weight: bold;">
              Corporación Municipal de Desarrollo Social<br/>
              Antofagasta

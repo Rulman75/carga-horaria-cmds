@@ -96,7 +96,7 @@ export default function SidebarLayout({
       >
         <div className="flex flex-col items-center py-6 border-b border-[#e2e8f0] bg-[#016098] text-white">
           <div className="w-16 h-16 bg-white rounded-xl shadow-inner flex items-center justify-center p-2 mb-3">
-            <img src="/logo.png" alt="CMDS Logo" className="object-contain" />
+            <img src="/logo-cmds.png" alt="CMDS Logo" className="object-contain" />
           </div>
           <h1 className="text-xl font-bold tracking-widest text-yellow-400">CMDS</h1>
           <p className="text-[10px] uppercase tracking-wider text-blue-200 mt-1 font-semibold">Carga Docente</p>

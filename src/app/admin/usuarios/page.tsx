@@ -75,7 +75,7 @@ export default function UsuariosPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <div className="flex-1 p-8 max-w-6xl mx-auto w-full">
+      <div className="flex-1 p-8 w-full mx-auto">
         <h1 className="text-3xl font-bold text-[#1e293b] mb-8">Mantenedor de Usuarios</h1>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

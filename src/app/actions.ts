@@ -239,7 +239,24 @@ export async function updateEstablecimientoConfig(establecimientoId: number, esJ
         }
       }
     }
-    await Promise.all(updates);
+        await Promise.all(updates);
+    }
+
+  // Sync letras
+  if (letrasData && letrasData.length > 0) {
+    await prisma.establecimientoCursoLetra.deleteMany({
+      where: { establecimientoId }
+    });
+    await prisma.establecimientoCursoLetra.createMany({
+      data: letrasData.map(l => ({
+        establecimientoId,
+        tienCod: l.tienCod,
+        grteCod: l.grteCod,
+        letra: l.letra,
+        esJec: l.esJec,
+        planEstablecimientoId: l.planEstablecimientoId || null
+      }))
+    });
   }
 }
 
@@ -571,30 +588,12 @@ export async function updateEstablecimientoTipos(establecimientoId: number, tien
   // Insertamos los nuevos
   if (tienCods.length > 0) {
     await prisma.establecimientoTipoEnsenanza.createMany({
-      data: tiposData.map(t => ({
+      data: tienCods.map(t => ({
         establecimientoId,
         tienCod: t
       }))
     });
   }
-  
-  // Sync letras
-  if (letrasData && letrasData.length > 0) {
-    await prisma.establecimientoCursoLetra.deleteMany({
-      where: { establecimientoId }
-    });
-    await prisma.establecimientoCursoLetra.createMany({
-      data: letrasData.map(l => ({
-        establecimientoId,
-        tienCod: l.tienCod,
-        grteCod: l.grteCod,
-        letra: l.letra,
-        esJec: l.esJec,
-        planEstablecimientoId: l.planEstablecimientoId || null
-      }))
-    });
-  }
-
 }
 
 export async function getActividadesNoLectivas() {

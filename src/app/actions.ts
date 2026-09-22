@@ -1095,7 +1095,8 @@ export async function getCargaDocenteUnico(docenteId: number, establecimientoId:
     include: {
       asignatura: true,
       actividadNoLectiva: true,
-      actividadExtracurricular: true
+      actividadExtracurricular: true,
+      grado: { include: { tipoEnsenanza: true } }
     }
   });
 }

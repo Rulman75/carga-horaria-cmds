@@ -179,7 +179,7 @@ export async function getEstablecimientoConfig(establecimientoId: number) {
   });
 }
 
-export async function updateEstablecimientoConfig(establecimientoId: number, esJec: boolean, gradosData: {tienCod: number, grteCod: number, cantidadCursos: number, esJec: boolean}[], tiposData: number[]) {
+export async function updateEstablecimientoConfig(establecimientoId: number, esJec: boolean, gradosData: {tienCod: number, grteCod: number, cantidadCursos: number, esJec: boolean}[], tiposData: number[], letrasData: any[] = []) {
   // Solo actualiza JEC y grados.
 
   const estabOld = await prisma.establecimiento.findUnique({ where: { esedSec: establecimientoId } });
@@ -571,12 +571,30 @@ export async function updateEstablecimientoTipos(establecimientoId: number, tien
   // Insertamos los nuevos
   if (tienCods.length > 0) {
     await prisma.establecimientoTipoEnsenanza.createMany({
-      data: tienCods.map(tienCod => ({
+      data: tiposData.map(t => ({
         establecimientoId,
-        tienCod
+        tienCod: t
       }))
     });
   }
+  
+  // Sync letras
+  if (letrasData && letrasData.length > 0) {
+    await prisma.establecimientoCursoLetra.deleteMany({
+      where: { establecimientoId }
+    });
+    await prisma.establecimientoCursoLetra.createMany({
+      data: letrasData.map(l => ({
+        establecimientoId,
+        tienCod: l.tienCod,
+        grteCod: l.grteCod,
+        letra: l.letra,
+        esJec: l.esJec,
+        planEstablecimientoId: l.planEstablecimientoId || null
+      }))
+    });
+  }
+
 }
 
 export async function getActividadesNoLectivas() {
@@ -1103,4 +1121,11 @@ export async function changePassword(id: number, newPass: string) {
 export async function logoutUsuario() {
   const cookieStore = await cookies();
   cookieStore.delete('token');
+}
+
+
+export async function getCursosLetra(establecimientoId: number) {
+  return await prisma.establecimientoCursoLetra.findMany({
+    where: { establecimientoId }
+  });
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getEstablecimientoConfig, getGrados, updateEstablecimientoConfig } from '../../actions';
+import { getEstablecimientoConfig, getGrados, updateEstablecimientoConfig, getCursosLetra } from '../../actions';
 
 export default function ConfigEstablecimientoPage() {
   const [esJec, setEsJec] = useState(false);
@@ -11,6 +11,7 @@ export default function ConfigEstablecimientoPage() {
   
   const [establecimientoId, setEstablecimientoId] = useState<number | null>(null);
   const [guardando, setGuardando] = useState(false);
+  const [cursosLetra, setCursosLetra] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,6 +30,8 @@ export default function ConfigEstablecimientoPage() {
     
     const config = await getEstablecimientoConfig(establecimientoId!);
     const g = await getGrados();
+    const cl = await getCursosLetra(establecimientoId!);
+    setCursosLetra(cl);
     
     setTodosGrados(g);
 
@@ -70,6 +73,16 @@ export default function ConfigEstablecimientoPage() {
     ));
   };
 
+  
+  const handleJecLetraChange = (tienCod: number, grteCod: number, letra: string, checked: boolean) => {
+    const existe = cursosLetra.find(c => c.tienCod === tienCod && c.grteCod === grteCod && c.letra === letra);
+    if (existe) {
+      setCursosLetra(cursosLetra.map(c => c === existe ? { ...c, esJec: checked } : c));
+    } else {
+      setCursosLetra([...cursosLetra, { tienCod, grteCod, letra, esJec: checked }]);
+    }
+  };
+  
   const handleJecGradoChange = (tienCod: number, grteCod: number, checked: boolean) => {
     setGradosDotacion(gradosDotacion.map(g => 
       (g.tienCod === tienCod && g.grteCod === grteCod) ? { ...g, esJec: checked } : g
@@ -86,7 +99,7 @@ export default function ConfigEstablecimientoPage() {
         esJec: g.esJec || false
       }));
       // Enviar array vacio de tiposData porque ya no lo actualizamos acá
-      await updateEstablecimientoConfig(establecimientoId!, esJec, payload, []);
+      await updateEstablecimientoConfig(establecimientoId!, esJec, payload, [], cursosLetra);
       alert('Configuración guardada exitosamente');
     } catch (e) {
       alert('Error guardando configuración');
@@ -167,6 +180,28 @@ export default function ConfigEstablecimientoPage() {
                             />
                             <span className="text-xs text-gray-500 font-medium">¿Es JEC?</span>
                           </div>
+
+                          {g.cantidadCursos > 0 && (
+                            <div className="mt-2 flex flex-col gap-1 border-t pt-2 border-gray-200">
+                              <span className="text-[10px] text-gray-500 font-bold">EXCEPCIONES JEC POR LETRA</span>
+                              {Array.from({length: g.cantidadCursos}, (_, i) => String.fromCharCode(65 + i)).map(letra => {
+                                const override = cursosLetra.find(c => c.tienCod === g.tienCod && c.grteCod === g.grteCod && c.letra === letra);
+                                const isLetraJec = override && override.esJec !== null ? override.esJec : (g.esJec || false);
+                                return (
+                                  <div key={letra} className="flex items-center gap-2">
+                                    <input 
+                                      type="checkbox"
+                                      checked={isLetraJec}
+                                      onChange={(e) => handleJecLetraChange(g.tienCod, g.grteCod, letra, e.target.checked)}
+                                      className="w-3 h-3 text-[#016098]"
+                                    />
+                                    <span className="text-[10px] text-gray-600">{letra} - {isLetraJec ? 'JEC' : 'Normal'}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+
                         </div>
                       </div>
                   ))}

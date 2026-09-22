@@ -94,7 +94,9 @@ export default function Login() {
           
           {/* Logo visible solo en mobile */}
           <div className="md:hidden flex justify-center mb-8">
-            <img src="/logo.png" alt="CMDS Logo" className="w-32 h-32 object-contain" />
+            <div className="bg-[#016098] p-4 rounded-2xl shadow-md">
+              <img src="/logo.png" alt="CMDS Logo" className="w-32 h-32 object-contain" />
+            </div>
           </div>
 
           {!showChangePass ? (

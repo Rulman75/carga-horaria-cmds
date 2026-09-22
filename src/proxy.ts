@@ -8,8 +8,12 @@ export async function proxy(req: NextRequest) {
 
   // Permitir acceso a la ruta de login y rutas estáticas
   if (pathname === '/login' || pathname.startsWith('/_next') || pathname.startsWith('/api') || pathname.endsWith('.ico')) {
-    // Si ya está logueado y va a /login, redirigir al inicio
-    if (pathname === '/login' && token) {
+    
+    // Evitar redirigir si es un Server Action (los Server Actions envían header Next-Action)
+    const isServerAction = req.headers.has('Next-Action');
+
+    // Si ya está logueado y va a /login (y no es un Server Action), redirigir al inicio
+    if (pathname === '/login' && token && !isServerAction) {
       try {
         const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'cmds2026_super_secret_key');
         await jwtVerify(token, secret);

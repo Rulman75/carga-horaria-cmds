@@ -44,7 +44,8 @@ export default function Login() {
         setError('Credenciales incorrectas.');
       }
     } catch (err: any) {
-      setError('Error al iniciar sesión');
+      setError('Error al iniciar sesión: ' + (err.message || ''));
+      console.error(err);
     }
   };
 
@@ -52,10 +53,6 @@ export default function Login() {
     e.preventDefault();
     if (newPass !== newPassConfirm) {
       setError('Las contraseñas no coinciden.');
-      return;
-    }
-    if (newPass === 'Cmds2027') {
-      setError('Debe elegir una contraseña diferente a la por defecto.');
       return;
     }
     if (newPass.length < 6) {
@@ -67,8 +64,9 @@ export default function Login() {
       await changePassword(loggedUser.id, newPass);
       const updatedUser = { ...loggedUser, debeCambiarPassword: false };
       proceedLogin(updatedUser);
-    } catch (err) {
-      setError('Error al actualizar contraseña.');
+    } catch (err: any) {
+      setError('Error al actualizar contraseña: ' + (err.message || ''));
+      console.error(err);
     }
   };
 

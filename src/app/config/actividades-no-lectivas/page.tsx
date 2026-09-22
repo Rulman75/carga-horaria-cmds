@@ -41,9 +41,9 @@ export default function MantenedorANLPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 h-full max-w-4xl mx-auto">
+    <div className="flex flex-col gap-6 h-full w-full mx-auto">
       <div>
-        <h1 className="text-2xl font-semibold text-[#016098]">Mantenedor Actividades No Lectivas</h1>
+        <h1 className="text-3xl font-bold text-[#1e293b]">Actividades No Lectivas</h1>
         <p className="text-sm text-gray-500 mt-1">Administra el catálogo de actividades como Planificación, Talleres Técnicos, etc.</p>
       </div>
 

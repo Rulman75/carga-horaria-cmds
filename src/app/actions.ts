@@ -964,6 +964,7 @@ export async function getUsuarios() {
 }
 
 export async function createUsuario(data: any) {
+  if (data.password) data.password = await bcrypt.hash(data.password, 10);
   return await prisma.usuario.create({
     data: {
       email: data.email,
@@ -976,6 +977,7 @@ export async function createUsuario(data: any) {
 }
 
 export async function updateUsuario(id: number, data: any) {
+  if (data.password) data.password = await bcrypt.hash(data.password, 10);
   return await prisma.usuario.update({
     where: { id },
     data: {
@@ -1081,9 +1083,10 @@ export async function getCargaDocenteUnico(docenteId: number, establecimientoId:
 
 
 export async function resetPassword(id: number) {
+  const hash = await bcrypt.hash('Cmds2027', 10);
   return await prisma.usuario.update({
     where: { id },
-    data: { password: 'Cmds2027', debeCambiarPassword: true }
+    data: { password: hash, debeCambiarPassword: true }
   });
 }
 

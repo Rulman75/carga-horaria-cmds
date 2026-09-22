@@ -638,16 +638,7 @@ export default function AsignacionCargaPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" checked={esDesdobleUI} onChange={e => setEsDesdobleUI(e.target.checked)} className="rounded border-gray-300 text-[#016098] focus:ring-[#016098]" />
-                        <span className="text-sm font-semibold text-gray-700">Es Grupo Paralelo (Desdoble/Dupla)</span>
-                      </label>
-                      {esDesdobleUI && (
-                        <input type="text" placeholder="Ej: Damas, Varones, Violín" value={grupoDesdobleUI} onChange={e => setGrupoDesdobleUI(e.target.value)} className="border border-gray-300 rounded p-1.5 text-sm flex-1" />
-                      )}
-                    </div>
-                     {modoAsignacion === 'GENERALISTA' ? (
+                    {modoAsignacion === 'GENERALISTA' ? (
                        <>
                           <div>
                             <label className="block text-xs font-semibold text-gray-600 mb-1">
@@ -701,11 +692,21 @@ export default function AsignacionCargaPage() {
                              <option key={a.asigCod} value={a.asigCod}>{a.asigDescripcion}</option>
                            ))}
                          </select>
-                       </div>
-                     )}
-                  </div>
+                         </div>
+                       )}
 
-                  <div className="flex-1 overflow-auto p-4 custom-scrollbar">
+                      <div className="col-span-2 flex items-center gap-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" checked={esDesdobleUI} onChange={e => setEsDesdobleUI(e.target.checked)} className="rounded border-gray-300 text-[#016098] focus:ring-[#016098]" />
+                          <span className="text-sm font-semibold text-gray-700">Es Grupo Paralelo (Desdoble/Dupla)</span>
+                        </label>
+                        {esDesdobleUI && (
+                          <input type="text" placeholder="Ej: Damas, Varones, Violín" value={grupoDesdobleUI} onChange={e => setGrupoDesdobleUI(e.target.value)} className="border border-gray-300 rounded p-1.5 text-sm flex-1" />
+                        )}
+                      </div>
+                    </div>
+  
+                    <div className="flex-1 overflow-auto p-4 custom-scrollbar">
                     {modoAsignacion === 'GENERALISTA' ? (
                       detallesPlan.length === 0 ? (
                         <div className="text-center text-[#94a3b8] mt-10">Seleccione un grado para ver el plan de estudio.</div>

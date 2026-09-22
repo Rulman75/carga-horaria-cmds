@@ -73,7 +73,7 @@ export default function Login() {
       
       {/* Panel Izquierdo Corporativo (Logo y Branding) */}
       <div className="hidden md:flex flex-col justify-center items-center w-1/2 bg-[#016098] text-white p-12 shadow-[10px_0_15px_-3px_rgba(0,0,0,0.1)] z-10">
-        <div className="bg-white p-6 rounded-2xl shadow-xl mb-8">
+        <div className="bg-transparent p-6 mb-8">
           <img src="/logo-cmds.png" alt="CMDS Logo" className="w-48 h-48 object-contain" />
         </div>
         <h1 className="text-4xl font-extrabold tracking-wider text-yellow-400 mb-4 text-center">

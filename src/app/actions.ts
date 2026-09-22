@@ -1091,12 +1091,12 @@ export async function resetPassword(id: number) {
 }
 
 export async function changePassword(id: number, newPass: string) {
+  const hash = await bcrypt.hash(newPass, 10);
   return await prisma.usuario.update({
     where: { id },
-    data: { password: newPass, debeCambiarPassword: false }
+    data: { password: hash, debeCambiarPassword: false }
   });
 }
-
 
 export async function logoutUsuario() {
   const cookieStore = await cookies();

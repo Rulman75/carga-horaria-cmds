@@ -26,6 +26,8 @@ interface CargaEnUI {
   grteCod?: number;
   codAsignatura?: string;
   letraCurso?: string;
+  esDesdoble?: boolean;
+  grupoDesdoble?: string;
   
   // No Lectiva
   actividadNoLectivaId?: number;
@@ -66,6 +68,8 @@ export default function AsignacionCargaPage() {
   const [anlSeleccionada, setAnlSeleccionada] = useState('');
   const [extSeleccionada, setExtSeleccionada] = useState('');
   const [finanSeleccionado, setFinanSeleccionado] = useState('Normal');
+  const [esDesdobleUI, setEsDesdobleUI] = useState(false);
+  const [grupoDesdobleUI, setGrupoDesdobleUI] = useState('');
   const [horasManual, setHorasManual] = useState(1);
   
   const [activeTab, setActiveTab] = useState<'LECTIVA' | 'NO_LECTIVA' | 'EXTRACURRICULAR'>('LECTIVA');
@@ -126,6 +130,8 @@ export default function AsignacionCargaPage() {
           actividadExtracurricularId: c.actividadExtracurricularId || undefined,
           financiamiento: c.financiamiento || undefined,
           letraCurso: c.letraCurso || undefined,
+          esDesdoble: c.esDesdoble || false,
+          grupoDesdoble: c.grupoDesdoble || undefined,
           nombre: nombre,
           horas: c.horasAllocadas,
           tipoCarga: (c.tipoCarga as any) || 'LECTIVA'
@@ -196,7 +202,35 @@ export default function AsignacionCargaPage() {
     .map(tienCod => grados.find(g => g.tienCod === tienCod)?.tipoEnsenanza)
     .filter(Boolean);
 
-  const getLetras = (cantidad: number) => {
+  
+    const calcularHorasConsumidas = (cargasFiltradas: any[]) => {
+      const porLetra: Record<string, any[]> = {};
+      cargasFiltradas.forEach(c => {
+        const l = c.letraCurso || 'GENERIC';
+        if (!porLetra[l]) porLetra[l] = [];
+        porLetra[l].push(c);
+      });
+
+      let totalConsumido = 0;
+      for (const letra in porLetra) {
+        const cargasLetra = porLetra[letra];
+        const porDesdoble: Record<string, number> = {};
+        cargasLetra.forEach(c => {
+          const g = (c.esDesdoble && c.grupoDesdoble) ? c.grupoDesdoble.toUpperCase().trim() : 'DEFAULT';
+          if (!porDesdoble[g]) porDesdoble[g] = 0;
+          porDesdoble[g] += c.horasAllocadas;
+        });
+
+        let maxEnLetra = 0;
+        for (const g in porDesdoble) {
+          if (porDesdoble[g] > maxEnLetra) maxEnLetra = porDesdoble[g];
+        }
+        totalConsumido += maxEnLetra;
+      }
+      return totalConsumido;
+    };
+
+    const getLetras = (cantidad: number) => {
     return Array.from({ length: cantidad }, (_, i) => String.fromCharCode(65 + i));
   };
 
@@ -208,8 +242,10 @@ export default function AsignacionCargaPage() {
       grteCod: det.grteCod,
       codAsignatura: det.codAsignatura,
       letraCurso: letra,
+        esDesdoble: esDesdobleUI,
+        grupoDesdoble: esDesdobleUI ? (grupoDesdobleUI || 'Grupo') : undefined,
       financiamiento: finanSeleccionado === 'Normal' ? undefined : finanSeleccionado,
-      nombre: det.asignatura?.asigDescripcion + (letra ? ` (${letra})` : '') + (finanSeleccionado !== 'Normal' ? ` [${finanSeleccionado}]` : ''),
+      nombre: det.asignatura?.asigDescripcion + (letra ? ` (${letra})` : '') + (esDesdobleUI ? ` [${grupoDesdobleUI || 'Grupo'}]` : '') + (finanSeleccionado !== 'Normal' ? ` [${finanSeleccionado}]` : ''),
       horas: det.horas,
       tipoCarga: 'LECTIVA'
     }]);
@@ -598,9 +634,19 @@ export default function AsignacionCargaPage() {
                            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${modoAsignacion === 'ESPECIALISTA' ? 'bg-[#016098] text-white' : 'text-gray-600 hover:bg-gray-100'}`}
                          >
                            Modo Especialista
-                         </button>
-                       </div>
-                     </div>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked={esDesdobleUI} onChange={e => setEsDesdobleUI(e.target.checked)} className="rounded border-gray-300 text-[#016098] focus:ring-[#016098]" />
+                        <span className="text-sm font-semibold text-gray-700">Es Grupo Paralelo (Desdoble/Dupla)</span>
+                      </label>
+                      {esDesdobleUI && (
+                        <input type="text" placeholder="Ej: Damas, Varones, Violín" value={grupoDesdobleUI} onChange={e => setGrupoDesdobleUI(e.target.value)} className="border border-gray-300 rounded p-1.5 text-sm flex-1" />
+                      )}
+                    </div>
                      {modoAsignacion === 'GENERALISTA' ? (
                        <>
                           <div>
@@ -671,12 +717,12 @@ export default function AsignacionCargaPage() {
                             const totalDisp = det.horas * cursos;
                             const letras = getLetras(cursos);
                             
-                            const tomadasGlobal = todasCargas.filter(c => 
+                            const tomadasGlobal = calcularHorasConsumidas(todasCargas.filter(c => 
                               c.planEstablecimientoId === det.planEstablecimientoId &&
                               c.tienCod === det.tienCod &&
                               c.grteCod === det.grteCod &&
                               c.asignaturaCod === det.codAsignatura
-                            ).reduce((sum, c) => sum + c.horasAllocadas, 0);
+                            ));
 
                             const asignadasEsteDocente = cargasVivas.filter(c => 
                               c.planEstablecimientoId === det.planEstablecimientoId &&
@@ -685,13 +731,13 @@ export default function AsignacionCargaPage() {
                               c.codAsignatura === det.codAsignatura
                             ).reduce((sum, c) => sum + c.horas, 0);
 
-                            const tomadasOtros = tomadasGlobal - todasCargas.filter(c => 
+                            const tomadasOtros = tomadasGlobal - calcularHorasConsumidas(todasCargas.filter(c => 
                               c.docenteId.toString() === docenteSeleccionado &&
                               c.planEstablecimientoId === det.planEstablecimientoId &&
                               c.tienCod === det.tienCod &&
                               c.grteCod === det.grteCod &&
                               c.asignaturaCod === det.codAsignatura
-                            ).reduce((sum, c) => sum + c.horasAllocadas, 0);
+                            ));
 
                             const tomadasReal = tomadasOtros + asignadasEsteDocente;
                             const restantes = totalDisp - tomadasReal;
@@ -746,12 +792,12 @@ export default function AsignacionCargaPage() {
                             const totalDisp = det.horas * cursos;
                             const letras = getLetras(cursos);
                             
-                            const tomadasGlobal = todasCargas.filter(c => 
+                            const tomadasGlobal = calcularHorasConsumidas(todasCargas.filter(c => 
                               c.planEstablecimientoId === det.planEstablecimientoId &&
                               c.tienCod === det.tienCod &&
                               c.grteCod === det.grteCod &&
                               c.asignaturaCod === det.codAsignatura
-                            ).reduce((sum, c) => sum + c.horasAllocadas, 0);
+                            ));
 
                             const asignadasEsteDocente = cargasVivas.filter(c => 
                               c.planEstablecimientoId === det.planEstablecimientoId &&
@@ -760,13 +806,13 @@ export default function AsignacionCargaPage() {
                               c.codAsignatura === det.codAsignatura
                             ).reduce((sum, c) => sum + c.horas, 0);
 
-                            const tomadasOtros = tomadasGlobal - todasCargas.filter(c => 
+                            const tomadasOtros = tomadasGlobal - calcularHorasConsumidas(todasCargas.filter(c => 
                               c.docenteId.toString() === docenteSeleccionado &&
                               c.planEstablecimientoId === det.planEstablecimientoId &&
                               c.tienCod === det.tienCod &&
                               c.grteCod === det.grteCod &&
                               c.asignaturaCod === det.codAsignatura
-                            ).reduce((sum, c) => sum + c.horasAllocadas, 0);
+                            ));
 
                             const tomadasReal = tomadasOtros + asignadasEsteDocente;
                             const restantes = totalDisp - tomadasReal;

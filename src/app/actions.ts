@@ -482,13 +482,15 @@ export async function saveCargasHorarias(docenteId: number, cargas: any[], estab
         tienCod: c.tienCod || null,
         grteCod: c.grteCod || null,
         asignaturaCod: c.codAsignatura || null,
-        actividadNoLectivaId: c.actividadNoLectivaId || null,
-        actividadExtracurricularId: c.actividadExtracurricularId || null,
-        financiamiento: c.financiamiento || null,
-        letraCurso: c.letraCurso || null,
-        horasAllocadas: c.horas,
-        tipoCarga: c.tipoCarga,
-        observacion: ''
+          actividadNoLectivaId: c.actividadNoLectivaId || null,
+          actividadExtracurricularId: c.actividadExtracurricularId || null,
+          financiamiento: c.financiamiento || null,
+          letraCurso: c.letraCurso || null,
+          esDesdoble: c.esDesdoble || false,
+          grupoDesdoble: c.grupoDesdoble || null,
+          horasAllocadas: c.horas,
+          tipoCarga: c.tipoCarga,
+          observacion: ''
       }))
     });
   }

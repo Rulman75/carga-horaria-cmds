@@ -1,5 +1,3 @@
-'use client';
-
 import { useState } from 'react';
 import { loginUsuario, changePassword } from '../actions';
 import { useRouter } from 'next/navigation';
@@ -59,7 +57,6 @@ export default function Login() {
       setError('La contraseña debe tener al menos 6 caracteres.');
       return;
     }
-
     try {
       await changePassword(loggedUser.id, newPass);
       const updatedUser = { ...loggedUser, debeCambiarPassword: false };
@@ -71,110 +68,142 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-extrabold text-[#016098] tracking-tight mb-2">
-            CorpDocs<span className="text-[#39BABD]">.edu</span>
-          </h1>
-          <p className="text-[#64748b] font-medium">Plataforma de Carga Horaria Docente</p>
+    <div className="flex h-screen w-full bg-gray-50 absolute top-0 left-0 z-50">
+      
+      {/* Panel Izquierdo Corporativo (Logo y Branding) */}
+      <div className="hidden md:flex flex-col justify-center items-center w-1/2 bg-[#016098] text-white p-12 shadow-[10px_0_15px_-3px_rgba(0,0,0,0.1)] z-10">
+        <div className="bg-white p-6 rounded-2xl shadow-xl mb-8">
+          <img src="/logo.png" alt="CMDS Logo" className="w-48 h-48 object-contain" />
         </div>
+        <h1 className="text-4xl font-extrabold tracking-wider text-yellow-400 mb-4 text-center">
+          CMDS
+        </h1>
+        <h2 className="text-xl font-semibold text-blue-200 tracking-wide text-center">
+          Sistema de Gestión de
+        </h2>
+        <h2 className="text-2xl font-bold text-white uppercase mt-2 tracking-widest text-center">
+          Carga Docente
+        </h2>
+        <div className="mt-12 w-16 h-1 bg-yellow-400 rounded"></div>
+      </div>
 
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+      {/* Panel Derecho (Formulario de Login o Cambio de Password) */}
+      <div className="flex flex-col justify-center items-center w-full md:w-1/2 bg-white px-6">
+        <div className="w-full max-w-md">
+          
+          {/* Logo visible solo en mobile */}
+          <div className="md:hidden flex justify-center mb-8">
+            <img src="/logo.png" alt="CMDS Logo" className="w-32 h-32 object-contain" />
+          </div>
+
           {!showChangePass ? (
             <>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Iniciar Sesión</h2>
-              
-              <form onSubmit={handleLogin} className="flex flex-col gap-5">
+              <h3 className="text-3xl font-bold text-[#016098] mb-2">Bienvenido</h3>
+              <p className="text-gray-500 mb-8">Ingresa tus credenciales para continuar</p>
+
+              {error && (
+                <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded mb-6 shadow-sm flex items-center gap-3 font-semibold">
+                  {error}
+                </div>
+              )}
+
+              <form onSubmit={handleLogin} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Correo Electrónico</label>
+                  <label className="block text-[#016098] text-sm font-bold mb-2 uppercase tracking-wide" htmlFor="username">
+                    Usuario
+                  </label>
                   <input
-                    type="email"
-                    required
+                    id="username"
+                    type="text"
+                    placeholder="Ej: admin@cmds.cl"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#016098] focus:bg-white transition shadow-sm text-gray-800 font-medium"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#39BABD] focus:border-transparent transition-all"
-                    placeholder="ejemplo@cmds.cl"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Contraseña</label>
-                  <input
-                    type="password"
                     required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#39BABD] focus:border-transparent transition-all"
-                    placeholder="••••••••"
                   />
                 </div>
                 
-                {error && (
-                  <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm font-medium">
-                    {error}
-                  </div>
-                )}
+                <div>
+                  <label className="block text-[#016098] text-sm font-bold mb-2 uppercase tracking-wide" htmlFor="password">
+                    Contraseña
+                  </label>
+                  <input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#016098] focus:bg-white transition shadow-sm text-gray-800 font-medium"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
 
                 <button
                   type="submit"
-                  className="w-full bg-[#016098] hover:bg-[#014a75] text-white font-bold py-3 px-4 rounded-lg transition-colors mt-2"
+                  className="w-full bg-[#016098] hover:bg-[#024a8d] text-white font-bold py-3 px-4 rounded-lg transition duration-200 shadow-lg mt-4 flex justify-center items-center gap-2"
                 >
-                  Ingresar a la Plataforma
+                  Ingresar al Sistema
                 </button>
               </form>
             </>
           ) : (
             <>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2 text-center">Actualizar Contraseña</h2>
-              <p className="text-sm text-amber-600 font-medium bg-amber-50 p-3 rounded mb-6 text-center border border-amber-200">
+              <h3 className="text-2xl font-bold text-[#016098] mb-2">Actualizar Contraseña</h3>
+              <p className="text-sm text-gray-500 mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
                 Por seguridad, debes cambiar tu contraseña predeterminada antes de continuar.
               </p>
               
-              <form onSubmit={handleChangePassword} className="flex flex-col gap-5">
+              {error && (
+                <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded mb-6 shadow-sm flex items-center gap-3 font-semibold text-sm">
+                  {error}
+                </div>
+              )}
+
+              <form onSubmit={handleChangePassword} className="space-y-5">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Nueva Contraseña</label>
+                  <label className="block text-[#016098] text-sm font-bold mb-2 uppercase tracking-wide">
+                    Nueva Contraseña
+                  </label>
                   <input
                     type="password"
-                    required
+                    placeholder="Mínimo 6 caracteres"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#016098] focus:bg-white transition shadow-sm text-gray-800 font-medium"
                     value={newPass}
                     onChange={(e) => setNewPass(e.target.value)}
-                    className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#39BABD] focus:border-transparent transition-all"
-                    placeholder="Mínimo 6 caracteres"
+                    required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Confirmar Contraseña</label>
+                  <label className="block text-[#016098] text-sm font-bold mb-2 uppercase tracking-wide">
+                    Confirmar Contraseña
+                  </label>
                   <input
                     type="password"
-                    required
+                    placeholder="Vuelve a escribir tu clave"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#016098] focus:bg-white transition shadow-sm text-gray-800 font-medium"
                     value={newPassConfirm}
                     onChange={(e) => setNewPassConfirm(e.target.value)}
-                    className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#39BABD] focus:border-transparent transition-all"
-                    placeholder="Vuelve a escribir la contraseña"
+                    required
                   />
                 </div>
-                
-                {error && (
-                  <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm font-medium">
-                    {error}
-                  </div>
-                )}
-
                 <button
                   type="submit"
-                  className="w-full bg-[#39BABD] hover:bg-[#2b9799] text-white font-bold py-3 px-4 rounded-lg transition-colors mt-2"
+                  className="w-full bg-[#016098] hover:bg-[#024a8d] text-white font-bold py-3 px-4 rounded-lg transition duration-200 shadow-lg mt-4"
                 >
                   Guardar e Ingresar
                 </button>
               </form>
             </>
           )}
+          
+          <div className="mt-8 pt-6 border-t border-gray-200 text-center">
+            <p className="text-xs text-gray-400 font-semibold">
+              &copy; 2026 CMDS - Corporación Municipal de Desarrollo Social de Antofagasta
+            </p>
+          </div>
         </div>
-        
-        <p className="text-center text-gray-400 text-sm mt-8">
-          © {new Date().getFullYear()} Corporación Municipal de Desarrollo Social
-        </p>
       </div>
+
     </div>
   );
 }

@@ -7,7 +7,15 @@ export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Permitir acceso a la ruta de login y rutas estáticas
-  if (pathname === '/login' || pathname.startsWith('/_next') || pathname.startsWith('/api') || pathname.endsWith('.ico')) {
+  if (
+    pathname === '/login' || 
+    pathname.startsWith('/_next') || 
+    pathname.startsWith('/api') || 
+    pathname.endsWith('.ico') || 
+    pathname.endsWith('.png') || 
+    pathname.endsWith('.svg') || 
+    pathname.endsWith('.jpg')
+  ) {
     
     // Evitar redirigir si es un Server Action (los Server Actions envían header Next-Action)
     const isServerAction = req.headers.has('Next-Action');

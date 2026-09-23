@@ -755,17 +755,18 @@ export default function AsignacionCargaPage() {
                                 <div className="flex gap-1 flex-wrap justify-end max-w-[200px]">
                                   {letras.map(l => {
                                     const assignedToMe = cargasVivas.some(c => 
-                                      c.codAsignatura === det.codAsignatura && 
-                                      c.tienCod === det.tienCod && 
-                                      c.grteCod === det.grteCod && 
-                                      c.letraCurso === l
-                                    );
+    c.codAsignatura === det.codAsignatura && 
+    c.tienCod === det.tienCod && 
+    c.grteCod === det.grteCod && 
+    c.letraCurso === l &&
+    (!esDesdobleUI || c.grupoDesdoble === (grupoDesdobleUI || 'Grupo'))
+  );
                                     
                                     return (
                                       <button 
                                         key={l}
                                         onClick={() => handleAsignarLectiva(det, l)}
-                                        disabled={!docenteSeleccionado || restantes < det.horas || assignedToMe}
+                                        disabled={!docenteSeleccionado || (!esDesdobleUI && restantes < det.horas) || assignedToMe}
                                         className={`px-2 py-1 rounded text-xs font-bold transition-colors ${assignedToMe ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700 hover:bg-[#016098] hover:text-white disabled:opacity-50 disabled:hover:bg-gray-100 disabled:hover:text-gray-700'}`}
                                         title={assignedToMe ? "Ya asignado a este docente" : "Asignar"}
                                       >
@@ -830,17 +831,18 @@ export default function AsignacionCargaPage() {
                                 <div className="flex gap-1 flex-wrap justify-end max-w-[200px]">
                                   {letras.map(l => {
                                     const assignedToMe = cargasVivas.some(c => 
-                                      c.codAsignatura === det.codAsignatura && 
-                                      c.tienCod === det.tienCod && 
-                                      c.grteCod === det.grteCod && 
-                                      c.letraCurso === l
-                                    );
+    c.codAsignatura === det.codAsignatura && 
+    c.tienCod === det.tienCod && 
+    c.grteCod === det.grteCod && 
+    c.letraCurso === l &&
+    (!esDesdobleUI || c.grupoDesdoble === (grupoDesdobleUI || 'Grupo'))
+  );
                                     
                                     return (
                                       <button 
                                         key={l}
                                         onClick={() => handleAsignarLectiva(det, l)}
-                                        disabled={!docenteSeleccionado || restantes < det.horas || assignedToMe}
+                                        disabled={!docenteSeleccionado || (!esDesdobleUI && restantes < det.horas) || assignedToMe}
                                         className={`px-2 py-1 rounded text-xs font-bold transition-colors ${assignedToMe ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700 hover:bg-[#016098] hover:text-white disabled:opacity-50 disabled:hover:bg-gray-100 disabled:hover:text-gray-700'}`}
                                         title={assignedToMe ? "Ya asignado a este docente" : "Asignar"}
                                       >

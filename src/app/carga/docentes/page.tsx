@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getDocentesEstablecimiento, updateDocenteHoras, createOrUpdateDocente, deleteDocente, getCargaDocenteUnico, getTablaConversion } from '../../actions';
+import { getDocentesEstablecimiento, updateDocenteHoras, createOrUpdateDocente, deleteDocente, getCargaDocenteUnico, getTablaConversion, getCargasEstablecimiento } from '../../actions';
 import * as XLSX from 'xlsx';
 
 export default function DocentesPage() {
@@ -22,6 +22,7 @@ const formatCronoDecimal = (decimal: number) => {
   return `${horas}:${mins.toString().padStart(2, '0')}`;
 };
   const [docentes, setDocentes] = useState<any[]>([]);
+  const [todasCargas, setTodasCargas] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editHoras, setEditHoras] = useState<number>(0);
   const [loading, setLoading] = useState(false);
@@ -54,6 +55,7 @@ const formatCronoDecimal = (decimal: number) => {
 
   const loadDocentes = (estId: number = establecimientoId) => {
     getDocentesEstablecimiento(estId).then(setDocentes);
+    getCargasEstablecimiento(estId).then(setTodasCargas);
   };
 
   const handleEdit = (doc: any) => {
@@ -210,7 +212,7 @@ const formatCronoDecimal = (decimal: number) => {
             </thead>
             <tbody>
               {docentes.map(docente => (
-                <tr key={docente.id} className="border-b border-[#e2e8f0] hover:bg-[#f8fafc] transition-colors whitespace-nowrap">
+                <tr key={docente.id} className={`border-b border-[#e2e8f0] transition-colors whitespace-nowrap ${todasCargas.some(c => c.docenteId === docente.id) ? 'bg-emerald-50 hover:bg-emerald-100' : 'bg-white hover:bg-[#f8fafc]'}`}>
                   <td className="px-4 py-3 font-mono text-xs text-[#64748b]">{docente.rut}</td>
                   <td className="px-4 py-3 font-medium text-[#1e293b]">{docente.nombres}</td>
                   <td className="px-4 py-3 text-[#1e293b]">{docente.apellidoPaterno}</td>
@@ -248,7 +250,9 @@ const formatCronoDecimal = (decimal: number) => {
                         <button onClick={() => handleEdit(docente)} className="text-blue-600 hover:text-blue-800 text-xs font-medium bg-blue-50 px-2 py-1 rounded">Editar Horas</button>
                       )}
                       
-                      <button onClick={() => handleVerCarga(docente)} className="text-emerald-600 hover:text-emerald-800 text-xs font-medium bg-emerald-50 px-2 py-1 rounded">Ver Carga</button>
+                      <button onClick={() => handleVerCarga(docente)} className={`text-xs font-medium px-2 py-1 rounded transition-colors ${todasCargas.some(c => c.docenteId === docente.id) ? 'text-emerald-700 bg-emerald-200 hover:bg-emerald-300 shadow-sm border border-emerald-400 font-bold' : 'text-gray-500 bg-gray-50 hover:bg-gray-100 border border-gray-200'}`}>
+                          {todasCargas.some(c => c.docenteId === docente.id) ? 'Ver Carga (Activa)' : 'Ver Carga (Vacía)'}
+                        </button>
                       {userRol === 'ADMIN' && (
                           <button onClick={() => handleDeleteDocente(docente.id)} className="text-red-600 hover:text-red-800 text-xs font-medium bg-red-50 px-2 py-1 rounded">Eliminar</button>
                         )}

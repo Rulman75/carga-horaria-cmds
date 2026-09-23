@@ -253,7 +253,7 @@ model CargaHoraria {
   esDesdoble    Boolean @default(false)
   grupoDesdoble String? // Ej. 'Damas', 'Varones', 'Violín'
 
-  horasAllocadas Int
+  horasAllocadas Float
   tipoCarga      String // 'LECTIVA' o 'NO_LECTIVA'
   observacion    String?
 

@@ -25,6 +25,7 @@ const formatCronoDecimal = (decimal: number) => {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editHoras, setEditHoras] = useState<number>(0);
   const [loading, setLoading] = useState(false);
+  const [userRol, setUserRol] = useState<string>('');
   const [establecimientoId, setEstablecimientoId] = useState<number>(2);
 
   const [showAddModal, setShowAddModal] = useState(false);
@@ -39,6 +40,13 @@ const formatCronoDecimal = (decimal: number) => {
 
   useEffect(() => {
     const estId = Number(localStorage.getItem('selectedEstablecimientoId')) || 2;
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          const u = JSON.parse(userStr);
+          setUserRol(u.rol || '');
+        } catch(e) {}
+      }
     setEstablecimientoId(estId);
     loadDocentes(estId);
     getTablaConversion().then(setTablaConversion);
@@ -170,9 +178,11 @@ const formatCronoDecimal = (decimal: number) => {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
             Exportar Excel
           </button>
-          <button onClick={() => setShowAddModal(true)} className="bg-[#39BABD] hover:bg-[#2b9799] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-            + Agregar Docente
-          </button>
+          {userRol === 'ADMIN' && (
+              <button onClick={() => setShowAddModal(true)} className="bg-[#39BABD] hover:bg-[#2b9799] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                + Agregar Docente
+              </button>
+            )}
         </div>
       </div>
 
@@ -239,7 +249,9 @@ const formatCronoDecimal = (decimal: number) => {
                       )}
                       
                       <button onClick={() => handleVerCarga(docente)} className="text-emerald-600 hover:text-emerald-800 text-xs font-medium bg-emerald-50 px-2 py-1 rounded">Ver Carga</button>
-                      <button onClick={() => handleDeleteDocente(docente.id)} className="text-red-600 hover:text-red-800 text-xs font-medium bg-red-50 px-2 py-1 rounded">Eliminar</button>
+                      {userRol === 'ADMIN' && (
+                          <button onClick={() => handleDeleteDocente(docente.id)} className="text-red-600 hover:text-red-800 text-xs font-medium bg-red-50 px-2 py-1 rounded">Eliminar</button>
+                        )}
                     </div>
                   </td>
                 </tr>

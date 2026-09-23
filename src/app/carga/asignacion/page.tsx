@@ -17,6 +17,8 @@ import {
 } from '../../actions';
 
 interface CargaEnUI {
+  esCombinado?: boolean;
+  grupoCombinado?: string;
   id?: string;
   dbId?: number;
   planEstablecimientoId: number;
@@ -70,6 +72,8 @@ export default function AsignacionCargaPage() {
   const [finanSeleccionado, setFinanSeleccionado] = useState('Normal');
   const [esDesdobleUI, setEsDesdobleUI] = useState(false);
   const [grupoDesdobleUI, setGrupoDesdobleUI] = useState('');
+  const [esCombinadoUI, setEsCombinadoUI] = useState(false);
+  const [grupoCombinadoUI, setGrupoCombinadoUI] = useState('');
   const [horasManual, setHorasManual] = useState(1);
   
   const [activeTab, setActiveTab] = useState<'LECTIVA' | 'NO_LECTIVA' | 'EXTRACURRICULAR'>('LECTIVA');
@@ -116,6 +120,7 @@ export default function AsignacionCargaPage() {
           nombre = c.asignatura?.asigDescripcion || 'Lectiva';
           if (c.letraCurso) nombre += ` (${c.letraCurso})`;
             if (c.esDesdoble) nombre += ` [${c.grupoDesdoble || 'Grupo'}]`;
+            if (c.esCombinado) nombre += ` {Multigrado: ${c.grupoCombinado || 'Comb1'}}`;
             if (c.financiamiento && c.financiamiento !== 'Normal') nombre += ` [${c.financiamiento}]`;
         }
         else if (c.tipoCarga === 'NO_LECTIVA') nombre = c.actividadNoLectiva?.descripcion || 'No Lectiva';
@@ -162,7 +167,25 @@ export default function AsignacionCargaPage() {
   const docenteSeleccionadoObj = docentes.find(d => d && d.id && d.id.toString() === docenteSeleccionado);
   const cargasVivas = cargas.filter(c => !c.eliminada);
   
-  const horasLectivasAsignadas = cargasVivas.filter(c => c.tipoCarga === 'LECTIVA').reduce((sum, c) => sum + c.horas, 0);
+  const calcularHorasLectivas = (cargasArray: any[]) => {
+      const lectivas = cargasArray.filter(c => c.tipoCarga === 'LECTIVA');
+      let total = 0;
+      const combinados: Record<string, number[]> = {};
+      lectivas.forEach(c => {
+        if (c.esCombinado && c.grupoCombinado) {
+          const g = c.grupoCombinado.toUpperCase().trim();
+          if (!combinados[g]) combinados[g] = [];
+          combinados[g].push(c.horas);
+        } else {
+          total += c.horas;
+        }
+      });
+      for (const g in combinados) {
+        total += Math.max(...combinados[g]);
+      }
+      return total;
+    };
+    const horasLectivasAsignadas = calcularHorasLectivas(cargasVivas);
   const horasNoLectivasAsignadas = cargasVivas.filter(c => c.tipoCarga === 'NO_LECTIVA').reduce((sum, c) => sum + c.horas, 0);
   const horasExtraAsignadas = cargasVivas.filter(c => c.tipoCarga === 'EXTRACURRICULAR').reduce((sum, c) => sum + c.horas, 0);
   
@@ -245,8 +268,10 @@ export default function AsignacionCargaPage() {
       letraCurso: letra,
         esDesdoble: esDesdobleUI,
         grupoDesdoble: esDesdobleUI ? (grupoDesdobleUI || 'Grupo') : undefined,
+        esCombinado: esCombinadoUI,
+        grupoCombinado: esCombinadoUI ? (grupoCombinadoUI || 'Comb1') : undefined,
       financiamiento: finanSeleccionado === 'Normal' ? undefined : finanSeleccionado,
-      nombre: det.asignatura?.asigDescripcion + (letra ? ` (${letra})` : '') + (esDesdobleUI ? ` [${grupoDesdobleUI || 'Grupo'}]` : '') + (finanSeleccionado !== 'Normal' ? ` [${finanSeleccionado}]` : ''),
+      nombre: det.asignatura?.asigDescripcion + (letra ? ` (${letra})` : '') + (esDesdobleUI ? ` [${grupoDesdobleUI || 'Grupo'}]` : '') + (esCombinadoUI ? ` {Multigrado: ${grupoCombinadoUI || 'Comb1'}}` : '') + (finanSeleccionado !== 'Normal' ? ` [${finanSeleccionado}]` : ''),
       horas: det.horas,
       tipoCarga: 'LECTIVA'
     }]);
@@ -701,10 +726,20 @@ export default function AsignacionCargaPage() {
                           <input type="checkbox" checked={esDesdobleUI} onChange={e => setEsDesdobleUI(e.target.checked)} className="rounded border-gray-300 text-[#016098] focus:ring-[#016098]" />
                           <span className="text-sm font-semibold text-gray-700">Es Grupo Paralelo (Desdoble/Dupla)</span>
                         </label>
-                        {esDesdobleUI && (
-                          <input type="text" placeholder="Ej: Damas, Varones, Violín" value={grupoDesdobleUI} onChange={e => setGrupoDesdobleUI(e.target.value)} className="border border-gray-300 rounded p-1.5 text-sm flex-1" />
-                        )}
-                      </div>
+                          {esDesdobleUI && (
+                            <input type="text" placeholder="Ej: Damas, Varones, Violín" value={grupoDesdobleUI} onChange={e => setGrupoDesdobleUI(e.target.value)} className="border border-gray-300 rounded p-1.5 text-sm flex-1" />
+                          )}
+                        </div>
+
+                        <div className="col-span-2 flex items-center gap-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" checked={esCombinadoUI} onChange={e => setEsCombinadoUI(e.target.checked)} className="rounded border-gray-300 text-[#016098] focus:ring-[#016098]" />
+                            <span className="text-sm font-semibold text-gray-700">Es Curso Combinado (Multigrado)</span>
+                          </label>
+                          {esCombinadoUI && (
+                            <input type="text" placeholder="Ej: Comb 1, Multigrado A" value={grupoCombinadoUI} onChange={e => setGrupoCombinadoUI(e.target.value)} className="border border-gray-300 rounded p-1.5 text-sm flex-1" />
+                          )}
+                        </div>
                     </div>
   
                     <div className="flex-1 overflow-auto p-4 custom-scrollbar">

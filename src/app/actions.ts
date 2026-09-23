@@ -505,6 +505,8 @@ export async function saveCargasHorarias(docenteId: number, cargas: any[], estab
           letraCurso: c.letraCurso || null,
           esDesdoble: c.esDesdoble || false,
           grupoDesdoble: c.grupoDesdoble || null,
+          esCombinado: c.esCombinado || false,
+          grupoCombinado: c.grupoCombinado || null,
           horasAllocadas: c.horas,
           tipoCarga: c.tipoCarga,
           observacion: ''
@@ -805,11 +807,18 @@ export async function getSchoolAnalytics(establecimientoId: number) {
     let anlCrono = 0;
     let extraCrono = 0;
     
+    const combinados: Record<string, any[]> = {};
     docCargas.forEach(c => {
       if (c.tipoCarga === 'LECTIVA') {
-        lectivasPed += c.horasAllocadas;
-        if (c.asignatura?.esTallerJec) totalJecAsignadas += c.horasAllocadas;
-        else totalBaseAsignadas += c.horasAllocadas;
+        if (c.esCombinado && c.grupoCombinado) {
+          const g = c.grupoCombinado.toUpperCase().trim();
+          if (!combinados[g]) combinados[g] = [];
+          combinados[g].push(c);
+        } else {
+          lectivasPed += c.horasAllocadas;
+          if (c.asignatura?.esTallerJec) totalJecAsignadas += c.horasAllocadas;
+          else totalBaseAsignadas += c.horasAllocadas;
+        }
       } else if (c.tipoCarga === 'NO_LECTIVA') {
         anlCrono += c.horasAllocadas;
       } else if (c.tipoCarga === 'EXTRACURRICULAR') {
@@ -818,7 +827,13 @@ export async function getSchoolAnalytics(establecimientoId: number) {
         extraDistribution[extraName] = (extraDistribution[extraName] || 0) + c.horasAllocadas;
       }
     });
-
+    for (const g in combinados) {
+      const maxC = combinados[g].reduce((prev: any, curr: any) => (prev.horasAllocadas > curr.horasAllocadas) ? prev : curr);
+      lectivasPed += maxC.horasAllocadas;
+      if (maxC.asignatura?.esTallerJec) totalJecAsignadas += maxC.horasAllocadas;
+      else totalBaseAsignadas += maxC.horasAllocadas;
+    }
+    
     const colacion = contrato >= 30 ? 2 : 1;
     let recreoDecimal = 0;
     if (lectivasPed > 0) {
@@ -879,11 +894,23 @@ export async function getGlobalAnalytics() {
       
       const docCargas = cargas.filter(c => c.docenteId === r.docente.id);
       let lectPed = 0, noLect = 0, extra = 0;
+      const combinadosRpt: Record<string, number[]> = {};
       docCargas.forEach(c => {
-        if(c.tipoCarga==='LECTIVA') lectPed += c.horasAllocadas;
+        if(c.tipoCarga==='LECTIVA') {
+          if (c.esCombinado && c.grupoCombinado) {
+            const g = c.grupoCombinado.toUpperCase().trim();
+            if (!combinadosRpt[g]) combinadosRpt[g] = [];
+            combinadosRpt[g].push(c.horasAllocadas);
+          } else {
+            lectPed += c.horasAllocadas;
+          }
+        }
         if(c.tipoCarga==='NO_LECTIVA') noLect += c.horasAllocadas;
         if(c.tipoCarga==='EXTRACURRICULAR') extra += c.horasAllocadas;
       });
+      for (const g in combinadosRpt) {
+        lectPed += Math.max(...combinadosRpt[g]);
+      }
       
       let colacion = contrato >= 30 ? 2 : 1;
       let recreoDecimal = 0;

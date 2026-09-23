@@ -276,9 +276,10 @@ model ConfiguracionGlobal {
 }
 
 model ActividadExtracurricular {
-  id          Int            @id @default(autoincrement())
-  descripcion String         @unique
-  cargas      CargaHoraria[]
+  id           Int            @id @default(autoincrement())
+  descripcion  String         @unique
+  horasDefault Float?
+  cargas       CargaHoraria[]
 }
 
 model EstablecimientoCursoLetra {

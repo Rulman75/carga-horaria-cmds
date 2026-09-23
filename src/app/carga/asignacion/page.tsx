@@ -891,11 +891,10 @@ export default function AsignacionCargaPage() {
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Horas Cronológicas a Asignar</label>
                     <input 
-                      type="number" 
-                      min="1"
+                      type="number" step="0.1" min="0"
                       className="w-full border border-gray-300 rounded-lg p-2.5 text-sm"
                       value={horasManual}
-                      onChange={e => setHorasManual(parseInt(e.target.value) || 1)}
+                      onChange={e => setHorasManual(parseFloat(e.target.value) || 0)}
                     />
                     <p className="text-xs text-gray-500 mt-1">Se miden en horas reales de 60 mins.</p>
                   </div>
@@ -947,11 +946,10 @@ export default function AsignacionCargaPage() {
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Horas a Asignar</label>
                     <input 
-                      type="number" 
-                      min="1"
+                      type="number" step="0.1" min="0"
                       className="w-full border border-gray-300 rounded-lg p-2.5 text-sm"
                       value={horasManual}
-                      onChange={e => setHorasManual(parseInt(e.target.value) || 1)}
+                      onChange={e => setHorasManual(parseFloat(e.target.value) || 0)}
                     />
                   </div>
 
@@ -1031,14 +1029,14 @@ export default function AsignacionCargaPage() {
                           <div className="flex items-center gap-2 mt-1">
                             <div className="flex items-center gap-1 bg-white rounded px-1 py-0.5 border border-gray-200 shadow-sm">
                               <button 
-                                onClick={() => handleCambiarHoras(index, -1)}
+                                onClick={() => handleCambiarHoras(index, -0.5)}
                                 className="w-5 h-5 flex items-center justify-center rounded hover:bg-gray-100 text-xs font-bold text-gray-600 transition-colors"
                               >
                                 -
                               </button>
                               <span className="text-xs font-bold opacity-90 w-5 text-center">{carga.horas}</span>
                               <button 
-                                onClick={() => handleCambiarHoras(index, 1)}
+                                onClick={() => handleCambiarHoras(index, 0.5)}
                                 className="w-5 h-5 flex items-center justify-center rounded hover:bg-gray-100 text-xs font-bold text-gray-600 transition-colors"
                               >
                                 +

@@ -921,7 +921,20 @@ export default function AsignacionCargaPage() {
                     <select 
                       className="w-full border border-gray-300 rounded-lg p-2.5 text-sm"
                       value={extSeleccionada}
-                      onChange={e => setExtSeleccionada(e.target.value)}
+                      onChange={e => {
+  const val = e.target.value;
+  setExtSeleccionada(val);
+  const extInfo = actividadesExt.find(a => a.id.toString() === val);
+  if (extInfo) {
+    const desc = extInfo.descripcion.toLowerCase().trim();
+    const roles44 = ['director', 'jefe utp', 'curriculista', 'evaluador', 'orientador', 'convivencia escolar', 'inspector general', 'coordinador tp', 'producción', 'produccion', 'informática', 'informatica'];
+    if (roles44.some(r => desc.includes(r))) {
+      setHorasManual(44);
+    } else {
+      setHorasManual(1);
+    }
+  }
+}}
                     >
                       <option value="">-- Seleccionar Actividad --</option>
                       {actividadesExt.map(a => (

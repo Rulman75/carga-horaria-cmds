@@ -401,7 +401,7 @@ const formatCronoDecimal = (decimal: number) => {
                         <li key={c.id} className="bg-white p-3 border rounded shadow-sm flex justify-between items-center">
                           <div>
                             {c.tipoCarga === 'LECTIVA' && (
-                              <span className="text-sm font-medium text-[#1e293b]">📚 {text} - {c.grado?.grteDescrip || ''} {c.letraCurso || ''}</span>
+                              <span className="text-sm font-medium text-[#1e293b]">📚 {text} - {c.grado?.grteDescrip || ''} {c.letraCurso || ''} {c.esDesdoble ? `[${c.grupoDesdoble || 'Grupo'}]` : ''}</span>
                             )}
                             {c.tipoCarga === 'NO_LECTIVA' && (
                               <span className="text-sm font-medium text-amber-700">📝 {text}</span>

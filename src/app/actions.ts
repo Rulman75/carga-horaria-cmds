@@ -471,13 +471,17 @@ export async function getGradosEstablecimiento(establecimientoId: number) {
     ]
   });
 
+  const letras = await prisma.establecimientoCursoLetra.findMany({
+    where: { establecimientoId }
+  });
+
   // Filtrar estrictamente solo los grados que tienen dotación de cursos asignada.
-  // Si no hay cursos (cantidadCursos = 0), el grado no existe en la realidad del colegio este año.
   const filtrados = estGrados.filter(eg => eg.cantidadCursos > 0);
 
   return filtrados.map(eg => ({
     ...eg.grado,
-    cantidadCursos: eg.cantidadCursos
+    cantidadCursos: eg.cantidadCursos,
+    letrasCustom: letras.filter(l => l.tienCod === eg.tienCod && l.grteCod === eg.grteCod).map(l => l.letra)
   }));
 }
 

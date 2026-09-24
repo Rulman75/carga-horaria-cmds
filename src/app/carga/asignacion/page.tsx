@@ -254,8 +254,11 @@ export default function AsignacionCargaPage() {
       return totalConsumido;
     };
 
-    const getLetras = (cantidad: number) => {
-    return Array.from({ length: cantidad }, (_, i) => String.fromCharCode(65 + i));
+    const getLetras = (gInfo: any) => {
+    if (gInfo && gInfo.letrasCustom && gInfo.letrasCustom.length > 0) {
+      return gInfo.letrasCustom;
+    }
+    return Array.from({ length: gInfo?.cantidadCursos || 1 }, (_, i) => String.fromCharCode(65 + i));
   };
 
   const handleAsignarLectiva = (det: any, letra?: string) => {
@@ -752,7 +755,7 @@ export default function AsignacionCargaPage() {
                             const gInfo = grados.find(g => g.tienCod === det.tienCod && g.grteCod === det.grteCod);
                             const cursos = gInfo?.cantidadCursos || 1;
                             const totalDisp = det.horas * cursos;
-                            const letras = getLetras(cursos);
+                            const letras = getLetras(gInfo);
                             
                             const tomadasGlobal = calcularHorasConsumidas(todasCargas.filter(c => 
                               c.planEstablecimientoId === det.planEstablecimientoId &&
@@ -789,7 +792,7 @@ export default function AsignacionCargaPage() {
                                   </div>
                                 </div>
                                 <div className="flex gap-1 flex-wrap justify-end max-w-[200px]">
-                                  {letras.map(l => {
+                                  {letras.map((l: string) => {
                                     const assignedToMe = cargasVivas.some(c => 
     c.codAsignatura === det.codAsignatura && 
     c.tienCod === det.tienCod && 
@@ -828,7 +831,7 @@ export default function AsignacionCargaPage() {
                             if (!gInfo) return null;
                             const cursos = gInfo.cantidadCursos || 1;
                             const totalDisp = det.horas * cursos;
-                            const letras = getLetras(cursos);
+                            const letras = getLetras(gInfo);
                             
                             const tomadasGlobal = calcularHorasConsumidas(todasCargas.filter(c => 
                               c.planEstablecimientoId === det.planEstablecimientoId &&
@@ -865,7 +868,7 @@ export default function AsignacionCargaPage() {
                                   </div>
                                 </div>
                                 <div className="flex gap-1 flex-wrap justify-end max-w-[200px]">
-                                  {letras.map(l => {
+                                  {letras.map((l: string) => {
                                     const assignedToMe = cargasVivas.some(c => 
     c.codAsignatura === det.codAsignatura && 
     c.tienCod === det.tienCod && 

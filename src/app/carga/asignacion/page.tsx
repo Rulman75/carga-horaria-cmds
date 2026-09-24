@@ -197,16 +197,17 @@ export default function AsignacionCargaPage() {
   const conversionData = tablaConversion.find((t: any) => t.jornadaSemanal === baseAsignable);
   
   const maxLectivasPedagogicas = conversionData ? conversionData.lectivasPedagogicas : Math.floor(baseAsignable * 0.65 * 1.3333);
-  const maxNoLectivasContrato = conversionData ? parseCronoToDecimal(conversionData.noLectivasCronologicas) : (baseAsignable * 0.35);
+  const maxNoLectivasDecimal = conversionData ? parseCronoToDecimal(conversionData.noLectivasCronologicas) : (baseAsignable * 0.35);
+  const maxNoLectivasStr = conversionData ? conversionData.noLectivasCronologicas : `${Math.floor(baseAsignable*0.35)}:00`;
 
   const currentConversionData = tablaConversion.find((t: any) => t.lectivasPedagogicas === Math.round(horasLectivasAsignadas));
   const recreoDecimal = currentConversionData ? parseCronoToDecimal(currentConversionData.recreoCronologicas) : 0;
   
-  const maxNoLectivasDecimal = currentConversionData ? parseCronoToDecimal(currentConversionData.noLectivasCronologicas) : 0;
-  const maxNoLectivasStr = currentConversionData ? currentConversionData.noLectivasCronologicas : '0:00';
+  const maxNoLectivasPropDecimal = currentConversionData ? parseCronoToDecimal(currentConversionData.noLectivasCronologicas) : 0;
+  const maxNoLectivasPropStr = currentConversionData ? currentConversionData.noLectivasCronologicas : '0:00';
   
   const pctLectivas = Math.min(100, (horasLectivasAsignadas / (maxLectivasPedagogicas || 1)) * 100) || 0;
-  const pctNoLectivas = maxNoLectivasDecimal > 0 ? Math.min(100, (horasNoLectivasAsignadas / maxNoLectivasDecimal) * 100) : (horasNoLectivasAsignadas > 0 ? 100 : 0);
+  const pctNoLectivas = Math.min(100, (horasNoLectivasAsignadas / (maxNoLectivasDecimal || 1)) * 100) || 0;
 
   // Planificacin rule
   const minPlanificacionDecimal = maxNoLectivasDecimal * 0.4;
@@ -590,11 +591,15 @@ export default function AsignacionCargaPage() {
                 
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="font-medium text-[#F59E0B]">No Lectivas (Max Prop: {maxNoLectivasStr})</span>
+                    <span className="font-medium text-[#F59E0B]">No Lectivas (Max Contrato: {maxNoLectivasStr})</span>
                     <span className={`font-bold ${horasNoLectivasAsignadas > maxNoLectivasDecimal ? 'text-red-500' : 'text-[#64748b]'}`}>{formatCronoDecimal(horasNoLectivasAsignadas)} / {formatCronoDecimal(maxNoLectivasDecimal)}</span>
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
                     <div className={`h-1.5 rounded-full transition-all duration-500 ${horasNoLectivasAsignadas > maxNoLectivasDecimal ? 'bg-red-500' : 'bg-[#F59E0B]'}`} style={{ width: `${Math.min(100, pctNoLectivas)}%` }}></div>
+                  </div>
+                  <div className="mt-1 flex justify-between text-[10px]">
+                    <span className="text-gray-500 italic">Max. proporcional (referencia):</span>
+                    <span className={`font-bold ${horasNoLectivasAsignadas > maxNoLectivasPropDecimal ? 'text-red-500' : 'text-gray-500'}`}>{maxNoLectivasPropStr} {horasNoLectivasAsignadas > maxNoLectivasPropDecimal && '(Excedido)'}</span>
                   </div>
                 </div>
               </div>

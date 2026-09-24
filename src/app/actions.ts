@@ -110,7 +110,7 @@ export async function clonarPlanEstudioBase(establecimientoId: number, codPlanBa
   });
   const isJecMap = new Map();
   for (const g of estabGrados) {
-    isJecMap.set(`${g.tienCod}-${g.grteCod}`, g.esJec);
+    if (g.cantidadCursos > 0) { isJecMap.set(`${g.tienCod}-${g.grteCod}`, g.esJec); }
   }
 
   const detallesFiltrados = planBase.detalles.filter((det: any) => {
@@ -330,7 +330,7 @@ export async function importarPlanBaseAPropio(planPropioId: number, codPlanBase:
   });
   const isJecMap = new Map();
   for (const g of estabGrados) {
-    isJecMap.set(`${g.tienCod}-${g.grteCod}`, g.esJec);
+    if (g.cantidadCursos > 0) { isJecMap.set(`${g.tienCod}-${g.grteCod}`, g.esJec); }
   }
 
   let insertados = 0;

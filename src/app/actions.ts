@@ -497,6 +497,12 @@ export async function getCargasEstablecimiento(establecimientoId: number) {
 }
 
 export async function saveCargasHorarias(docenteId: number, cargas: any[], establecimientoId?: number, observacionCarga?: string) {
+  let fallbackPlanId: number | null = null;
+  if (establecimientoId) {
+    const firstPlan = await prisma.planEstablecimiento.findFirst({ where: { establecimientoId } });
+    if (firstPlan) fallbackPlanId = firstPlan.id;
+  }
+
   // Replace all assignments for this teacher
   await prisma.cargaHoraria.deleteMany({
     where: { docenteId }
@@ -504,12 +510,17 @@ export async function saveCargasHorarias(docenteId: number, cargas: any[], estab
   
   if (cargas.length > 0) {
     await prisma.cargaHoraria.createMany({
-      data: cargas.map(c => ({
-        docenteId,
-        planEstablecimientoId: c.planEstablecimientoId,
-        tienCod: c.tienCod || null,
-        grteCod: c.grteCod || null,
-        asignaturaCod: c.codAsignatura || null,
+      data: cargas.map(c => {
+        // Fix para Extracurriculares/No lectivas que envian planId=1 cuando no hay seleccion
+        let pid = c.planEstablecimientoId;
+        if (pid === 1 && fallbackPlanId) pid = fallbackPlanId;
+        
+        return {
+          docenteId,
+          planEstablecimientoId: pid,
+          tienCod: c.tienCod || null,
+          grteCod: c.grteCod || null,
+          asignaturaCod: c.codAsignatura || null,
           actividadNoLectivaId: c.actividadNoLectivaId || null,
           actividadExtracurricularId: c.actividadExtracurricularId || null,
           financiamiento: c.financiamiento || null,
@@ -521,7 +532,8 @@ export async function saveCargasHorarias(docenteId: number, cargas: any[], estab
           horasAllocadas: c.horas,
           tipoCarga: c.tipoCarga,
           observacion: ''
-      }))
+        };
+      })
     });
   }
 

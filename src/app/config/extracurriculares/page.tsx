@@ -9,10 +9,12 @@ export default function MantenedorExtracurricularesPage() {
   
   const [nuevaDesc, setNuevaDesc] = useState('');
   const [nuevasHoras, setNuevasHoras] = useState<string>('');
+  const [nuevoTopeMaximo, setNuevoTopeMaximo] = useState<string>('');
   
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editDesc, setEditDesc] = useState('');
   const [editHoras, setEditHoras] = useState<string>('');
+  const [editTopeMaximo, setEditTopeMaximo] = useState<string>('');
 
   useEffect(() => {
     loadData();
@@ -30,9 +32,11 @@ export default function MantenedorExtracurricularesPage() {
     if (!nuevaDesc.trim()) return;
     try {
       const horas = nuevasHoras ? parseFloat(nuevasHoras) : null;
-      await createActividadExtracurricular(nuevaDesc.trim(), horas);
+      const tope = nuevoTopeMaximo ? parseFloat(nuevoTopeMaximo) : null;
+      await createActividadExtracurricular(nuevaDesc.trim(), horas, tope);
       setNuevaDesc('');
       setNuevasHoras('');
+      setNuevoTopeMaximo('');
       loadData();
     } catch (e) {
       alert('Error al crear. Es posible que ya exista.');
@@ -43,12 +47,14 @@ export default function MantenedorExtracurricularesPage() {
     setEditingId(act.id);
     setEditDesc(act.descripcion);
     setEditHoras(act.horasDefault !== null ? act.horasDefault.toString() : '');
+    setEditTopeMaximo(act.topeMaximo !== null ? act.topeMaximo.toString() : '');
   };
 
   const handleSaveEdit = async (id: number) => {
     try {
       const horas = editHoras ? parseFloat(editHoras) : null;
-      await updateActividadExtracurricular(id, editDesc.trim(), horas);
+      const tope = editTopeMaximo ? parseFloat(editTopeMaximo) : null;
+      await updateActividadExtracurricular(id, editDesc.trim(), horas, tope);
       setEditingId(null);
       loadData();
     } catch (e) {
@@ -95,6 +101,18 @@ export default function MantenedorExtracurricularesPage() {
               onChange={(e) => setNuevasHoras(e.target.value)}
             />
           </div>
+          <div className="flex-1">
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Tope Máximo (Escuela)</label>
+            <input 
+              type="number" 
+              step="0.1"
+              min="0"
+              placeholder="Ej. 2"
+              className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#016098] focus:ring-1 focus:ring-[#016098]"
+              value={nuevoTopeMaximo}
+              onChange={(e) => setNuevoTopeMaximo(e.target.value)}
+            />
+          </div>
           <button 
             type="submit"
             className="bg-[#016098] hover:bg-[#014d7a] text-white px-6 py-2 rounded-lg font-medium transition-colors h-[42px]"
@@ -115,6 +133,7 @@ export default function MantenedorExtracurricularesPage() {
                   <th className="px-6 py-4">ID</th>
                   <th className="px-6 py-4">Descripción</th>
                   <th className="px-6 py-4 text-center">Horas Default</th>
+                  <th className="px-6 py-4 text-center">Tope Máx/Escuela</th>
                   <th className="px-6 py-4 text-right">Acciones</th>
                 </tr>
               </thead>
@@ -149,6 +168,22 @@ export default function MantenedorExtracurricularesPage() {
                       ) : (
                         <span className={`font-bold ${act.horasDefault ? 'text-blue-600' : 'text-gray-400'}`}>
                           {act.horasDefault !== null ? `${act.horasDefault} Hrs` : '-'}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-center w-48">
+                      {editingId === act.id ? (
+                        <input 
+                          type="number" 
+                          step="0.1" 
+                          min="0"
+                          className="w-24 border p-1 rounded text-center mx-auto" 
+                          value={editTopeMaximo} 
+                          onChange={e => setEditTopeMaximo(e.target.value)} 
+                        />
+                      ) : (
+                        <span className={`font-bold ${act.topeMaximo ? 'text-red-600' : 'text-gray-400'}`}>
+                          {act.topeMaximo !== null ? `${act.topeMaximo} Hrs` : 'Sin Límite'}
                         </span>
                       )}
                     </td>

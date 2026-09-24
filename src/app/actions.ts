@@ -706,16 +706,16 @@ export async function getActividadesExtracurriculares() {
   });
 }
 
-export async function createActividadExtracurricular(descripcion: string, horasDefault?: number | null) {
+export async function createActividadExtracurricular(descripcion: string, horasDefault?: number | null, topeMaximo?: number | null) {
   return await prisma.actividadExtracurricular.create({
-    data: { descripcion, horasDefault: horasDefault || null }
+    data: { descripcion, horasDefault: horasDefault || null, topeMaximo: topeMaximo || null }
   });
 }
 
-export async function updateActividadExtracurricular(id: number, descripcion: string, horasDefault?: number | null) {
+export async function updateActividadExtracurricular(id: number, descripcion: string, horasDefault?: number | null, topeMaximo?: number | null) {
   return await prisma.actividadExtracurricular.update({
     where: { id },
-    data: { descripcion, horasDefault: horasDefault || null }
+    data: { descripcion, horasDefault: horasDefault || null, topeMaximo: topeMaximo || null }
   });
 }
 

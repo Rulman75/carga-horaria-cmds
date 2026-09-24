@@ -282,6 +282,7 @@ model ActividadExtracurricular {
   id           Int            @id @default(autoincrement())
   descripcion  String         @unique
   horasDefault Float?
+  topeMaximo   Float?
   cargas       CargaHoraria[]
 }
 

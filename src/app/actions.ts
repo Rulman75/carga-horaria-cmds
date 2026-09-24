@@ -912,6 +912,7 @@ export async function getGlobalAnalytics() {
     
     let estContrato = 0;
     let estAsignado = 0;
+    let estDocentesConCarga = 0;
     
     sRels.forEach(r => {
       const contrato = r.docente.totalDefinitivo || r.docente.totalJornada || r.docente.horasTitular || 0;
@@ -948,6 +949,7 @@ export async function getGlobalAnalytics() {
       
       if (lectPed > 0 || noLect > 0 || extra > 0) {
         estAsignado += Math.ceil((lectPed * 45 / 60) + recreoDecimal + noLect + extra + colacion);
+        estDocentesConCarga++;
       }
 
     });
@@ -957,7 +959,9 @@ export async function getGlobalAnalytics() {
         nombre: est.esedDescripcion,
         contrato: estContrato,
         asignado: estAsignado,
-        ociosas: estContrato - estAsignado
+        ociosas: estContrato - estAsignado,
+        totalDocentes: sRels.length,
+        docentesConCarga: estDocentesConCarga
       });
     }
   }

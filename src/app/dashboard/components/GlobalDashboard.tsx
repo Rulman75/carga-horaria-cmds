@@ -79,8 +79,9 @@ export default function GlobalDashboard() {
                     style={{ width: `${pct}%` }}
                   ></div>
                 </div>
-                <div className="text-[10px] text-gray-400 text-right">
-                  {d.asignado} / {d.contrato} hrs asignadas
+                <div className="flex justify-between items-center text-[10px] text-gray-500 mt-0.5">
+                  <span className="font-medium">{d.docentesConCarga} de {d.totalDocentes} docentes con carga</span>
+                  <span>{d.asignado} / {d.contrato} hrs asignadas</span>
                 </div>
               </div>
             );

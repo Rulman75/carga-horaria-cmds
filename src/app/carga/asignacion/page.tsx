@@ -598,9 +598,9 @@ export default function AsignacionCargaPage() {
                   <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
                     <div className={`h-1.5 rounded-full transition-all duration-500 ${horasNoLectivasAsignadas > maxNoLectivasDecimal ? 'bg-red-500' : 'bg-[#F59E0B]'}`} style={{ width: `${Math.min(100, pctNoLectivas)}%` }}></div>
                   </div>
-                  <div className="mt-1 flex justify-between text-[10px]">
-                    <span className="text-gray-500 italic">Max. proporcional (referencia):</span>
-                    <span className={`font-bold ${horasNoLectivasAsignadas > maxNoLectivasPropDecimal ? 'text-red-500' : 'text-gray-500'}`}>{maxNoLectivasPropStr} {horasNoLectivasAsignadas > maxNoLectivasPropDecimal && '(Excedido)'}</span>
+                  <div className="mt-1.5 flex justify-between text-xs">
+                    <span className="text-gray-600 font-semibold">Máx. proporcional (referencia):</span>
+                    <span className={`font-bold ${horasNoLectivasAsignadas > maxNoLectivasPropDecimal ? 'text-red-500' : 'text-[#64748b]'}`}>{maxNoLectivasPropStr ? maxNoLectivasPropStr.replace(':', ' H ') + ' MIN' : '0 H 00 MIN'} {horasNoLectivasAsignadas > maxNoLectivasPropDecimal && '(Excedido)'}</span>
                   </div>
                 </div>
               </div>

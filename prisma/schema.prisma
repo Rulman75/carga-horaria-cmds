@@ -275,6 +275,7 @@ model ConfiguracionGlobal {
   id            Int   @id @default(1)
   horasColacion Float @default(2)
   maxHorasPie   Float @default(3)
+  porcentajeMinimoPlanificacion Float @default(40)
 }
 
 model ActividadExtracurricular {

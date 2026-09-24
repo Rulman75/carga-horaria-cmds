@@ -736,11 +736,11 @@ export async function getConfiguracionGlobal() {
   return config;
 }
 
-export async function updateConfiguracionGlobal(horasColacion: number, maxHorasPie: number) {
+export async function updateConfiguracionGlobal(horasColacion: number, maxHorasPie: number, porcentajeMinimoPlanificacion: number = 40) {
   return await prisma.configuracionGlobal.upsert({
     where: { id: 1 },
-    update: { horasColacion, maxHorasPie },
-    create: { id: 1, horasColacion, maxHorasPie }
+    update: { horasColacion, maxHorasPie, porcentajeMinimoPlanificacion },
+    create: { id: 1, horasColacion, maxHorasPie, porcentajeMinimoPlanificacion }
   });
 }
 

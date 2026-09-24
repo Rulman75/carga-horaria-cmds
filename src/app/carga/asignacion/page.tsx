@@ -485,6 +485,10 @@ export default function AsignacionCargaPage() {
             <td class="center">${Math.ceil(asigTotal)} H</td>
           </tr>
         </table>
+        ` + (observacionCarga ? `
+        <div class="section">Observaciones Adicionales</div>
+        <p style="font-size: 14px; text-align: justify; white-space: pre-wrap;">${observacionCarga}</p>
+        ` : ``) + `
 
         <div class="section">III. Declaración de Aceptación</div>
         <p style="font-size: 14px; text-align: justify;">Mediante la firma del presente documento, declaro haber sido informado(a) detalladamente de mi carga horaria lectiva y no lectiva para el año escolar 2027 en el establecimiento indicado. Comprendo que esta distribución se ajusta a mi contrato de trabajo y a la planificación operativa del establecimiento.</p>

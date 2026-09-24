@@ -135,7 +135,10 @@ export async function clonarPlanEstudioBase(establecimientoId: number, codPlanBa
       detalles: {
         create: detallesFiltrados.reduce((acc: any[], det: any) => {
           const key = `${det.tienCod}-${det.grteCod}`;
-          const esGradoJec = isJecMap.has(key) ? isJecMap.get(key) : (estab?.esJec || false);
+          // Solo insertar si el colegio realmente tiene configurado este grado
+          if (!isJecMap.has(key)) return acc;
+
+          const esGradoJec = isJecMap.get(key);
           const horasFinales = esGradoJec ? (det.horasCJ || 0) : (det.horasSJ || 0);
           if (horasFinales > 0) {
             acc.push({
@@ -349,7 +352,10 @@ export async function importarPlanBaseAPropio(planPropioId: number, codPlanBase:
 
     if (!existe) {
       const key = `${det.tienCod}-${det.grteCod}`;
-      const esGradoJec = isJecMap.has(key) ? isJecMap.get(key) : (planPropio.establecimiento?.esJec || false);
+      // Solo insertar si el colegio realmente tiene configurado este grado
+      if (!isJecMap.has(key)) continue;
+
+      const esGradoJec = isJecMap.get(key);
       const horasFinales = esGradoJec ? (det.horasCJ || 0) : (det.horasSJ || 0);
       if (horasFinales === 0) continue;
 

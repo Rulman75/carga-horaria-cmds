@@ -824,26 +824,36 @@ export default function AsignacionCargaPage() {
                                 </div>
                                 <div className="flex gap-1 flex-wrap justify-end max-w-[200px]">
                                   {letras.map((l: string) => {
-                                    const assignedToMe = cargasVivas.some(c => 
-    c.codAsignatura === det.codAsignatura && 
-    c.tienCod === det.tienCod && 
-    c.grteCod === det.grteCod && 
-    c.letraCurso === l &&
-    (!esDesdobleUI || c.grupoDesdoble === (grupoDesdobleUI || 'Grupo'))
-  );
-                                    
-                                    return (
-                                      <button 
-                                        key={l}
-                                        onClick={() => handleAsignarLectiva(det, l)}
-                                        disabled={!docenteSeleccionado || (!esDesdobleUI && restantes < det.horas) || assignedToMe}
-                                        className={`px-2 py-1 rounded text-xs font-bold transition-colors ${assignedToMe ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700 hover:bg-[#016098] hover:text-white disabled:opacity-50 disabled:hover:bg-gray-100 disabled:hover:text-gray-700'}`}
-                                        title={assignedToMe ? "Ya asignado a este docente" : "Asignar"}
-                                      >
-                                        Asignar {l}
-                                      </button>
-                                    );
-                                  })}
+    const assignedToMe = cargasVivas.some(c => 
+      c.codAsignatura === det.codAsignatura && 
+      c.tienCod === det.tienCod && 
+      c.grteCod === det.grteCod && 
+      c.letraCurso === l &&
+      (!esDesdobleUI || c.grupoDesdoble === (grupoDesdobleUI || 'Grupo'))
+    );
+    
+    const groupKey = esDesdobleUI ? (grupoDesdobleUI || 'Grupo').toUpperCase().trim() : 'DEFAULT';
+    const myH = cargasVivas
+        .filter(c => c.tienCod === det.tienCod && c.grteCod === det.grteCod && c.codAsignatura === det.codAsignatura && c.letraCurso === l && ((c.esDesdoble ? (c.grupoDesdoble||'GRUPO').toUpperCase().trim() : 'DEFAULT') === groupKey))
+        .reduce((sum, c) => sum + c.horas, 0);
+    const otherH = todasCargas
+        .filter(c => c.docenteId.toString() !== docenteSeleccionado && c.tienCod === det.tienCod && c.grteCod === det.grteCod && c.asignaturaCod === det.codAsignatura && c.letraCurso === l && ((c.esDesdoble ? (c.grupoDesdoble||'GRUPO').toUpperCase().trim() : 'DEFAULT') === groupKey))
+        .reduce((sum, c) => sum + c.horasAllocadas, 0);
+    
+    const letterIsFull = (myH + otherH) >= det.horas;
+
+    return (
+      <button 
+        key={l}
+        onClick={() => handleAsignarLectiva(det, l)}
+        disabled={!docenteSeleccionado || (!esDesdobleUI && restantes < det.horas) || assignedToMe || letterIsFull}
+        className={`px-2 py-1 rounded text-xs font-bold transition-colors ${assignedToMe ? 'bg-green-100 text-green-700' : letterIsFull ? 'bg-red-50 text-red-500 cursor-not-allowed opacity-60' : 'bg-gray-100 text-gray-700 hover:bg-[#016098] hover:text-white disabled:opacity-50 disabled:hover:bg-gray-100 disabled:hover:text-gray-700'}`}
+        title={assignedToMe ? "Ya asignado a este docente" : letterIsFull ? "Letra sin horas disponibles" : "Asignar"}
+      >
+        Asignar {l}
+      </button>
+    );
+  })}
                                 </div>
                               </div>
                             );
@@ -900,26 +910,36 @@ export default function AsignacionCargaPage() {
                                 </div>
                                 <div className="flex gap-1 flex-wrap justify-end max-w-[200px]">
                                   {letras.map((l: string) => {
-                                    const assignedToMe = cargasVivas.some(c => 
-    c.codAsignatura === det.codAsignatura && 
-    c.tienCod === det.tienCod && 
-    c.grteCod === det.grteCod && 
-    c.letraCurso === l &&
-    (!esDesdobleUI || c.grupoDesdoble === (grupoDesdobleUI || 'Grupo'))
-  );
-                                    
-                                    return (
-                                      <button 
-                                        key={l}
-                                        onClick={() => handleAsignarLectiva(det, l)}
-                                        disabled={!docenteSeleccionado || (!esDesdobleUI && restantes < det.horas) || assignedToMe}
-                                        className={`px-2 py-1 rounded text-xs font-bold transition-colors ${assignedToMe ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700 hover:bg-[#016098] hover:text-white disabled:opacity-50 disabled:hover:bg-gray-100 disabled:hover:text-gray-700'}`}
-                                        title={assignedToMe ? "Ya asignado a este docente" : "Asignar"}
-                                      >
-                                        Asignar {l}
-                                      </button>
-                                    );
-                                  })}
+    const assignedToMe = cargasVivas.some(c => 
+      c.codAsignatura === det.codAsignatura && 
+      c.tienCod === det.tienCod && 
+      c.grteCod === det.grteCod && 
+      c.letraCurso === l &&
+      (!esDesdobleUI || c.grupoDesdoble === (grupoDesdobleUI || 'Grupo'))
+    );
+    
+    const groupKey = esDesdobleUI ? (grupoDesdobleUI || 'Grupo').toUpperCase().trim() : 'DEFAULT';
+    const myH = cargasVivas
+        .filter(c => c.tienCod === det.tienCod && c.grteCod === det.grteCod && c.codAsignatura === det.codAsignatura && c.letraCurso === l && ((c.esDesdoble ? (c.grupoDesdoble||'GRUPO').toUpperCase().trim() : 'DEFAULT') === groupKey))
+        .reduce((sum, c) => sum + c.horas, 0);
+    const otherH = todasCargas
+        .filter(c => c.docenteId.toString() !== docenteSeleccionado && c.tienCod === det.tienCod && c.grteCod === det.grteCod && c.asignaturaCod === det.codAsignatura && c.letraCurso === l && ((c.esDesdoble ? (c.grupoDesdoble||'GRUPO').toUpperCase().trim() : 'DEFAULT') === groupKey))
+        .reduce((sum, c) => sum + c.horasAllocadas, 0);
+    
+    const letterIsFull = (myH + otherH) >= det.horas;
+
+    return (
+      <button 
+        key={l}
+        onClick={() => handleAsignarLectiva(det, l)}
+        disabled={!docenteSeleccionado || (!esDesdobleUI && restantes < det.horas) || assignedToMe || letterIsFull}
+        className={`px-2 py-1 rounded text-xs font-bold transition-colors ${assignedToMe ? 'bg-green-100 text-green-700' : letterIsFull ? 'bg-red-50 text-red-500 cursor-not-allowed opacity-60' : 'bg-gray-100 text-gray-700 hover:bg-[#016098] hover:text-white disabled:opacity-50 disabled:hover:bg-gray-100 disabled:hover:text-gray-700'}`}
+        title={assignedToMe ? "Ya asignado a este docente" : letterIsFull ? "Letra sin horas disponibles" : "Asignar"}
+      >
+        Asignar {l}
+      </button>
+    );
+  })}
                                 </div>
                               </div>
                             );

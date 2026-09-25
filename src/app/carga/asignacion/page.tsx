@@ -289,7 +289,7 @@ export default function AsignacionCargaPage() {
     const anlInfo = actividadesNL.find(a => a.id.toString() === anlSeleccionada);
     
     if (anlInfo?.esPlanificacion) {
-      if (planificacionActual + horasManual < minPlanificacionDecimal) {
+      if (planificacionActual + horasManual < minPlanificacionDecimal - 0.01) {
         alert(`Por normativa, la planificación debe ser al menos el ${pctPlanificacion}% de las horas no lectivas proporcionales (${maxNoLectivasPropStr}). La cantidad mínima esperada es ${minPlanificacionDecimal.toFixed(1)} hrs.`);
         return;
       }

@@ -33,7 +33,7 @@ export default function PlanEstablecimientoDetallePage() {
   
   // Form selections for Individual Subject
   const [asigTienCod, setAsigTienCod] = useState<number | ''>('');
-  const [asigGrteCod, setAsigGrteCod] = useState<number | ''>('');
+  const [asigGrteCods, setAsigGrteCods] = useState<number[]>([]);
   const [asigCod, setAsigCod] = useState('');
   const [categoria, setCategoria] = useState('BASE');
 
@@ -139,23 +139,25 @@ export default function PlanEstablecimientoDetallePage() {
   };
 
   const handleAgregarIndividual = async () => {
-    if (asigTienCod === '' || asigGrteCod === '' || !asigCod) {
-      alert("Por favor, selecciona Tipo de Enseñanza, Curso y Asignatura.");
+    if (asigTienCod === '' || asigGrteCods.length === 0 || !asigCod) {
+      alert("Por favor, selecciona Tipo de Enseñanza, Cursos y Asignatura.");
       return;
     }
 
     setImportando(true);
     try {
-      await agregarAsignaturaIndividualPropio(
-        parseInt(id as string),
-        asigTienCod,
-        asigGrteCod,
-        asigCod,
-        categoria
-      );
+      for (const grteCod of asigGrteCods) {
+        await agregarAsignaturaIndividualPropio(
+          parseInt(id as string),
+          asigTienCod,
+          grteCod,
+          asigCod,
+          categoria
+        );
+      }
       setShowModal(false);
       setAsigTienCod('');
-      setAsigGrteCod('');
+      setAsigGrteCods([]);
       setAsigCod('');
       setSearchAsig('');
       setCategoria('BASE');
@@ -720,7 +722,7 @@ export default function PlanEstablecimientoDetallePage() {
                         value={asigTienCod}
                         onChange={(e) => {
                           setAsigTienCod(Number(e.target.value));
-                          setAsigGrteCod(''); // reset grade
+                          setAsigGrteCods([]); // reset grades
                         }}
                       >
                         <option value="">Seleccione...</option>
@@ -731,18 +733,30 @@ export default function PlanEstablecimientoDetallePage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1">Curso Destino</label>
-                      <select 
-                        className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-[#016098]"
-                        value={asigGrteCod}
-                        onChange={(e) => setAsigGrteCod(Number(e.target.value))}
-                        disabled={!asigTienCod}
-                      >
-                        <option value="">Seleccione...</option>
-                        {availableGradesForForm.map((g: any) => (
-                          <option key={g.grteCod} value={g.grteCod}>{g.grteDescrip}</option>
-                        ))}
-                      </select>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Cursos Destino (Múltiple)</label>
+                      <div className="border border-gray-300 rounded-lg p-2.5 text-sm h-[132px] overflow-y-auto custom-scrollbar bg-white">
+                        {!asigTienCod ? (
+                          <div className="text-gray-400 text-center mt-10">Seleccione Tipo Enseñanza</div>
+                        ) : (
+                          availableGradesForForm.map((g: any) => (
+                            <label key={g.grteCod} className="flex items-center gap-2 py-1.5 cursor-pointer hover:bg-gray-50 border-b border-gray-50 last:border-0">
+                              <input 
+                                type="checkbox" 
+                                className="w-4 h-4 text-[#016098]"
+                                checked={asigGrteCods.includes(g.grteCod)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setAsigGrteCods([...asigGrteCods, g.grteCod]);
+                                  } else {
+                                    setAsigGrteCods(asigGrteCods.filter(c => c !== g.grteCod));
+                                  }
+                                }}
+                              />
+                              <span className="text-gray-800">{g.grteDescrip}</span>
+                            </label>
+                          ))
+                        )}
+                      </div>
                     </div>
                   </div>
 

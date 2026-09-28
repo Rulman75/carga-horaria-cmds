@@ -138,6 +138,8 @@ export default function AsignacionCargaPage() {
           letraCurso: c.letraCurso || undefined,
           esDesdoble: c.esDesdoble || false,
           grupoDesdoble: c.grupoDesdoble || undefined,
+            esCombinado: c.esCombinado || false,
+            grupoCombinado: c.grupoCombinado || undefined,
           nombre: nombre,
           horas: c.horasAllocadas,
           tipoCarga: (c.tipoCarga as any) || 'LECTIVA'
@@ -174,14 +176,16 @@ export default function AsignacionCargaPage() {
       lectivas.forEach(c => {
         if (c.esCombinado && c.grupoCombinado) {
           const g = c.grupoCombinado.toUpperCase().trim();
-          if (!combinados[g]) combinados[g] = [];
-          combinados[g].push(c.horas);
+          const asig = c.codAsignatura || 'GEN';
+          const key = `${asig}_${g}`;
+          if (!combinados[key]) combinados[key] = [];
+          combinados[key].push(c.horas);
         } else {
           total += c.horas;
         }
       });
-      for (const g in combinados) {
-        total += Math.max(...combinados[g]);
+      for (const key in combinados) {
+        total += Math.max(...combinados[key]);
       }
       return total;
     };

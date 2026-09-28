@@ -147,7 +147,24 @@ const formatCronoDecimal = (decimal: number) => {
   let colacion = 0;
   
   if (showCargaModal && docenteSeleccionado) {
-    horasLectivasAsignadas = cargaDocente.filter(c => c.tipoCarga === 'LECTIVA').reduce((sum, c) => sum + (c.horasAllocadas || c.horas || 0), 0);
+          const lectivasDocente = cargaDocente.filter(c => c.tipoCarga === 'LECTIVA');
+      let tmpLectivas = 0;
+      const combinadosDoc: Record<string, number[]> = {};
+      lectivasDocente.forEach(c => {
+        if (c.esCombinado && c.grupoCombinado) {
+          const g = c.grupoCombinado.toUpperCase().trim();
+          const asig = c.asignaturaCod || c.codAsignatura || 'GEN';
+          const key = `${asig}_${g}`;
+          if (!combinadosDoc[key]) combinadosDoc[key] = [];
+          combinadosDoc[key].push(c.horasAllocadas || c.horas || 0);
+        } else {
+          tmpLectivas += (c.horasAllocadas || c.horas || 0);
+        }
+      });
+      for (const key in combinadosDoc) {
+        tmpLectivas += Math.max(...combinadosDoc[key]);
+      }
+      horasLectivasAsignadas = tmpLectivas;
     horasNoLectivasAsignadas = cargaDocente.filter(c => c.tipoCarga === 'NO_LECTIVA').reduce((sum, c) => sum + (c.horasAllocadas || c.horas || 0), 0);
     horasExtraAsignadas = cargaDocente.filter(c => c.tipoCarga === 'EXTRACURRICULAR').reduce((sum, c) => sum + (c.horasAllocadas || c.horas || 0), 0);
     

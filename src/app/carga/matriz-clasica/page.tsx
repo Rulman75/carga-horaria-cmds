@@ -65,13 +65,24 @@ export default function SabanaClasicaPage() {
       const isJec = c.asignatura?.esTallerJec || false;
       const asigDesc = c.asignatura?.asigDescripcion || 'Desconocida';
       
-      const key = `${c.asignaturaCod}|${asigDesc}`;
-      if (isJec) {
-        asignaturasJecSet.add(key);
-        d.asignaturasJec[key] = (d.asignaturasJec[key] || 0) + c.horasAllocadas;
+      const asigKey = `${c.asignaturaCod}|${asigDesc}`;
+      if (isJec) asignaturasJecSet.add(asigKey);
+      else asignaturasBaseSet.add(asigKey);
+
+      if (c.esCombinado && c.grupoCombinado) {
+        const g = c.grupoCombinado.toUpperCase().trim();
+        const combKey = `${asigKey}|${g}`;
+        
+        if (isJec) {
+          if (!d._combinadosJec[combKey]) d._combinadosJec[combKey] = [];
+          d._combinadosJec[combKey].push(c.horasAllocadas);
+        } else {
+          if (!d._combinadosBase[combKey]) d._combinadosBase[combKey] = [];
+          d._combinadosBase[combKey].push(c.horasAllocadas);
+        }
       } else {
-        asignaturasBaseSet.add(key);
-        d.asignaturasBase[key] = (d.asignaturasBase[key] || 0) + c.horasAllocadas;
+        if (isJec) d.asignaturasJec[asigKey] = (d.asignaturasJec[asigKey] || 0) + c.horasAllocadas;
+        else d.asignaturasBase[asigKey] = (d.asignaturasBase[asigKey] || 0) + c.horasAllocadas;
       }
     } else if (c.tipoCarga === 'NO_LECTIVA') {
       const anlDesc = c.actividadNoLectiva?.descripcion || 'No Lectiva';
@@ -87,6 +98,18 @@ export default function SabanaClasicaPage() {
       extSet.add(key);
       d.extras[key] = (d.extras[key] || 0) + c.horasAllocadas;
       d.totalExtraCrono += c.horasAllocadas;
+    }
+  });
+
+  // Apply Math.max for combined classes
+  Object.values(docentesMap).forEach((d: any) => {
+    for (const combKey in d._combinadosBase) {
+      const asigKey = combKey.substring(0, combKey.lastIndexOf('|'));
+      d.asignaturasBase[asigKey] = (d.asignaturasBase[asigKey] || 0) + Math.max(...d._combinadosBase[combKey]);
+    }
+    for (const combKey in d._combinadosJec) {
+      const asigKey = combKey.substring(0, combKey.lastIndexOf('|'));
+      d.asignaturasJec[asigKey] = (d.asignaturasJec[asigKey] || 0) + Math.max(...d._combinadosJec[combKey]);
     }
   });
 
@@ -249,7 +272,7 @@ export default function SabanaClasicaPage() {
               let recreoCrono: number | string = '-';
               let recreoDecimal = 0;
               if (totalAulaPed > 0) {
-                const row = tablaConversion.find(r => r.lectivasPedagogicas === totalAulaPed);
+                const row = tablaConversion.find(r => r.lectivasPedagogicas === Math.round(totalAulaPed));
                 if (row) {
                   anlMarcoCrono = Math.round(parseCronoToDecimal(row.noLectivasCronologicas));
                   recreoCrono = Math.round(parseCronoToDecimal(row.recreoCronologicas));

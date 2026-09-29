@@ -178,7 +178,7 @@ const formatCronoDecimal = (decimal: number) => {
     maxNoLectivasStr = conversionData ? conversionData.noLectivasCronologicas : `${Math.floor(baseAsignable*0.35)}:00`;
     maxNoLectivasDecimal = parseCronoToDecimal(maxNoLectivasStr);
 
-    const currentConversionData = tablaConversion.find((t: any) => t.lectivasPedagogicas === horasLectivasAsignadas);
+    const currentConversionData = tablaConversion.find((t: any) => t.lectivasPedagogicas === Math.round(horasLectivasAsignadas));
     recreoDecimal = currentConversionData ? parseCronoToDecimal(currentConversionData.recreoCronologicas) : 0;
     
     pctLectivas = Math.min(100, (horasLectivasAsignadas / maxLectivasPedagogicas) * 100) || 0;

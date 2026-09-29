@@ -875,9 +875,7 @@ export default function AsignacionCargaPage() {
                         <div className="text-center text-[#94a3b8] mt-10">Seleccione una asignatura para ver los cursos.</div>
                       ) : (
                         <div className="space-y-3">
-                          {todosLosDetalles
-                            .filter(d => d.codAsignatura === asignaturaSeleccionada)
-                            .map(det => {
+                          {Array.from(new Map(todosLosDetalles.filter(d => d.codAsignatura === asignaturaSeleccionada).map(d => [`${d.tienCod}-${d.grteCod}-${d.codAsignatura}`, d])).values()).map((det: any) => {
                             const gInfo = grados.find(g => g.tienCod === det.tienCod && g.grteCod === det.grteCod);
                             if (!gInfo) return null;
                             const cursos = gInfo.cantidadCursos || 1;

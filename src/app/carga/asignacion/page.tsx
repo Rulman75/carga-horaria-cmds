@@ -840,9 +840,15 @@ export default function AsignacionCargaPage() {
     const myH = cargasVivas
         .filter(c => c.tienCod === det.tienCod && c.grteCod === det.grteCod && c.codAsignatura === det.codAsignatura && c.letraCurso === l && ((c.esDesdoble ? (c.grupoDesdoble||'GRUPO').toUpperCase().trim() : 'DEFAULT') === groupKey))
         .reduce((sum, c) => sum + c.horas, 0);
-    const otherH = todasCargas
-        .filter(c => c.docenteId.toString() !== docenteSeleccionado && c.tienCod === det.tienCod && c.grteCod === det.grteCod && c.asignaturaCod === det.codAsignatura && c.letraCurso === l && ((c.esDesdoble ? (c.grupoDesdoble||'GRUPO').toUpperCase().trim() : 'DEFAULT') === groupKey))
-        .reduce((sum, c) => sum + c.horasAllocadas, 0);
+    const otherCargas = todasCargas
+          .filter(c => c.docenteId.toString() !== docenteSeleccionado && c.tienCod === det.tienCod && c.grteCod === det.grteCod && c.asignaturaCod === det.codAsignatura && c.letraCurso === l && ((c.esDesdoble ? (c.grupoDesdoble||'GRUPO').toUpperCase().trim() : 'DEFAULT') === groupKey));
+      const otherH = otherCargas.reduce((sum, c) => sum + c.horasAllocadas, 0);
+      
+      const nombresDocentes = otherCargas.map(c => {
+         const d = docentes.find(doc => doc.id === c.docenteId);
+         return d ? `${d.nombres} ${d.apellidos}` : 'Otro Docente';
+      });
+      const docentesAsignadosUnicos = Array.from(new Set(nombresDocentes));
     
     const letterIsFull = (myH + otherH) >= det.horas;
 
@@ -852,7 +858,7 @@ export default function AsignacionCargaPage() {
         onClick={() => handleAsignarLectiva(det, l)}
         disabled={!docenteSeleccionado || (!esDesdobleUI && restantes < det.horas) || assignedToMe || letterIsFull}
         className={`px-2 py-1 rounded text-xs font-bold transition-colors ${assignedToMe ? 'bg-green-100 text-green-700' : letterIsFull ? 'bg-red-50 text-red-500 cursor-not-allowed opacity-60' : 'bg-gray-100 text-gray-700 hover:bg-[#016098] hover:text-white disabled:opacity-50 disabled:hover:bg-gray-100 disabled:hover:text-gray-700'}`}
-        title={assignedToMe ? "Ya asignado a este docente" : letterIsFull ? "Letra sin horas disponibles" : "Asignar"}
+        title={assignedToMe ? "Ya asignado a este docente" : letterIsFull ? `Letra sin horas disponibles (Asignado a: ${docentesAsignadosUnicos.join(', ')})` : (docentesAsignadosUnicos.length > 0 ? `Asignar (Horas parciales en: ${docentesAsignadosUnicos.join(', ')})` : "Asignar")}
       >
         Asignar {l}
       </button>
@@ -926,9 +932,15 @@ export default function AsignacionCargaPage() {
     const myH = cargasVivas
         .filter(c => c.tienCod === det.tienCod && c.grteCod === det.grteCod && c.codAsignatura === det.codAsignatura && c.letraCurso === l && ((c.esDesdoble ? (c.grupoDesdoble||'GRUPO').toUpperCase().trim() : 'DEFAULT') === groupKey))
         .reduce((sum, c) => sum + c.horas, 0);
-    const otherH = todasCargas
-        .filter(c => c.docenteId.toString() !== docenteSeleccionado && c.tienCod === det.tienCod && c.grteCod === det.grteCod && c.asignaturaCod === det.codAsignatura && c.letraCurso === l && ((c.esDesdoble ? (c.grupoDesdoble||'GRUPO').toUpperCase().trim() : 'DEFAULT') === groupKey))
-        .reduce((sum, c) => sum + c.horasAllocadas, 0);
+    const otherCargas = todasCargas
+          .filter(c => c.docenteId.toString() !== docenteSeleccionado && c.tienCod === det.tienCod && c.grteCod === det.grteCod && c.asignaturaCod === det.codAsignatura && c.letraCurso === l && ((c.esDesdoble ? (c.grupoDesdoble||'GRUPO').toUpperCase().trim() : 'DEFAULT') === groupKey));
+      const otherH = otherCargas.reduce((sum, c) => sum + c.horasAllocadas, 0);
+      
+      const nombresDocentes = otherCargas.map(c => {
+         const d = docentes.find(doc => doc.id === c.docenteId);
+         return d ? `${d.nombres} ${d.apellidos}` : 'Otro Docente';
+      });
+      const docentesAsignadosUnicos = Array.from(new Set(nombresDocentes));
     
     const letterIsFull = (myH + otherH) >= det.horas;
 
@@ -938,7 +950,7 @@ export default function AsignacionCargaPage() {
         onClick={() => handleAsignarLectiva(det, l)}
         disabled={!docenteSeleccionado || (!esDesdobleUI && restantes < det.horas) || assignedToMe || letterIsFull}
         className={`px-2 py-1 rounded text-xs font-bold transition-colors ${assignedToMe ? 'bg-green-100 text-green-700' : letterIsFull ? 'bg-red-50 text-red-500 cursor-not-allowed opacity-60' : 'bg-gray-100 text-gray-700 hover:bg-[#016098] hover:text-white disabled:opacity-50 disabled:hover:bg-gray-100 disabled:hover:text-gray-700'}`}
-        title={assignedToMe ? "Ya asignado a este docente" : letterIsFull ? "Letra sin horas disponibles" : "Asignar"}
+        title={assignedToMe ? "Ya asignado a este docente" : letterIsFull ? `Letra sin horas disponibles (Asignado a: ${docentesAsignadosUnicos.join(', ')})` : (docentesAsignadosUnicos.length > 0 ? `Asignar (Horas parciales en: ${docentesAsignadosUnicos.join(', ')})` : "Asignar")}
       >
         Asignar {l}
       </button>

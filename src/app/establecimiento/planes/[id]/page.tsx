@@ -54,6 +54,13 @@ export default function PlanEstablecimientoDetallePage() {
   const loadData = async () => {
     setLoading(true);
     const data = await getPlanPropio(parseInt(id as string));
+    
+    const selectedEstId = localStorage.getItem('selectedEstablecimientoId');
+    if (selectedEstId && data && data.establecimientoId && data.establecimientoId.toString() !== selectedEstId) {
+      router.push('/establecimiento/planes');
+      return;
+    }
+
     setPlan(data);
     
     const bases = await getPlanesEstudio();

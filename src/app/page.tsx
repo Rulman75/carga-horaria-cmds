@@ -8,8 +8,9 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const id = Number(localStorage.getItem('selectedEstablecimientoId')) || 0;
-    if (id > 0 && id !== 2) {
+    const idStr = localStorage.getItem('selectedEstablecimientoId');
+    const id = idStr ? Number(idStr) : 0;
+    if (id > 0) {
       setEstId(id);
     }
     setLoading(false);

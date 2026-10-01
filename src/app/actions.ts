@@ -1201,3 +1201,22 @@ export async function getCursosLetra(establecimientoId: number) {
     where: { establecimientoId }
   });
 }
+
+
+export async function updateEspecialidadAsignaturaPropia(
+  planPropioId: number,
+  codAsignatura: string,
+  oldEspecialidad: string | null,
+  newEspecialidad: string | null
+) {
+  await prisma.planEstablecimientoDet.updateMany({
+    where: {
+      planEstablecimientoId: planPropioId,
+      codAsignatura,
+      especialidad: oldEspecialidad
+    },
+    data: {
+      especialidad: newEspecialidad
+    }
+  });
+}

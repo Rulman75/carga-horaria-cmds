@@ -799,23 +799,26 @@ export default function AsignacionCargaPage() {
                               c.planEstablecimientoId === det.planEstablecimientoId &&
                               c.tienCod === det.tienCod &&
                               c.grteCod === det.grteCod &&
-                              c.asignaturaCod === det.codAsignatura
-                            ));
+                              c.asignaturaCod === det.codAsignatura &&
+                                (c.especialidad || null) === (det.especialidad || null)
+                              ));
 
                             const asignadasEsteDocente = cargasVivas.filter(c => 
                               c.planEstablecimientoId === det.planEstablecimientoId &&
                               c.tienCod === det.tienCod &&
                               c.grteCod === det.grteCod &&
-                              c.codAsignatura === det.codAsignatura
-                            ).reduce((sum, c) => sum + c.horas, 0);
+                              c.codAsignatura === det.codAsignatura &&
+                                (c.especialidad || null) === (det.especialidad || null)
+                              ).reduce((sum, c) => sum + c.horas, 0);
 
                             const tomadasOtros = tomadasGlobal - calcularHorasConsumidas(todasCargas.filter(c => 
                               c.docenteId.toString() === docenteSeleccionado &&
                               c.planEstablecimientoId === det.planEstablecimientoId &&
                               c.tienCod === det.tienCod &&
                               c.grteCod === det.grteCod &&
-                              c.asignaturaCod === det.codAsignatura
-                            ));
+                              c.asignaturaCod === det.codAsignatura &&
+                                (c.especialidad || null) === (det.especialidad || null)
+                              ));
 
                             const tomadasReal = tomadasOtros + asignadasEsteDocente;
                             const restantes = totalDisp - tomadasReal;
@@ -823,7 +826,7 @@ export default function AsignacionCargaPage() {
                             return (
                               <div key={det.id} className="flex justify-between items-center p-3 border border-[#e2e8f0] rounded-lg hover:border-[#016098] transition-colors bg-white shadow-sm">
                                 <div>
-                                  <p className="font-medium text-[#1e293b] text-sm">{det.asignatura?.asigDescripcion}</p>
+                                  <p className="font-medium text-[#1e293b] text-sm">{det.asignatura?.asigDescripcion} {det.especialidad && <span className="ml-2 px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-bold tracking-widest uppercase">{det.especialidad}</span>}</p>
                                   <p className="text-xs text-[#64748b]">{det.horas} Pedagógicas/curso • {det.formacion}</p>
                                   <div className="mt-1 text-xs font-bold text-[#016098]">
                                     Disp: {restantes} / {totalDisp} hrs ped
@@ -889,23 +892,26 @@ export default function AsignacionCargaPage() {
                               c.planEstablecimientoId === det.planEstablecimientoId &&
                               c.tienCod === det.tienCod &&
                               c.grteCod === det.grteCod &&
-                              c.asignaturaCod === det.codAsignatura
-                            ));
+                              c.asignaturaCod === det.codAsignatura &&
+                                (c.especialidad || null) === (det.especialidad || null)
+                              ));
 
                             const asignadasEsteDocente = cargasVivas.filter(c => 
                               c.planEstablecimientoId === det.planEstablecimientoId &&
                               c.tienCod === det.tienCod &&
                               c.grteCod === det.grteCod &&
-                              c.codAsignatura === det.codAsignatura
-                            ).reduce((sum, c) => sum + c.horas, 0);
+                              c.codAsignatura === det.codAsignatura &&
+                                (c.especialidad || null) === (det.especialidad || null)
+                              ).reduce((sum, c) => sum + c.horas, 0);
 
                             const tomadasOtros = tomadasGlobal - calcularHorasConsumidas(todasCargas.filter(c => 
                               c.docenteId.toString() === docenteSeleccionado &&
                               c.planEstablecimientoId === det.planEstablecimientoId &&
                               c.tienCod === det.tienCod &&
                               c.grteCod === det.grteCod &&
-                              c.asignaturaCod === det.codAsignatura
-                            ));
+                              c.asignaturaCod === det.codAsignatura &&
+                                (c.especialidad || null) === (det.especialidad || null)
+                              ));
 
                             const tomadasReal = tomadasOtros + asignadasEsteDocente;
                             const restantes = totalDisp - tomadasReal;

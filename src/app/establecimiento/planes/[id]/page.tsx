@@ -8,7 +8,8 @@ import {
   getPlanesEstudio, 
   importarPlanBaseAPropio,
   getAllAsignaturas,
-  agregarAsignaturaIndividualPropio
+    agregarAsignaturaIndividualPropio,
+  updateEspecialidadAsignaturaPropia
 } from '../../../actions';
 import Link from 'next/link';
 
@@ -121,6 +122,16 @@ export default function PlanEstablecimientoDetallePage() {
 
     for (const d of detallesABorrar) {
       await eliminarDetallePropio(d.id);
+    }
+  };
+
+  const handleEspecialidadChange = async (asigCodStr: string, oldEspecialidad: string | null, newEspecialidad: string) => {
+    if (!confirm(`¿Mover esta asignatura a la especialidad ${newEspecialidad || 'NINGUNA'}?`)) return;
+    try {
+      await updateEspecialidadAsignaturaPropia(plan.id, asigCodStr, oldEspecialidad, newEspecialidad || null);
+      await loadData();
+    } catch (e) {
+      alert("Error al actualizar la especialidad");
     }
   };
 
@@ -347,7 +358,21 @@ export default function PlanEstablecimientoDetallePage() {
                                 return (
                                   <tr key={rowKey} className={`${fIdx % 2 === 0 ? 'bg-white' : 'bg-[#fcfcfc]'} group`}>
                                     <td className="px-4 py-3 font-semibold text-[#1e293b] border-b border-r border-[#e2e8f0] sticky left-0 z-10 bg-inherit shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] flex justify-between items-center">
-                                      <span className="truncate pr-2">{fila.asigDescripcion} {fila._especialidad && <span className="ml-2 px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-bold tracking-widest uppercase">{fila._especialidad}</span>}</span>
+                                      <div className="flex flex-col gap-1 w-full truncate pr-2">
+                                          <span className="truncate">{fila.asigDescripcion}</span>
+                                          {plan?.establecimiento?.especialidades?.length > 0 && (
+                                            <select 
+                                              value={fila._especialidad || ''}
+                                              onChange={(e) => handleEspecialidadChange(fila.asigCod, fila._especialidad || null, e.target.value)}
+                                              className="text-[10px] border border-gray-200 rounded p-0.5 max-w-fit focus:outline-none focus:border-[#016098] bg-blue-50 text-blue-800 font-bold"
+                                            >
+                                              <option value="">- Global (Sin Especialidad) -</option>
+                                              {plan.establecimiento.especialidades.map((e: string) => (
+                                                <option key={e} value={e}>{e}</option>
+                                              ))}
+                                            </select>
+                                          )}
+                                        </div>
                                       <button 
                                         onClick={() => handleEliminarFila(fila.asigCod, matriz.tipo.tienCod, fila._especialidad)}
                                         className="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity p-1"

@@ -360,7 +360,7 @@ export default function PlanEstablecimientoDetallePage() {
                                     <td className="px-4 py-3 font-semibold text-[#1e293b] border-b border-r border-[#e2e8f0] sticky left-0 z-10 bg-inherit shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] flex justify-between items-center">
                                       <div className="flex flex-col gap-1 w-full truncate pr-2">
                                           <span className="truncate">{fila.asigDescripcion}</span>
-                                          {plan?.establecimiento?.especialidades?.length > 0 && (
+                                          {plan?.establecimiento?.especialidades?.length > 0 && fila._esPropio && (
                                             <select 
                                               value={fila._especialidad || ''}
                                               onChange={(e) => handleEspecialidadChange(fila.asigCod, fila._especialidad || null, e.target.value)}

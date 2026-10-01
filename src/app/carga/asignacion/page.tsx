@@ -751,13 +751,18 @@ export default function AsignacionCargaPage() {
                            onChange={e => setAsignaturaSeleccionada(e.target.value)}
                          >
                            <option value="">-- Seleccionar Asignatura --</option>
-                           {Array.from(new Set(todosLosDetalles.map(d => d.codAsignatura)))
-                             .map(cod => todasAsignaturas.find(a => a.asigCod === cod))
-                             .filter(Boolean)
-                             .sort((a, b) => a.asigDescripcion.localeCompare(b.asigDescripcion))
-                             .map(a => (
-                             <option key={a.asigCod} value={a.asigCod}>{a.asigDescripcion}</option>
-                           ))}
+                           {Array.from(new Map(todosLosDetalles.map(d => [`${d.codAsignatura}-${d.especialidad || 'NONE'}`, d])).values())
+                               .map(d => {
+                                 const a = todasAsignaturas.find(asig => asig.asigCod === d.codAsignatura);
+                                 return a ? { ...a, _especialidad: d.especialidad } : null;
+                               })
+                               .filter(Boolean)
+                               .sort((a, b) => a.asigDescripcion.localeCompare(b.asigDescripcion) || (a._especialidad || '').localeCompare(b._especialidad || ''))
+                               .map(a => (
+                               <option key={`${a.asigCod}-${a._especialidad || 'NONE'}`} value={`${a.asigCod}-${a._especialidad || 'NONE'}`}>
+                                 {a.asigDescripcion} {a._especialidad ? `(${a._especialidad})` : ''}
+                               </option>
+                             ))}
                          </select>
                          </div>
                        )}
@@ -881,7 +886,7 @@ export default function AsignacionCargaPage() {
                         <div className="text-center text-[#94a3b8] mt-10">Seleccione una asignatura para ver los cursos.</div>
                       ) : (
                         <div className="space-y-3">
-                          {Array.from(new Map(todosLosDetalles.filter(d => d.codAsignatura === asignaturaSeleccionada).map(d => [`${d.tienCod}-${d.grteCod}-${d.codAsignatura}-${d.especialidad || 'NONE'}`, d])).values()).map((det: any) => {
+                          {Array.from(new Map(todosLosDetalles.filter(d => `${d.codAsignatura}-${d.especialidad || 'NONE'}` === asignaturaSeleccionada).map(d => [`${d.tienCod}-${d.grteCod}-${d.codAsignatura}-${d.especialidad || 'NONE'}`, d])).values()).map((det: any) => {
                             const gInfo = grados.find(g => g.tienCod === det.tienCod && g.grteCod === det.grteCod);
                             if (!gInfo) return null;
                             const cursos = gInfo.cantidadCursos || 1;
@@ -919,7 +924,7 @@ export default function AsignacionCargaPage() {
                             return (
                               <div key={det.id} className="flex justify-between items-center p-3 border border-[#e2e8f0] rounded-lg hover:border-[#016098] transition-colors bg-white shadow-sm">
                                 <div>
-                                  <p className="font-medium text-[#1e293b] text-sm">{gInfo.grteDescrip} ({gInfo.tipoEnsenanza?.tienDescripcion})</p>
+                                  <p className="font-medium text-[#1e293b] text-sm">{gInfo.grteDescrip} ({gInfo.tipoEnsenanza?.tienDescripcion}) {det.especialidad && <span className="ml-2 px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-bold tracking-widest uppercase">{det.especialidad}</span>}</p>
                                   <p className="text-xs text-[#64748b]">{det.horas} Pedagógicas/curso • {det.formacion}</p>
                                   <div className="mt-1 text-xs font-bold text-[#016098]">
                                     Disp: {restantes} / {totalDisp} hrs ped

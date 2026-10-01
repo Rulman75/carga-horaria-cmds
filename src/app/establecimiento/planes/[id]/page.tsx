@@ -345,6 +345,15 @@ export default function PlanEstablecimientoDetallePage() {
                         
                         const renderGroup = (filasGrupo: any[], titulo: string, bgClass: string) => {
                           if (filasGrupo.length === 0) return null;
+                          
+                          const grouped = new Map<string, any[]>();
+                          grouped.set('GLOBAL', []);
+                          filasGrupo.forEach(f => {
+                            const esp = f._especialidad || 'GLOBAL';
+                            if (!grouped.has(esp)) grouped.set(esp, []);
+                            grouped.get(esp)!.push(f);
+                          });
+
                           return (
                             <>
                               <tr className={bgClass}>
@@ -352,128 +361,96 @@ export default function PlanEstablecimientoDetallePage() {
                                   {titulo}
                                 </td>
                               </tr>
-                              {filasGrupo.map((fila: any, fIdx: number) => {
-                                let sumaFila = 0;
-                                const rowKey = fila.asigCod + '-' + (fila._especialidad || 'NONE');
+                              {Array.from(grouped.entries()).map(([esp, filasDeEspecialidad]) => {
+                                if (filasDeEspecialidad.length === 0) return null;
                                 return (
-                                  <tr key={rowKey} className={`${fIdx % 2 === 0 ? 'bg-white' : 'bg-[#fcfcfc]'} group`}>
-                                    <td className="px-4 py-3 font-semibold text-[#1e293b] border-b border-r border-[#e2e8f0] sticky left-0 z-10 bg-inherit shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] flex justify-between items-center">
-                                      <div className="flex flex-col gap-1 w-full truncate pr-2">
-                                          <span className="truncate">{fila.asigDescripcion}</span>
-                                          {plan?.establecimiento?.especialidades?.length > 0 && fila._esPropio && (
-                                            <select 
-                                              value={fila._especialidad || ''}
-                                              onChange={(e) => handleEspecialidadChange(fila.asigCod, fila._especialidad || null, e.target.value)}
-                                              className="text-[10px] border border-gray-200 rounded p-0.5 max-w-fit focus:outline-none focus:border-[#016098] bg-blue-50 text-blue-800 font-bold"
-                                            >
-                                              <option value="">- Global (Sin Especialidad) -</option>
-                                              {plan.establecimiento.especialidades.map((e: string) => (
-                                                <option key={e} value={e}>{e}</option>
-                                              ))}
-                                            </select>
-                                          )}
-                                        </div>
-                                      <button 
-                                        onClick={() => handleEliminarFila(fila.asigCod, matriz.tipo.tienCod, fila._especialidad)}
-                                        className="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity p-1"
-                                        title="Eliminar Asignatura"
-                                      >
-                                        🗑️
-                                      </button>
-                                    </td>
-                                    {matriz.columnas.map((col: any) => {
-                                      const cellData = matriz.matrizDatos.get(`${fila.asigCod}-${fila._especialidad || 'NONE'}-${col.grteCod}`);
-                                      // Solo sumar en Total Horas los grados especialistas (5º+)
-                                      if (cellData && (col.grteCod > 40 || isEspecialistaAsig(fila))) sumaFila += (cellData.horas * (col.cantidadCursos || 0));
-
-                                      return (
-                                        <td key={col.grteCod} className="border-b border-r border-[#e2e8f0] text-center p-0 align-middle">
-                                          {cellData ? (
-                                            <div className="w-full h-full min-h-[48px] flex items-center justify-center hover:bg-[#e0f2fe] transition-colors">
-                                              {editingId === cellData.id ? (
-                                                <div className="flex items-center justify-center p-1">
-                                                  <input 
-                                                    type="number"
-                                                    step="0.5"
-                                                    className="w-16 h-8 border-2 border-[#0369a1] rounded text-center font-bold text-[#0369a1] focus:outline-none"
-                                                    value={editValue}
-                                                    onChange={(e) => setEditValue(e.target.value)}
-                                                    autoFocus
-                                                    onKeyDown={(e) => e.key === 'Enter' && handleSaveHoras(cellData.id)}
-                                                    onBlur={() => handleSaveHoras(cellData.id)}
-                                                  />
-                                                </div>
-                                              ) : (
-                                                <div 
-                                                  className="cursor-pointer w-full h-full flex flex-col items-center justify-center p-2"
-                                                  onClick={() => handleEdit(cellData.id, cellData.horas)}
-                                                >
-                                                  <span className={`text-lg font-bold ${cellData.horas > 0 ? 'text-[#016098]' : 'text-red-400'}`}>
-                                                    {cellData.horas}
-                                                  </span>
-                                                </div>
+                                <React.Fragment key={esp}>
+                                  {esp !== 'GLOBAL' && (
+                                    <tr className="bg-blue-50/50">
+                                      <td colSpan={matriz.columnas.length + 3} className="px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-blue-900 border-b border-blue-200 sticky left-0 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
+                                        ↳ MÓDULO / ESPECIALIDAD: {esp}
+                                      </td>
+                                    </tr>
+                                  )}
+                                  {filasDeEspecialidad.map((fila: any, fIdx: number) => {
+                                    let sumaFila = 0;
+                                    const rowKey = fila.asigCod + '-' + (fila._especialidad || 'NONE');
+                                    return (
+                                      <tr key={rowKey} className={`${fIdx % 2 === 0 ? 'bg-white' : 'bg-[#fcfcfc]'} group`}>
+                                        <td className="px-4 py-3 font-semibold text-[#1e293b] border-b border-r border-[#e2e8f0] sticky left-0 z-10 bg-inherit shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] flex justify-between items-center">
+                                          <div className="flex flex-col gap-1 w-full truncate pr-2">
+                                              <span className="truncate">{fila.asigDescripcion}</span>
+                                              {plan?.establecimiento?.especialidades?.length > 0 && fila._esPropio && (
+                                                <select 
+                                                  value={fila._especialidad || ''}
+                                                  onChange={(e) => handleEspecialidadChange(fila.asigCod, fila._especialidad || null, e.target.value)}
+                                                  className="text-[10px] border border-gray-200 rounded p-0.5 max-w-fit focus:outline-none focus:border-[#016098] bg-blue-50 text-blue-800 font-bold">
+                                                  <option value="">- Global (Sin Especialidad) -</option>
+                                                  {plan.establecimiento.especialidades.map((e: string) => (
+                                                    <option key={e} value={e}>{e}</option>
+                                                  ))}
+                                                </select>
                                               )}
                                             </div>
-                                          ) : (
-                                            <div className="w-full h-full min-h-[48px] bg-gray-50 flex items-center justify-center text-gray-300 text-xs">-</div>
-                                          )}
+                                          <button 
+                                            onClick={() => handleEliminarFila(fila.asigCod, matriz.tipo.tienCod, fila._especialidad)}
+                                            className="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                                            title="Eliminar Asignatura">
+                                            🗑️
+                                          </button>
                                         </td>
-                                      );
-                                    })}
-                                    <td className="px-4 py-3 font-bold border-b border-l-2 border-l-[#016098] border-r border-[#e2e8f0] text-center bg-[#f8fafc] text-[#016098]">
-                                      {sumaFila > 0 ? sumaFila : '-'}
-                                    </td>
-                                    <td className="px-4 py-3 font-bold border-b border-r border-[#e2e8f0] text-center bg-[#f8fafc] text-[#0f766e]">
-                                      {(() => {
-                                        // Cálculo de docentes requeridos
-                                        if (sumaFila > 0) {
-                                          const req = sumaFila / 28.6;
-                                          return req.toFixed(1);
-                                        }
-                                        return '-';
-                                      })()}
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                              <tr className="bg-gray-100/80 border-t border-b-2 border-b-gray-300/50 font-bold text-gray-600 text-xs shadow-inner">
-                                <td className="px-4 py-2 border-r border-[#e2e8f0] text-right uppercase sticky left-0 z-10 bg-gray-100/90 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
-                                  Subtotal {titulo}
-                                </td>
-                                {matriz.columnas.map((col: any) => {
-                                  let sumaCol = 0;
-                                  filasGrupo.forEach((f: any) => {
-                                    const cData = matriz.matrizDatos.get(`${f.asigCod}-${col.grteCod}`);
-                                    if (cData) sumaCol += cData.horas;
-                                  });
-                                  return (
-                                    <td key={col.grteCod} className="border-r border-[#e2e8f0] text-center p-2 text-sm text-gray-600">
-                                      {sumaCol > 0 ? sumaCol : '-'}
-                                    </td>
+                                        {matriz.columnas.map((col: any) => {
+                                        const cellData = matriz.matrizDatos.get(`${fila.asigCod}-${fila._especialidad || 'NONE'}-${col.grteCod}`);
+                                        if (cellData && (col.grteCod > 40 || isEspecialistaAsig(fila))) sumaFila += (cellData.horas * (col.cantidadCursos || 0));
+                                        
+                                        return (
+                                          <td key={col.grteCod} className="border-b border-r border-[#e2e8f0] text-center p-0 align-middle">
+                                            {cellData ? (
+                                              <div className="w-full h-full min-h-[48px] flex items-center justify-center hover:bg-[#e0f2fe] transition-colors">
+                                                {editingId === cellData.id ? (
+                                                  <div className="flex items-center justify-center p-1">
+                                                    <input 
+                                                      type="number"
+                                                      step="0.5"
+                                                      className="w-16 h-8 border-2 border-[#0369a1] rounded text-center font-bold text-[#0369a1] focus:outline-none"
+                                                      value={editValue}
+                                                      onChange={(e) => setEditValue(e.target.value)}
+                                                      autoFocus
+                                                      onKeyDown={(e) => e.key === 'Enter' && handleSaveHoras(cellData.id)}
+                                                      onBlur={() => handleSaveHoras(cellData.id)}
+                                                    />
+                                                  </div>
+                                                ) : (
+                                                  <div 
+                                                    className="cursor-pointer w-full h-full flex flex-col items-center justify-center p-2"
+                                                    onClick={() => handleEdit(cellData.id, cellData.horas)}
+                                                  >
+                                                    <span className={`text-lg font-bold ${cellData.horas > 0 ? 'text-[#016098]' : 'text-red-400'}`}>
+                                                      {cellData.horas}
+                                                    </span>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            ) : (
+                                              <div className="w-full h-full min-h-[48px] bg-gray-50 flex items-center justify-center text-gray-300 text-xs">-</div>
+                                            )}
+                                          </td>
+                                        );
+                                      })}
+                                      <td className="px-4 py-3 font-bold border-b border-l-2 border-l-[#016098] border-r border-[#e2e8f0] text-center bg-[#f8fafc] text-[#016098]">
+                                        {sumaFila > 0 ? sumaFila : '-'}
+                                      </td>
+                                      <td className="border-b border-l border-[#e2e8f0] px-3 py-2">
+                                        {(() => {
+                                          const asigBase = plan.planBase?.detalles?.find((db: any) => db.codAsignatura === fila.asigCod);
+                                          return <span className="text-xs text-gray-500 font-medium">{asigBase ? asigBase.formacion : 'General'}</span>;
+                                        })()}
+                                      </td>
+                                    </tr>
                                   );
                                 })}
-                                {(() => {
-                                  let sumTotal = 0;
-                                  filasGrupo.forEach((f: any) => {
-                                    matriz.columnas.forEach((col: any) => {
-                                      const cData = matriz.matrizDatos.get(`${f.asigCod}-${col.grteCod}`);
-                                      if (cData && (col.grteCod > 40 || isEspecialistaAsig(f))) {
-                                        sumTotal += (cData.horas * (col.cantidadCursos || 0));
-                                      }
-                                    });
-                                  });
-                                  return (
-                                    <>
-                                      <td className="px-4 py-2 border-l-2 border-l-[#016098] border-r border-[#e2e8f0] text-center bg-gray-200/50 text-gray-700">
-                                        {sumTotal > 0 ? sumTotal : '-'}
-                                      </td>
-                                      <td className="px-4 py-2 border-r border-[#e2e8f0] text-center bg-gray-200/50 text-gray-700">
-                                        {sumTotal > 0 ? (sumTotal / 28.6).toFixed(1) : '-'}
-                                      </td>
-                                    </>
-                                  );
-                                })()}
-                              </tr>
+                                </React.Fragment>
+                                )})}
                             </>
                           );
                         };

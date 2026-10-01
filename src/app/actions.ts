@@ -185,14 +185,14 @@ export async function getEstablecimientoConfig(establecimientoId: number) {
   });
 }
 
-export async function updateEstablecimientoConfig(establecimientoId: number, esJec: boolean, gradosData: {tienCod: number, grteCod: number, cantidadCursos: number, esJec: boolean}[], tiposData: number[], letrasData: any[] = []) {
+export async function updateEstablecimientoConfig(establecimientoId: number, esJec: boolean, gradosData: {tienCod: number, grteCod: number, cantidadCursos: number, esJec: boolean}[], tiposData: number[], letrasData: any[] = [], especialidades: string[] = []) {
   // Solo actualiza JEC y grados.
 
   const estabOld = await prisma.establecimiento.findUnique({ where: { esedSec: establecimientoId } });
   
   await prisma.establecimiento.update({
     where: { esedSec: establecimientoId },
-    data: { esJec }
+    data: { esJec, especialidades }
   });
 
   await Promise.all(gradosData.map(g => 
@@ -404,15 +404,16 @@ export async function agregarAsignaturaIndividualPropio(
   tienCod: number, 
   grteCod: number, 
   codAsignatura: string,
-  categoria: string = 'BASE'
+  categoria: string = 'BASE',
+  especialidad: string | null = null
 ) {
-  // Check if exists
   const existe = await prisma.planEstablecimientoDet.findFirst({
     where: {
       planEstablecimientoId: planPropioId,
       tienCod,
       grteCod,
-      codAsignatura
+      codAsignatura,
+      especialidad
     }
   });
 
@@ -423,11 +424,12 @@ export async function agregarAsignaturaIndividualPropio(
         tienCod,
         grteCod,
         codAsignatura,
-        horas: 0, // Starts at 0 so they can edit it in the matrix
+        horas: 0,
         obligatoria: 'NO',
         formacion: 'General',
         esPropio: true,
-        categoria // ADDED CATEGORIA
+        categoria,
+        especialidad
       }
     });
   }
@@ -533,6 +535,7 @@ export async function saveCargasHorarias(docenteId: number, cargas: any[], estab
           grupoDesdoble: c.grupoDesdoble || null,
           esCombinado: c.esCombinado || false,
           grupoCombinado: c.grupoCombinado || null,
+          especialidad: c.especialidad || null,
           horasAllocadas: c.horas,
           tipoCarga: c.tipoCarga,
           observacion: ''

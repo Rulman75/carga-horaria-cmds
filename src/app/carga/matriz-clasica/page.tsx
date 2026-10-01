@@ -63,7 +63,7 @@ export default function SabanaClasicaPage() {
 
     if (c.tipoCarga === 'LECTIVA') {
       const isJec = c.asignatura?.esTallerJec || false;
-      const asigDesc = c.asignatura?.asigDescripcion || 'Desconocida';
+      const asigDesc = (c.asignatura?.asigDescripcion || 'Desconocida') + (c.especialidad ? ` (${c.especialidad})` : '');
       
       const asigKey = `${c.asignaturaCod}|${asigDesc}`;
       if (isJec) asignaturasJecSet.add(asigKey);

@@ -36,6 +36,7 @@ export default function PlanEstablecimientoDetallePage() {
   const [asigGrteCods, setAsigGrteCods] = useState<number[]>([]);
   const [asigCod, setAsigCod] = useState('');
   const [categoria, setCategoria] = useState('BASE');
+  const [especialidad, setEspecialidad] = useState('');
 
   // Search filter for subjects
   const [searchAsig, setSearchAsig] = useState('');
@@ -108,14 +109,14 @@ export default function PlanEstablecimientoDetallePage() {
     }
   };
 
-  const handleEliminarFila = async (asigCodStr: string, tienCod: number) => {
+  const handleEliminarFila = async (asigCodStr: string, tienCod: number, especialidad: string | null = null) => {
     if (!confirm("¿Eliminar esta asignatura completa de este nivel?")) return;
     
-    const detallesABorrar = plan.detalles.filter((d: any) => d.codAsignatura === asigCodStr && d.tienCod === tienCod);
+    const detallesABorrar = plan.detalles.filter((d: any) => d.codAsignatura === asigCodStr && d.tienCod === tienCod && (d.especialidad || null) === (especialidad || null));
     
     setPlan({
       ...plan,
-      detalles: plan.detalles.filter((d: any) => !(d.codAsignatura === asigCodStr && d.tienCod === tienCod))
+      detalles: plan.detalles.filter((d: any) => !(d.codAsignatura === asigCodStr && d.tienCod === tienCod && (d.especialidad || null) === (especialidad || null)))
     });
 
     for (const d of detallesABorrar) {
@@ -159,8 +160,9 @@ export default function PlanEstablecimientoDetallePage() {
           asigTienCod,
           grteCod,
           asigCod,
-          categoria
-        );
+            categoria,
+            especialidad || null
+          );
       }
       setShowModal(false);
       setAsigTienCod('');
@@ -168,6 +170,7 @@ export default function PlanEstablecimientoDetallePage() {
       setAsigCod('');
       setSearchAsig('');
       setCategoria('BASE');
+        setEspecialidad('');
       await loadData();
     } catch (error) {
       alert("Error al agregar la asignatura.");
@@ -212,11 +215,13 @@ export default function PlanEstablecimientoDetallePage() {
 
         const asigMap = new Map<string, any>();
         detallesTipo.forEach((d: any) => {
-          if (!asigMap.has(d.codAsignatura) && d.asignatura) {
-            asigMap.set(d.codAsignatura, {
+          const rowKey = d.codAsignatura + '-' + (d.especialidad || 'NONE');
+          if (!asigMap.has(rowKey) && d.asignatura) {
+            asigMap.set(rowKey, {
               ...d.asignatura,
               _categoria: d.categoria,
-              _esPropio: d.esPropio
+              _esPropio: d.esPropio,
+              _especialidad: d.especialidad
             });
           }
         });
@@ -224,7 +229,7 @@ export default function PlanEstablecimientoDetallePage() {
 
       const matrizDatos = new Map<string, any>();
       detallesTipo.forEach((d: any) => {
-        matrizDatos.set(`${d.codAsignatura}-${d.grteCod}`, d);
+        matrizDatos.set(`${d.codAsignatura}-${d.especialidad || 'NONE'}-${d.grteCod}`, d);
       });
 
       // Determinar si los grados son generalistas (1-4, grteCod <= 40) o especialistas (5+, grteCod > 40)
@@ -338,12 +343,13 @@ export default function PlanEstablecimientoDetallePage() {
                               </tr>
                               {filasGrupo.map((fila: any, fIdx: number) => {
                                 let sumaFila = 0;
+                                const rowKey = fila.asigCod + '-' + (fila._especialidad || 'NONE');
                                 return (
-                                  <tr key={fila.asigCod} className={`${fIdx % 2 === 0 ? 'bg-white' : 'bg-[#fcfcfc]'} group`}>
+                                  <tr key={rowKey} className={`${fIdx % 2 === 0 ? 'bg-white' : 'bg-[#fcfcfc]'} group`}>
                                     <td className="px-4 py-3 font-semibold text-[#1e293b] border-b border-r border-[#e2e8f0] sticky left-0 z-10 bg-inherit shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] flex justify-between items-center">
-                                      <span className="truncate pr-2">{fila.asigDescripcion}</span>
+                                      <span className="truncate pr-2">{fila.asigDescripcion} {fila._especialidad && <span className="ml-2 px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-bold tracking-widest uppercase">{fila._especialidad}</span>}</span>
                                       <button 
-                                        onClick={() => handleEliminarFila(fila.asigCod, matriz.tipo.tienCod)}
+                                        onClick={() => handleEliminarFila(fila.asigCod, matriz.tipo.tienCod, fila._especialidad)}
                                         className="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity p-1"
                                         title="Eliminar Asignatura"
                                       >
@@ -351,7 +357,7 @@ export default function PlanEstablecimientoDetallePage() {
                                       </button>
                                     </td>
                                     {matriz.columnas.map((col: any) => {
-                                      const cellData = matriz.matrizDatos.get(`${fila.asigCod}-${col.grteCod}`);
+                                      const cellData = matriz.matrizDatos.get(`${fila.asigCod}-${fila._especialidad || 'NONE'}-${col.grteCod}`);
                                       // Solo sumar en Total Horas los grados especialistas (5º+)
                                       if (cellData && (col.grteCod > 40 || isEspecialistaAsig(fila))) sumaFila += (cellData.horas * (col.cantidadCursos || 0));
 
@@ -779,6 +785,23 @@ export default function PlanEstablecimientoDetallePage() {
                       </select>
                       <p className="text-xs text-gray-500 mt-1">Sirve para ordenar visualmente la matriz del plan.</p>
                     </div>
+
+                    {plan?.establecimiento?.especialidades?.length > 0 && (
+                      <div className="mt-4">
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Módulo / Especialidad TP</label>
+                        <select 
+                          className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-[#016098]"
+                          value={especialidad}
+                          onChange={(e) => setEspecialidad(e.target.value)}
+                        >
+                          <option value="">-- Ninguna Especialidad --</option>
+                          {plan.establecimiento.especialidades.map((e: string) => (
+                            <option key={e} value={e}>{e}</option>
+                          ))}
+                        </select>
+                        <p className="text-xs text-gray-500 mt-1">Si es una asignatura Técnica que varía por especialidad, selecciónela aquí.</p>
+                      </div>
+                    )}
                   </div>
 
                   {/* COLUMNA DERECHA: Asignaturas */}

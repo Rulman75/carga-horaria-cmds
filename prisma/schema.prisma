@@ -30,6 +30,7 @@ model Establecimiento {
   nombreDirector  String?
   esJec           Boolean @default(false)
   maxHorasPie     Float   @default(3)
+  especialidades  String[] @default([])
 
   docentes       DocenteEstablecimiento[]
   usuarios       Usuario[]
@@ -213,7 +214,8 @@ model PlanEstablecimientoDet {
   obligatoria String?
   formacion   String?
   esPropio    Boolean @default(false) // True si el colegio la agregó manualmente, False si viene del Plan Base
-  categoria   String  @default("BASE") // "BASE", "ELECTIVA", "JEC"
+  categoria   String  @default("BASE")
+  especialidad String? // "BASE", "ELECTIVA", "JEC"
 }
 
 model ActividadNoLectiva {
@@ -246,7 +248,8 @@ model CargaHoraria {
   actividadExtracurricularId Int?
   actividadExtracurricular   ActividadExtracurricular? @relation(fields: [actividadExtracurricularId], references: [id])
 
-  letraCurso String? // Para indicar a qué letra del curso se asigna (ej. 'A', 'B')
+  letraCurso String?
+  especialidad String?
 
   financiamiento String? // 'SEP', 'PIE', null
 

@@ -410,7 +410,7 @@ const formatCronoDecimal = (decimal: number) => {
                     {cargaDocente.map(c => {
                        let text = '';
                        let horas = c.horas || c.horasAllocadas || 0;
-                       if (c.tipoCarga === 'LECTIVA') text = c.asignatura?.asigDescripcion || 'Asignatura';
+                       if (c.tipoCarga === 'LECTIVA') text = (c.asignatura?.asigDescripcion || 'Asignatura') + (c.especialidad ? ` (${c.especialidad})` : '');
                        if (c.tipoCarga === 'NO_LECTIVA') text = c.actividadNoLectiva?.descripcion || 'No Lectiva';
                        if (c.tipoCarga === 'EXTRACURRICULAR') text = c.actividadExtracurricular?.descripcion || 'Extracurricular';
                        

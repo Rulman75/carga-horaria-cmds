@@ -30,6 +30,7 @@ interface CargaEnUI {
   letraCurso?: string;
   esDesdoble?: boolean;
   grupoDesdoble?: string;
+  especialidad?: string;
   
   // No Lectiva
   actividadNoLectivaId?: number;
@@ -132,6 +133,7 @@ export default function AsignacionCargaPage() {
           tienCod: c.tienCod || undefined,
           grteCod: c.grteCod || undefined,
           codAsignatura: c.asignaturaCod || undefined,
+          especialidad: c.especialidad || undefined,
           actividadNoLectivaId: c.actividadNoLectivaId || undefined,
           actividadExtracurricularId: c.actividadExtracurricularId || undefined,
           financiamiento: c.financiamiento || undefined,
@@ -276,6 +278,7 @@ export default function AsignacionCargaPage() {
       tienCod: det.tienCod,
       grteCod: det.grteCod,
       codAsignatura: det.codAsignatura,
+        especialidad: det.especialidad,
       letraCurso: letra,
         esDesdoble: esDesdobleUI,
         grupoDesdoble: esDesdobleUI ? (grupoDesdobleUI || 'Grupo') : undefined,
@@ -875,7 +878,7 @@ export default function AsignacionCargaPage() {
                         <div className="text-center text-[#94a3b8] mt-10">Seleccione una asignatura para ver los cursos.</div>
                       ) : (
                         <div className="space-y-3">
-                          {Array.from(new Map(todosLosDetalles.filter(d => d.codAsignatura === asignaturaSeleccionada).map(d => [`${d.tienCod}-${d.grteCod}-${d.codAsignatura}`, d])).values()).map((det: any) => {
+                          {Array.from(new Map(todosLosDetalles.filter(d => d.codAsignatura === asignaturaSeleccionada).map(d => [`${d.tienCod}-${d.grteCod}-${d.codAsignatura}-${d.especialidad || 'NONE'}`, d])).values()).map((det: any) => {
                             const gInfo = grados.find(g => g.tienCod === det.tienCod && g.grteCod === det.grteCod);
                             if (!gInfo) return null;
                             const cursos = gInfo.cantidadCursos || 1;

@@ -797,7 +797,7 @@ export default function AsignacionCargaPage() {
                           {detallesPlan.map(det => {
                             const gInfo = grados.find(g => g.tienCod === det.tienCod && g.grteCod === det.grteCod);
                             const cursos = gInfo?.cantidadCursos || 1;
-                            const totalDisp = det.horas * cursos;
+                            const totalDisp = det.horas * (det.grupos ?? cursos);
                             const letras = getLetras(gInfo);
                             
                             const tomadasGlobal = calcularHorasConsumidas(todasCargas.filter(c => 
@@ -890,7 +890,7 @@ export default function AsignacionCargaPage() {
                             const gInfo = grados.find(g => g.tienCod === det.tienCod && g.grteCod === det.grteCod);
                             if (!gInfo) return null;
                             const cursos = gInfo.cantidadCursos || 1;
-                            const totalDisp = det.horas * cursos;
+                            const totalDisp = det.horas * (det.grupos ?? cursos);
                             const letras = getLetras(gInfo);
                             
                             const tomadasGlobal = calcularHorasConsumidas(todasCargas.filter(c => 

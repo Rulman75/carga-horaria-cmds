@@ -211,6 +211,7 @@ model PlanEstablecimientoDet {
   asignatura    Asignatura @relation(fields: [codAsignatura], references: [asigCod])
 
   horas       Float // Ya resuelto si es CJ o SJ al momento de clonar o editar
+  grupos      Int?  // Si se establece, sobreescribe la cantidad de cursos del grado para esta asignatura
   obligatoria String?
   formacion   String?
   esPropio    Boolean @default(false) // True si el colegio la agregó manualmente, False si viene del Plan Base

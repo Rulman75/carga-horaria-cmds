@@ -52,6 +52,7 @@ export default function PlanEstablecimientoDetallePage() {
 
 
   const [editValue, setEditValue] = useState<string>('');
+  const [editGrupos, setEditGrupos] = useState<string>('');
 
   const loadData = async () => {
     setLoading(true);
@@ -78,21 +79,22 @@ export default function PlanEstablecimientoDetallePage() {
     loadData();
   }, [id]);
 
-  const handleEdit = (detId: number, currentHoras: number) => {
+  const handleEdit = (detId: number, currentHoras: number, currentGrupos?: number | null) => {
     setEditingId(detId);
     setEditValue(currentHoras.toString());
+    setEditGrupos(currentGrupos !== null && currentGrupos !== undefined ? currentGrupos.toString() : '');
   };
 
   const handleSaveHoras = async (detId: number) => {
     const num = parseFloat(editValue);
     if (isNaN(num)) return;
-    
+    const grp = editGrupos.trim() !== '' ? parseInt(editGrupos) : null;
     setPlan({
       ...plan,
-      detalles: plan.detalles.map((d: any) => d.id === detId ? { ...d, horas: num } : d)
+      detalles: plan.detalles.map((d: any) => d.id === detId ? { ...d, horas: num, grupos: grp } : d)
     });
     setEditingId(null);
-    await actualizarHorasDetallePropio(detId, num);
+    await actualizarHorasDetallePropio(detId, num, grp);
   };
 
   const handleEliminarColumna = async (tienCod: number, grteCod: number) => {
@@ -401,7 +403,7 @@ export default function PlanEstablecimientoDetallePage() {
                                         </td>
                                         {matriz.columnas.map((col: any) => {
                                         const cellData = matriz.matrizDatos.get(`${fila.asigCod}-${fila._especialidad || 'NONE'}-${col.grteCod}`);
-                                        if (cellData && (col.grteCod > 40 || isEspecialistaAsig(fila))) sumaFila += (cellData.horas * (col.cantidadCursos || 0));
+                                        if (cellData && (col.grteCod > 40 || isEspecialistaAsig(fila))) sumaFila += (cellData.horas * (cellData.grupos ?? col.cantidadCursos ?? 0));
                                         
                                         return (
                                           <td key={col.grteCod} className="border-b border-r border-[#e2e8f0] text-center p-0 align-middle">
@@ -473,9 +475,7 @@ export default function PlanEstablecimientoDetallePage() {
                                             matriz.columnas.forEach((col: any) => {
                                               filasDeEspecialidad.forEach((f: any) => {
                                                 const cData = matriz.matrizDatos.get(`${f.asigCod}-${f._especialidad || 'NONE'}-${col.grteCod}`);
-                                                if (cData && (col.grteCod > 40 || isEspecialistaAsig(f))) {
-                                                  totalReal += (cData.horas * (col.cantidadCursos || 0));
-                                                }
+                                                if (cData && (col.grteCod > 40 || isEspecialistaAsig(f))) { totalReal += (cData.horas * (cData.grupos ?? col.cantidadCursos ?? 0)); }
                                               });
                                             });
                                             return totalReal > 0 ? totalReal : '-';

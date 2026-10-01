@@ -286,10 +286,10 @@ export async function getPlanPropio(id: number) {
   });
 }
 
-export async function actualizarHorasDetallePropio(detalleId: number, horas: number) {
+export async function actualizarHorasDetallePropio(detalleId: number, horas: number, grupos?: number | null) {
   return await prisma.planEstablecimientoDet.update({
     where: { id: detalleId },
-    data: { horas }
+    data: { horas, grupos: grupos !== undefined ? grupos : undefined }
   });
 }
 

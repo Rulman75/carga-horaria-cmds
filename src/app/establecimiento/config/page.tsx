@@ -144,7 +144,7 @@ export default function ConfigEstablecimientoPage() {
         esJec: g.esJec || false
       }));
       // Enviar array vacio de tiposData porque ya no lo actualizamos acá
-      await updateEstablecimientoConfig(establecimientoId!, esJec, payload, [], cursosLetra);
+      await updateEstablecimientoConfig(establecimientoId!, esJec, payload, [], cursosLetra, especialidades);
       alert('Configuración guardada exitosamente');
     } catch (e) {
       alert('Error guardando configuración');

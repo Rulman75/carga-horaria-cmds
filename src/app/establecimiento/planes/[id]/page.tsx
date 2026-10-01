@@ -366,9 +366,9 @@ export default function PlanEstablecimientoDetallePage() {
                                 return (
                                 <React.Fragment key={esp}>
                                     {(esp !== 'GLOBAL' || titulo.includes('Adicional')) && (
-                                      <tr className={esp === 'GLOBAL' ? 'bg-gray-100' : 'bg-blue-50/50'}>
-                                        <td colSpan={matriz.columnas.length + 3} className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest ${esp === 'GLOBAL' ? 'text-gray-600 border-gray-200' : 'text-blue-900 border-blue-200'} border-b sticky left-0 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]`}>
-                                          ↳ {esp === 'GLOBAL' ? 'GLOBAL (SIN ESPECIALIDAD)' : `MÓDULO / ESPECIALIDAD: ${esp}`}
+                                      <tr className={esp === 'GLOBAL' ? 'bg-gray-200' : 'bg-[#e0f2fe]'}>
+                                        <td colSpan={matriz.columnas.length + 3} className={`px-4 py-2 text-[13px] font-extrabold uppercase tracking-widest border-b border-gray-300 sticky left-0 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] ${esp === 'GLOBAL' ? 'text-gray-700' : 'text-[#016098] border-l-4 border-l-[#016098]'}`}>
+                                          {esp === 'GLOBAL' ? '📁 GLOBAL (SIN ESPECIALIDAD)' : `⚙️ MÓDULO / ESPECIALIDAD: ${esp}`}
                                         </td>
                                       </tr>
                                     )}

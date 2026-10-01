@@ -113,18 +113,18 @@ export default function SabanaClasicaPage() {
     }
   });
 
-  const colsBase = Array.from(asignaturasBaseSet).map(x => ({ key: x, desc: x.split('|')[1] })).sort((a,b) => a.desc.localeCompare(b.desc));
-  const colsJec = Array.from(asignaturasJecSet).map(x => ({ key: x, desc: x.split('|')[1] })).sort((a,b) => a.desc.localeCompare(b.desc));
+  const colsBase = Array.from(asignaturasBaseSet).map(x => ({ key: x, desc: x.split('|')[1] })).sort((a,b) => String(a.desc || "").localeCompare(String(b.desc || "")));
+  const colsJec = Array.from(asignaturasJecSet).map(x => ({ key: x, desc: x.split('|')[1] })).sort((a,b) => String(a.desc || "").localeCompare(String(b.desc || "")));
   const colsAnl = Array.from(anlSet).map(x => {
     const p = x.split('|');
     return { key: x, desc: p[1], finan: p[2] };
-  }).sort((a,b) => a.desc.localeCompare(b.desc));
+  }).sort((a,b) => String(a.desc || "").localeCompare(String(b.desc || "")));
   const colsExt = Array.from(extSet).map(x => {
     const p = x.split('|');
     return { key: x, desc: p[1], finan: p[2] };
-  }).sort((a,b) => a.desc.localeCompare(b.desc));
+  }).sort((a,b) => String(a.desc || "").localeCompare(String(b.desc || "")));
 
-  const docentesArray = Object.values(docentesMap).sort((a, b) => a.apellidos.localeCompare(b.apellidos));
+  const docentesArray = Object.values(docentesMap).sort((a,b) => String(a.apellidos || "").localeCompare(String(b.apellidos || "")));
 
   
   const exportarExcel = () => {

@@ -462,7 +462,7 @@ export default function AsignacionCargaPage() {
           </tr>
           ` + cargasVivas.filter(c => c.tipoCarga === 'LECTIVA').map(c => 
             "<tr><td class='center'>" + getGradoNombre(c.tienCod, c.grteCod) + (c.letraCurso ? " " + c.letraCurso : "") + "</td>" +
-            "<td class='center'>" + (todasAsignaturas.find(a => a.asigCod === c.codAsignatura)?.asigDescripcion || c.nombre) + "</td>" +
+            "<td class='center'>" + (todasAsignaturas.find(a => a.asigCod === c.codAsignatura)?.asigDescripcion || c.nombre) + (c.especialidad ? ` (${c.especialidad})` : "") + "</td>" +
             "<td class='center'>" + c.horas + "</td></tr>"
           ).join('') + `
           <tr style="background-color: #f3f4f6; font-weight: bold;">

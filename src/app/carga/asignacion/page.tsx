@@ -217,7 +217,7 @@ export default function AsignacionCargaPage() {
 
   // Planificacin rule
   const pctPlanificacion = (configGlobal?.porcentajeMinimoPlanificacion ?? 40);
-  const minPlanificacionDecimal = maxNoLectivasPropDecimal * (pctPlanificacion / 100);
+  const minPlanificacionDecimal = Math.round((maxNoLectivasPropDecimal * (pctPlanificacion / 100)) * 10) / 10;
   const planificacionActual = cargasVivas
     .filter(c => c.tipoCarga === 'NO_LECTIVA')
     .filter(c => {
@@ -296,7 +296,7 @@ export default function AsignacionCargaPage() {
     const anlInfo = actividadesNL.find(a => a.id.toString() === anlSeleccionada);
     
     if (anlInfo?.esPlanificacion) {
-      if (planificacionActual + horasManual < minPlanificacionDecimal - 0.01) {
+      if (planificacionActual + horasManual < minPlanificacionDecimal) {
         alert(`Por normativa, la planificación debe ser al menos el ${pctPlanificacion}% de las horas no lectivas proporcionales (${maxNoLectivasPropStr}). La cantidad mínima esperada es ${minPlanificacionDecimal.toFixed(1)} hrs.`);
         return;
       }

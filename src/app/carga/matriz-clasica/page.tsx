@@ -45,6 +45,8 @@ export default function SabanaClasicaPage() {
       colacion,
       asignaturasBase: {},
       asignaturasJec: {},
+      _combinadosBase: {},
+      _combinadosJec: {},
       anls: {},
       extras: {},
       totalAnlCrono: 0,

@@ -118,7 +118,7 @@ export default function AsignacionCargaPage() {
       setCargas(dbCargas.map(c => {
         let nombre = '';
         if (c.tipoCarga === 'LECTIVA') {
-          nombre = c.asignatura?.asigDescripcion || 'Lectiva';
+          nombre = (c.asignatura?.asigDescripcion || 'Lectiva') + (c.especialidad ? ` (${c.especialidad})` : '');
           if (c.letraCurso) nombre += ` (${c.letraCurso})`;
             if (c.esDesdoble) nombre += ` [${c.grupoDesdoble || 'Grupo'}]`;
             if (c.esCombinado) nombre += ` {Multigrado: ${c.grupoCombinado || 'Comb1'}}`;

@@ -97,9 +97,7 @@ export default function AsignacionCargaPage() {
     getTodosDetallesPlanEstablecimiento(Number(estId)).then(setTodosLosDetalles);
   }, []);
 
-  const loadTodasCargas = () => {
-    if (ESTABLECIMIENTO_ID) getCargasEstablecimiento(ESTABLECIMIENTO_ID).then(setTodasCargas);
-  };
+  const loadTodasCargas = () => { if (ESTABLECIMIENTO_ID) { getCargasEstablecimiento(ESTABLECIMIENTO_ID).then(setTodasCargas); getDocentesEstablecimiento(ESTABLECIMIENTO_ID).then(setDocentes); } };
 
   useEffect(() => {
     if (gradoSeleccionado) {

@@ -810,7 +810,7 @@ export async function getSchoolAnalytics(establecimientoId: number) {
     const gInfo = det.grado?.establecimientoGrados?.[0];
     const cursos = gInfo?.cantidadCursos || 1;
     if (!subjectNeed[det.codAsignatura]) subjectNeed[det.codAsignatura] = { needed: 0, assigned: 0, name: asig };
-    subjectNeed[det.codAsignatura].needed += (det.horas * cursos);
+    subjectNeed[det.codAsignatura].needed += (det.horas * (det.grupos ?? cursos));
   });
 
   cargas.forEach(c => {

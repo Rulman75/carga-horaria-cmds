@@ -559,12 +559,11 @@ export default function PlanEstablecimientoDetallePage() {
                         Total Horas Docentes Requeridas
                       </td>
                       {matriz.columnas.map((col: any) => {
-                        let sumaColumna = 0;
-                        matriz.filas.forEach((f: any) => {
-                          const cData = matriz.matrizDatos.get(`${f.asigCod}-${f._especialidad || 'NONE'}-${col.grteCod}`);
-                          if (cData) sumaColumna += cData.horas;
-                        });
-                        const real = sumaColumna * (col.cantidadCursos || 0);
+                        let real = 0;
+                          matriz.filas.forEach((f: any) => {
+                            const cData = matriz.matrizDatos.get(`${f.asigCod}-${f._especialidad || 'NONE'}-${col.grteCod}`);
+                            if (cData) real += cData.horas * (cData.grupos ?? col.cantidadCursos ?? 0);
+                          });
                         totalHorasRealesNivel += real;
                         
                         return (
@@ -635,7 +634,7 @@ export default function PlanEstablecimientoDetallePage() {
                           matriz.columnas.forEach((col: any) => {
                             if (col.grteCod > 40 || isEspecialistaAsig(fila)) {
                               const cd = matriz.matrizDatos.get(`${fila.asigCod}-${fila._especialidad || 'NONE'}-${col.grteCod}`);
-                              if (cd) sumaFilaEsp += (cd.horas * (col.cantidadCursos || 0));
+                              if (cd) sumaFilaEsp += (cd.horas * (cd.grupos ?? col.cantidadCursos ?? 0));
                             }
                           });
                           totalEsp += sumaFilaEsp / 28.6;
@@ -674,12 +673,12 @@ export default function PlanEstablecimientoDetallePage() {
               matricesPorTipo.forEach(m => {
                 // Generalistas: sumar cantidadCursos de grados 1°-4°
                 m.columnas.forEach((col: any) => {
-                  let sumaCol = 0;
+                  let sumaColReal = 0;
                   m.filas.forEach((f: any) => {
                     const cData = m.matrizDatos.get(`${f.asigCod}-${f._especialidad || 'NONE'}-${col.grteCod}`);
-                    if (cData) sumaCol += cData.horas;
+                    if (cData) sumaColReal += (cData.horas * (cData.grupos ?? col.cantidadCursos ?? 0));
                   });
-                  granTotalReales += sumaCol * (col.cantidadCursos || 0);
+                  granTotalReales += sumaColReal;
                   
                   if (col.grteCod <= 40) {
                     totalGeneralistas += (col.cantidadCursos || 0);
@@ -692,7 +691,7 @@ export default function PlanEstablecimientoDetallePage() {
                   m.columnas.forEach((col: any) => {
                     if (col.grteCod > 40 || isEspecialistaAsig(fila)) {
                       const cd = m.matrizDatos.get(`${fila.asigCod}-${fila._especialidad || 'NONE'}-${col.grteCod}`);
-                      if (cd) sumaFilaEsp += (cd.horas * (col.cantidadCursos || 0));
+                      if (cd) sumaFilaEsp += (cd.horas * (cd.grupos ?? col.cantidadCursos ?? 0));
                     }
                   });
                   totalEspecialistas += sumaFilaEsp / 28.6;

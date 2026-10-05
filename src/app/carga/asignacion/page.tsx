@@ -1045,7 +1045,7 @@ export default function AsignacionCargaPage() {
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Horas Cronológicas a Asignar</label>
                     <input 
-                      type="number" step="0.1" min="0"
+                      type="number" step="0.01" min="0"
                       className="w-full border border-gray-300 rounded-lg p-2.5 text-sm"
                       value={horasManual}
                       onChange={e => setHorasManual(parseFloat(e.target.value) || 0)}
@@ -1111,7 +1111,7 @@ export default function AsignacionCargaPage() {
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Horas a Asignar</label>
                     <input 
-                      type="number" step="0.1" min="0"
+                      type="number" step="0.01" min="0"
                       className="w-full border border-gray-300 rounded-lg p-2.5 text-sm"
                       value={horasManual}
                       onChange={e => setHorasManual(parseFloat(e.target.value) || 0)}

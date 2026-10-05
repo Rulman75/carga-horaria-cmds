@@ -778,6 +778,8 @@ export async function getDashboardStats() {
   };
 
 export async function getSchoolAnalytics(establecimientoId: number) {
+  const est = await prisma.establecimiento.findUnique({ where: { esedSec: establecimientoId } });
+  const establecimientoNombre = est?.esedDescripcion || "Establecimiento";
   const tablaConversion = await prisma.tablaConversion.findMany();
   // Get all teachers for this school
   const rels = await prisma.docenteEstablecimiento.findMany({
@@ -889,6 +891,7 @@ export async function getSchoolAnalytics(establecimientoId: number) {
   const chartExtra = Object.entries(extraDistribution).map(([name, value]) => ({ name, value }));
 
   return {
+    establecimientoNombre,
     totalDocentes: rels.length,
     docentesAsignados,
     totalHorasContrato: Math.ceil(totalHorasContrato),

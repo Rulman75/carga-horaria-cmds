@@ -294,6 +294,10 @@ export default function AsignacionCargaPage() {
       const anlInfo = actividadesNL.find(a => a.id.toString() === anlSeleccionada);
       
       if (anlInfo?.esPlanificacion) {
+        if (horasLectivasAsignadas === 0) {
+          alert(`Error: No puedes asignar horas de planificación si el docente aún no tiene horas de aula (lectivas) asignadas. Por favor, asigna primero las horas de aula.`);
+          return;
+        }
         if (planificacionActual + horasManual < minPlanificacionDecimal) {
           alert(`Por normativa, la planificación debe ser al menos el ${pctPlanificacion}% de las horas no lectivas proporcionales (${maxNoLectivasPropStr}). La cantidad mínima esperada es ${minPlanificacionDecimal.toFixed(1)} hrs.`);
           return;
@@ -373,6 +377,17 @@ export default function AsignacionCargaPage() {
 
   const handleGuardar = async () => {
       if (!docenteSeleccionado) return;
+      
+      if (horasLectivasAsignadas > 0 && planificacionActual < minPlanificacionDecimal) {
+        alert(`Error: Por normativa, el total de horas de planificación debe ser al menos el ${pctPlanificacion}% de las horas no lectivas proporcionales a las horas de aula asignadas.
+
+Actualmente el docente tiene ${planificacionActual} hrs de planificación.
+El mínimo requerido para las horas de aula actuales es de ${minPlanificacionDecimal} hrs.
+
+Por favor, completa las horas de planificación antes de guardar.`);
+        return;
+      }
+      
       setSaving(true);
     try {
       const payloads = cargas.filter(c => !c.eliminada);

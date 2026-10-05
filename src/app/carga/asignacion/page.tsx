@@ -445,7 +445,8 @@ export default function AsignacionCargaPage() {
           <tr><td width="30%"><strong>Nombre Completo:</strong></td><td>${docenteSeleccionadoObj.nombres} ${docenteSeleccionadoObj.apellidos}</td></tr>
           <tr><td><strong>RUT:</strong></td><td>${docenteSeleccionadoObj.rut}</td></tr>
           <tr><td><strong>Establecimiento Educativo:</strong></td><td>${estName}</td></tr>
-          <tr><td><strong>Tipo de Contrato:</strong></td><td>${totalHorasContrato} horas cronológicas</td></tr>
+          <tr><td><strong>Tipo de Contrato:</strong></td><td style="text-transform: capitalize;">${docenteSeleccionadoObj.contrato ? docenteSeleccionadoObj.contrato.toLowerCase() : 'No especificado'}</td></tr>
+          <tr><td><strong>Horas Contrato:</strong></td><td>${totalHorasContrato} horas cronológicas</td></tr>
         </table>
 
         <div class="section">II. Detalle de Carga Horaria (Año Escolar 2027)</div>
@@ -454,9 +455,9 @@ export default function AsignacionCargaPage() {
         <table>
           <tr><th colspan="3" class="center">DESCRIPCIÓN HORAS LECTIVAS</th></tr>
           <tr style="background-color: #fff;">
-            <td class="center font-bold" width="20%">CURSO</td>
+            <td class="center font-bold" width="35%">CURSO</td>
             <td class="center font-bold">ASIGNATURA</td>
-            <td class="center font-bold" width="20%">HORAS</td>
+            <td class="center font-bold" width="15%">HORAS</td>
           </tr>
           ` + cargasVivas.filter(c => c.tipoCarga === 'LECTIVA').map(c => 
             "<tr><td class='center'>" + getGradoNombre(c.tienCod, c.grteCod) + (c.letraCurso ? " " + c.letraCurso : "") + "</td>" +

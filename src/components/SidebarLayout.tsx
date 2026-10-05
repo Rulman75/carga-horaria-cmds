@@ -71,7 +71,7 @@ export default function SidebarLayout({
       
       {/* Botón menú móvil */}
       <button 
-        className="md:hidden fixed top-4 right-4 z-50 p-2 bg-white rounded-md shadow-md text-[#016098]"
+        className="md:hidden fixed top-4 right-4 z-50 p-2 bg-white rounded-md shadow-md text-[#016098] print:hidden"
         onClick={() => setIsMobileOpen(!isMobileOpen)}
       >
         {isMobileOpen ? <span>Cerrar</span> : <span>Menú</span>}
@@ -88,7 +88,7 @@ export default function SidebarLayout({
       {/* Sidebar Principal */}
       <aside 
         className={`
-          fixed md:static inset-y-0 left-0 z-40
+          fixed md:static inset-y-0 left-0 z-40 print:hidden
           w-72 bg-white border-r border-[#e2e8f0] shadow-sm
           transform transition-transform duration-300 ease-in-out flex flex-col
           ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
@@ -346,7 +346,7 @@ export default function SidebarLayout({
       </aside>
 
       {/* Contenido Principal */}
-      <main className="flex-1 overflow-auto h-screen bg-[#f8fafc] p-6 md:p-8">
+      <main className="flex-1 overflow-auto h-screen bg-[#f8fafc] p-6 md:p-8 print:p-0 print:h-auto print:overflow-visible">
         {children}
       </main>
     </div>

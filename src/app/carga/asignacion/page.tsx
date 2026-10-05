@@ -290,12 +290,17 @@ export default function AsignacionCargaPage() {
   };
 
   const handleAsignarNoLectiva = () => {
-    if (!anlSeleccionada) return;
-    const anlInfo = actividadesNL.find(a => a.id.toString() === anlSeleccionada);
-    
-    
-
-    const planId = detallesPlan[0]?.planEstablecimientoId || todasCargas[0]?.planEstablecimientoId || 1; 
+      if (!anlSeleccionada) return;
+      const anlInfo = actividadesNL.find(a => a.id.toString() === anlSeleccionada);
+      
+      if (anlInfo?.esPlanificacion) {
+        if (planificacionActual + horasManual < minPlanificacionDecimal) {
+          alert(`Por normativa, la planificación debe ser al menos el ${pctPlanificacion}% de las horas no lectivas proporcionales (${maxNoLectivasPropStr}). La cantidad mínima esperada es ${minPlanificacionDecimal.toFixed(1)} hrs.`);
+          return;
+        }
+      }
+      
+      const planId = detallesPlan[0]?.planEstablecimientoId || todasCargas[0]?.planEstablecimientoId || 1; 
 
     setCargas([...cargas, {
       id: Math.random().toString(),
@@ -367,19 +372,8 @@ export default function AsignacionCargaPage() {
   };
 
   const handleGuardar = async () => {
-    if (!docenteSeleccionado) return;
-    
-    if (horasLectivasAsignadas > 0 && planificacionActual < minPlanificacionDecimal) {
-      alert(`Error: Por normativa, el total de horas de planificación debe ser al menos el ${pctPlanificacion}% de las horas no lectivas proporcionales a las horas de aula asignadas.
-
-Actualmente el docente tiene ${planificacionActual} hrs de planificación.
-El mínimo requerido para las horas de aula actuales es de ${minPlanificacionDecimal} hrs.
-
-Por favor, completa las horas de planificación antes de guardar.`);
-      return;
-    }
-    
-    setSaving(true);
+      if (!docenteSeleccionado) return;
+      setSaving(true);
     try {
       const payloads = cargas.filter(c => !c.eliminada);
       await saveCargasHorarias(Number(docenteSeleccionado), payloads, ESTABLECIMIENTO_ID || undefined, observacionCarga);

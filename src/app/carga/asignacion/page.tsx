@@ -378,7 +378,7 @@ export default function AsignacionCargaPage() {
   const handleGuardar = async () => {
       if (!docenteSeleccionado) return;
       
-      if (horasLectivasAsignadas > 0 && planificacionActual < minPlanificacionDecimal) {
+      if (horasLectivasAsignadas > 0 && planificacionActual > 0 && planificacionActual < minPlanificacionDecimal) {
         alert(`Error: Por normativa, el total de horas de planificación debe ser al menos el ${pctPlanificacion}% de las horas no lectivas proporcionales a las horas de aula asignadas.
 
 Actualmente el docente tiene ${planificacionActual} hrs de planificación.

@@ -459,11 +459,46 @@ export default function AsignacionCargaPage() {
             <td class="center font-bold">ASIGNATURA</td>
             <td class="center font-bold" width="15%">HORAS</td>
           </tr>
-          ` + cargasVivas.filter(c => c.tipoCarga === 'LECTIVA').map(c => 
-            "<tr><td class='center'>" + getGradoNombre(c.tienCod, c.grteCod) + (c.letraCurso ? " " + c.letraCurso : "") + "</td>" +
-            "<td class='center'>" + (todasAsignaturas.find(a => a.asigCod === c.codAsignatura)?.asigDescripcion || c.nombre) + (c.especialidad ? ` (${c.especialidad})` : "") + "</td>" +
-            "<td class='center'>" + c.horas + "</td></tr>"
-          ).join('') + `
+          ` + (() => {
+              const lectivas = cargasVivas.filter(c => c.tipoCarga === 'LECTIVA');
+              const normales: any[] = [];
+              const combinados: Record<string, any[]> = {};
+              
+              lectivas.forEach(c => {
+                if (c.esCombinado && c.grupoCombinado) {
+                  const asig = c.codAsignatura || 'GEN';
+                  const key = `${asig}_${c.grupoCombinado.toUpperCase().trim()}`;
+                  if (!combinados[key]) combinados[key] = [];
+                  combinados[key].push(c);
+                } else {
+                  normales.push(c);
+                }
+              });
+
+              let rowsHtml = '';
+              
+              // Render normales
+              normales.forEach(c => {
+                rowsHtml += "<tr><td class='center'>" + getGradoNombre(c.tienCod, c.grteCod) + (c.letraCurso ? " " + c.letraCurso : "") + "</td>" +
+                            "<td class='center'>" + (todasAsignaturas.find(a => a.asigCod === c.codAsignatura)?.asigDescripcion || c.nombre) + (c.especialidad ? ` (${c.especialidad})` : "") + "</td>" +
+                            "<td class='center'>" + c.horas + "</td></tr>";
+              });
+
+              // Render combinados
+              for (const key in combinados) {
+                const arr = combinados[key];
+                const asigObj = todasAsignaturas.find(a => a.asigCod === arr[0].codAsignatura);
+                const asigName = asigObj ? asigObj.asigDescripcion : arr[0].nombre;
+                const especialidad = arr[0].especialidad ? ` (${arr[0].especialidad})` : "";
+                const cursosComb = arr.map((c: any) => getGradoNombre(c.tienCod, c.grteCod) + (c.letraCurso ? " " + c.letraCurso : "")).join(" + ");
+                const maxHoras = Math.max(...arr.map((c: any) => c.horas));
+                rowsHtml += "<tr><td class='center' style='font-size: 11px;'>" + cursosComb + "</td>" +
+                            "<td class='center'>" + asigName + especialidad + " <span style='font-size: 10px; color: #666;'>(Multigrado)</span></td>" +
+                            "<td class='center'>" + maxHoras + "</td></tr>";
+              }
+              
+              return rowsHtml;
+            })() + `
           <tr style="background-color: #f3f4f6; font-weight: bold;">
             <td colspan="2" style="text-align: right;">HORAS PEDAGÓGICAS (LECTIVAS / AULA)</td>
             <td class="center">${Math.round(horasLectivasAsignadas)}</td>

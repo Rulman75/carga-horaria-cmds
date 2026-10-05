@@ -24,7 +24,7 @@ export default function SchoolDashboard({ estId }: { estId: number }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex justify-between items-center print:hidden">
-        <h2 className="text-2xl font-bold text-[#016098]">Dashboard del Establecimiento</h2>
+        <h2 className="text-2xl font-bold text-[#016098]">Dashboard: {data.establecimientoNombre}</h2>
         <button 
           onClick={() => window.print()}
           className="bg-[#016098] text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition-colors flex items-center gap-2"
@@ -33,7 +33,7 @@ export default function SchoolDashboard({ estId }: { estId: number }) {
           Imprimir / PDF
         </button>
       </div>
-      <h2 className="text-2xl font-bold text-[#016098] hidden print:block mb-4">Dashboard del Establecimiento</h2>
+      <h2 className="text-2xl font-bold text-[#016098] hidden print:block mb-4">Dashboard: {data.establecimientoNombre}</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Termómetro */}

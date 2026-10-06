@@ -37,11 +37,11 @@ export default function SabanaClasicaPage() {
   
   // Inicializar docentes
   docentes.forEach(d => {
-    const contrato = d.totalDefinitivo || d.totalJornada || d.horasTitular || 0;
-    const colacion = contrato >= 30 ? (config?.horasColacion || 2) : 1;
+    const contratoHoras = d.totalDefinitivo || d.totalJornada || d.horasTitular || 0;
+    const colacion = contratoHoras >= 30 ? (config?.horasColacion || 2) : 1;
     docentesMap[d.id] = {
       ...d,
-      contrato,
+      contratoHoras,
       colacion,
       asignaturasBase: {},
       asignaturasJec: {},
@@ -148,14 +148,14 @@ export default function SabanaClasicaPage() {
       <div className="flex flex-col gap-6 h-full">
 <style>{`
         @media print {
-          @page { size: landscape; margin: 10mm; }
+          @page { size: landscape; margin: 5mm; }
           body, html { height: auto !important; overflow: visible !important; background: white !important; }
           aside, nav, .no-print { display: none !important; }
           main { height: auto !important; overflow: visible !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
           /* Reset parent flex containers that clip content */
           div[class*="flex h-screen"] { display: block !important; height: auto !important; overflow: visible !important; }
           .custom-scrollbar { overflow: visible !important; }
-          table { width: 100% !important; page-break-inside: auto; }
+          table { width: 100% !important; page-break-inside: auto; zoom: 0.55; transform-origin: top left; }
           tr { page-break-inside: avoid; page-break-after: auto; }
           thead { display: table-header-group; }
           tfoot { display: table-footer-group; }
@@ -284,16 +284,16 @@ export default function SabanaClasicaPage() {
 
                 const totalJornadaSemanalCrono = Math.ceil((totalAulaPed * 45 / 60) + recreoDecimal + totalAnlCrono);
                 const asignadoCronoTotal = Math.ceil((totalAulaPed * 45 / 60) + recreoDecimal + totalAnlCrono + totalExtCrono + doc.colacion);
-                const balance = doc.contrato - asignadoCronoTotal;
+                const balance = doc.contratoHoras - asignadoCronoTotal;
                 const hasData = asignadoCronoTotal > doc.colacion;
 
               return (
                 <tr key={doc.id} className={`bg-white hover:bg-gray-50 border-b border-[#e2e8f0] ${!hasData ? 'opacity-40' : ''}`}>
                   <td className="px-4 py-2 sticky left-0 bg-white z-10 border-r border-[#e2e8f0] min-w-[250px]">
                     <div className="font-bold text-gray-800">{doc.apellidos}, {doc.nombres}</div>
-                    <div className="text-[10px] text-gray-500">{doc.rut}</div>
+                    <div className="text-[10px] text-gray-500">{doc.rut} - {doc.contrato || doc.tipoContrato || "No especificado"}</div>
                   </td>
-                  <td className="px-2 py-2 text-center font-bold sticky left-[250px] bg-white z-10 border-r">{doc.contrato}</td>
+                  <td className="px-2 py-2 text-center font-bold sticky left-[250px] bg-white z-10 border-r">{doc.contratoHoras}</td>
                   <td className="px-2 py-2 text-center text-gray-500 sticky left-[320px] bg-white z-10 border-r bg-gray-50">{doc.colacion}</td>
                   
                   {colsBase.map(c => <td key={c.key} className="px-1 py-2 text-center border-r text-[#016098] font-medium">{doc.asignaturasBase[c.key] ? Math.round(doc.asignaturasBase[c.key]) : '-'}</td>)}

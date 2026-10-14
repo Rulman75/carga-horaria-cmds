@@ -215,7 +215,7 @@ export default function AsignacionCargaPage() {
 
   // Planificacin rule
   const pctPlanificacion = (configGlobal?.porcentajeMinimoPlanificacion ?? 40);
-  const minPlanificacionDecimal = Math.round((maxNoLectivasPropDecimal * (pctPlanificacion / 100)) * 10) / 10;
+  const minPlanificacionDecimal = Math.floor(Number((maxNoLectivasPropDecimal * (pctPlanificacion / 100) * 100).toFixed(6))) / 100;
   const planificacionActual = cargasVivas
     .filter(c => c.tipoCarga === 'NO_LECTIVA')
     .filter(c => {
@@ -298,8 +298,8 @@ export default function AsignacionCargaPage() {
           alert(`Error: No puedes asignar horas de planificación si el docente aún no tiene horas de aula (lectivas) asignadas. Por favor, asigna primero las horas de aula.`);
           return;
         }
-        if (planificacionActual + horasManual < minPlanificacionDecimal) {
-          alert(`Por normativa, la planificación debe ser al menos el ${pctPlanificacion}% de las horas no lectivas proporcionales (${maxNoLectivasPropStr}). La cantidad mínima esperada es ${minPlanificacionDecimal.toFixed(1)} hrs.`);
+        if (planificacionActual + horasManual + 0.0001 < minPlanificacionDecimal) {
+          alert(`Por normativa, la planificación debe ser al menos el ${pctPlanificacion}% de las horas no lectivas proporcionales (${maxNoLectivasPropStr}). La cantidad mínima esperada es ${minPlanificacionDecimal} hrs (${formatCronoDecimal(minPlanificacionDecimal)}).`);
           return;
         }
       }
@@ -368,7 +368,7 @@ export default function AsignacionCargaPage() {
 
   const handleCambiarHoras = (index: number, delta: number) => {
     const newCargas = [...cargas];
-    const nuevaHora = newCargas[index].horas + delta;
+    const nuevaHora = Number((newCargas[index].horas + delta).toFixed(2));
     if (nuevaHora > 0) {
       newCargas[index].horas = nuevaHora;
       setCargas(newCargas);
@@ -378,11 +378,11 @@ export default function AsignacionCargaPage() {
   const handleGuardar = async () => {
       if (!docenteSeleccionado) return;
       
-      if (horasLectivasAsignadas > 0 && planificacionActual > 0 && planificacionActual < minPlanificacionDecimal) {
+      if (horasLectivasAsignadas > 0 && planificacionActual > 0 && planificacionActual + 0.0001 < minPlanificacionDecimal) {
         alert(`Error: Por normativa, el total de horas de planificación debe ser al menos el ${pctPlanificacion}% de las horas no lectivas proporcionales a las horas de aula asignadas.
 
-Actualmente el docente tiene ${planificacionActual} hrs de planificación.
-El mínimo requerido para las horas de aula actuales es de ${minPlanificacionDecimal} hrs.
+Actualmente el docente tiene ${Number(planificacionActual.toFixed(2))} hrs (${formatCronoDecimal(planificacionActual)}) de planificación.
+El mínimo requerido para las horas de aula actuales es de ${minPlanificacionDecimal} hrs (${formatCronoDecimal(minPlanificacionDecimal)}).
 
 Por favor, completa las horas de planificación antes de guardar.`);
         return;
@@ -1035,7 +1035,14 @@ Por favor, completa las horas de planificación antes de guardar.`);
                     <select 
                       className="w-full border border-gray-300 rounded-lg p-2.5 text-sm"
                       value={anlSeleccionada}
-                      onChange={e => setAnlSeleccionada(e.target.value)}
+                      onChange={e => {
+                        const val = e.target.value;
+                        setAnlSeleccionada(val);
+                        const anlInfo = actividadesNL.find(a => a.id.toString() === val);
+                        if (anlInfo?.esPlanificacion && minPlanificacionDecimal > planificacionActual) {
+                          setHorasManual(Number((minPlanificacionDecimal - planificacionActual).toFixed(2)));
+                        }
+                      }}
                     >
                       <option value="">-- Seleccionar Actividad --</option>
                       {actividadesNL.map(a => (
@@ -1065,7 +1072,14 @@ Por favor, completa las horas de planificación antes de guardar.`);
                       value={horasManual}
                       onChange={e => setHorasManual(parseFloat(e.target.value) || 0)}
                     />
-                    <p className="text-xs text-gray-500 mt-1">Se miden en horas reales de 60 mins.</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Se miden en horas reales de 60 mins (Equivale a: <strong>{formatCronoDecimal(horasManual)}</strong>).
+                    </p>
+                    {actividadesNL.find(a => a.id.toString() === anlSeleccionada)?.esPlanificacion && horasLectivasAsignadas > 0 && (
+                      <p className="text-xs text-[#016098] font-semibold mt-1">
+                        Mínimo requerido ({pctPlanificacion}% de {maxNoLectivasPropStr.replace(':', ' H ')} MIN): {minPlanificacionDecimal} hrs ({formatCronoDecimal(minPlanificacionDecimal)})
+                      </p>
+                    )}
                   </div>
 
                   <div className="mt-4">
@@ -1214,7 +1228,7 @@ Por favor, completa las horas de planificación antes de guardar.`);
                               >
                                 -
                               </button>
-                              <span className="text-xs font-bold opacity-90 w-5 text-center">{carga.horas}</span>
+                              <span className="text-xs font-bold opacity-90 min-w-[28px] px-1 text-center">{carga.horas}</span>
                               <button 
                                 onClick={() => handleCambiarHoras(index, 0.5)}
                                 className="w-5 h-5 flex items-center justify-center rounded hover:bg-gray-100 text-xs font-bold text-gray-600 transition-colors"
@@ -1222,7 +1236,7 @@ Por favor, completa las horas de planificación antes de guardar.`);
                                 +
                               </button>
                             </div>
-                            <span className="text-xs font-bold opacity-90">{carga.tipoCarga === 'LECTIVA' ? 'Ped' : 'Crono'}</span>
+                            <span className="text-xs font-bold opacity-90">{carga.tipoCarga === 'LECTIVA' ? 'Ped' : `Crono (${formatCronoDecimal(carga.horas)})`}</span>
                             <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${badge}`}>
                               {carga.tipoCarga}
                             </span>

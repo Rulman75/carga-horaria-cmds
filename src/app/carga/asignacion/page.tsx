@@ -461,7 +461,7 @@ Por favor, completa las horas de planificación antes de guardar.`);
           <tr><td><strong>RUT:</strong></td><td>${docenteSeleccionadoObj.rut}</td></tr>
           <tr><td><strong>Establecimiento Educativo:</strong></td><td>${estName}</td></tr>
           <tr><td><strong>Tipo de Contrato:</strong></td><td style="text-transform: capitalize;">${docenteSeleccionadoObj.contrato ? docenteSeleccionadoObj.contrato.toLowerCase() : 'No especificado'}</td></tr>
-          <tr><td><strong>Horas Contrato:</strong></td><td>${totalHorasContrato} horas cronológicas</td></tr>
+          <tr><td><strong>Horas Titularidad:</strong></td><td>${docenteSeleccionadoObj.horasTitular || 0} horas cronológicas</td></tr>
         </table>
 
         <div class="section">II. Detalle de Carga Horaria (Año Escolar 2027)</div>

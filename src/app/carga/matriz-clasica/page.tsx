@@ -1,17 +1,14 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { 
-  getCargasEstablecimiento, 
-  getDocentesEstablecimiento, 
-  getGradosEstablecimiento,
-  getActividadesNoLectivas,
-  getActividadesExtracurriculares,
-  getConfiguracionGlobal,
-  getTablaConversion
-} from '../../actions';
+import { getDatosSabanaClasica } from '../../actions';
 
 export default function SabanaClasicaPage() {
-  const parseCronoToDecimal = (crono: string) => { if(!crono) return 0; const p = crono.split(':'); if(p.length !== 2) return 0; return parseInt(p[0]) + parseInt(p[1])/60; };
+  const parseCronoToDecimal = (crono: string) => {
+    if (!crono) return 0;
+    const p = crono.split(':');
+    if (p.length !== 2) return 0;
+    return parseInt(p[0]) + parseInt(p[1]) / 60;
+  };
   const [ESTABLECIMIENTO_ID, setEstablecimientoId] = useState<number | null>(null);
   const [docentes, setDocentes] = useState<any[]>([]);
   const [cargas, setCargas] = useState<any[]>([]);
@@ -24,17 +21,19 @@ export default function SabanaClasicaPage() {
   useEffect(() => {
     const estId = Number(localStorage.getItem('selectedEstablecimientoId')) || 2;
     setEstablecimientoId(estId);
-    getDocentesEstablecimiento(estId).then(setDocentes);
-    getCargasEstablecimiento(estId).then(setCargas);
-    getGradosEstablecimiento(estId).then(setGrados);
-      getTablaConversion().then(setTablaConversion);
-    getActividadesNoLectivas().then(setCatAnl);
-    getActividadesExtracurriculares().then(setCatExt);
-    getConfiguracionGlobal().then(setConfig);
+    getDatosSabanaClasica(estId).then((data) => {
+      setDocentes(data.docentes);
+      setCargas(data.cargas);
+      setGrados(data.grados);
+      setTablaConversion(data.tablaConversion);
+      setCatAnl(data.catAnl);
+      setCatExt(data.catExt);
+      setConfig(data.config);
+    });
   }, []);
 
   const docentesMap: Record<number, any> = {};
-  
+
   // Inicializar docentes
   docentes.forEach(d => {
     const contratoHoras = d.totalDefinitivo || d.totalJornada || d.horasTitular || 0;
@@ -128,7 +127,6 @@ export default function SabanaClasicaPage() {
 
   const docentesArray = Object.values(docentesMap).sort((a,b) => String(a.apellidos || "").localeCompare(String(b.apellidos || "")));
 
-  
   const exportarExcel = () => {
     const table = document.getElementById('sabana-table');
     if (!table) return;
@@ -144,9 +142,8 @@ export default function SabanaClasicaPage() {
   };
 
   return (
-    
-      <div className="flex flex-col gap-6 h-full">
-<style>{`
+    <div className="flex flex-col gap-6 h-full">
+      <style>{`
         @media print {
           @page { size: landscape; margin: 5mm; }
           body, html { height: auto !important; overflow: visible !important; background: white !important; }
@@ -167,7 +164,6 @@ export default function SabanaClasicaPage() {
         }
       `}</style>
 
-      
       <div className="flex justify-between items-center no-print">
         <div>
           <h1 className="text-xl font-bold text-[#016098]">Sábana Clásica de Carga (Global)</h1>
@@ -269,7 +265,6 @@ export default function SabanaClasicaPage() {
               const totalAnlCrono = doc.totalAnlCrono;
               const totalExtCrono = doc.totalExtraCrono;
 
-              
               let anlMarcoCrono: number | string = '-';
               let recreoCrono: number | string = '-';
               let recreoDecimal = 0;
@@ -279,13 +274,13 @@ export default function SabanaClasicaPage() {
                   anlMarcoCrono = Math.round(parseCronoToDecimal(row.noLectivasCronologicas));
                   recreoCrono = Math.round(parseCronoToDecimal(row.recreoCronologicas));
                   recreoDecimal = parseCronoToDecimal(row.recreoCronologicas);
-                  }
                 }
+              }
 
-                const totalJornadaSemanalCrono = Math.ceil((totalAulaPed * 45 / 60) + recreoDecimal + totalAnlCrono);
-                const asignadoCronoTotal = Math.ceil((totalAulaPed * 45 / 60) + recreoDecimal + totalAnlCrono + totalExtCrono + doc.colacion);
-                const balance = doc.contratoHoras - asignadoCronoTotal;
-                const hasData = asignadoCronoTotal > doc.colacion;
+              const totalJornadaSemanalCrono = Math.ceil((totalAulaPed * 45 / 60) + recreoDecimal + totalAnlCrono);
+              const asignadoCronoTotal = Math.ceil((totalAulaPed * 45 / 60) + recreoDecimal + totalAnlCrono + totalExtCrono + doc.colacion);
+              const balance = doc.contratoHoras - asignadoCronoTotal;
+              const hasData = asignadoCronoTotal > doc.colacion;
 
               return (
                 <tr key={doc.id} className={`bg-white hover:bg-gray-50 border-b border-[#e2e8f0] ${!hasData ? 'opacity-40' : ''}`}>

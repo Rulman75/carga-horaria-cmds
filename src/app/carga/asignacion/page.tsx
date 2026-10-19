@@ -2,18 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  getDocentesEstablecimiento, 
-  getGradosEstablecimiento, 
-  getAsignaturasPropiasPorGrado, 
-  getCargasEstablecimiento, 
   saveCargasHorarias, 
-  getActividadesNoLectivas, 
-  getTablaConversion,
-  getActividadesExtracurriculares,
-  getConfiguracionGlobal,
-  getEstablecimientoConfig,
-  getTodasAsignaturas,
-  getTodosDetallesPlanEstablecimiento
+  getDatosInicialesAsignacion,
+  getDatosPostGuardado
 } from '../../actions';
 
 interface CargaEnUI {
@@ -84,29 +75,39 @@ export default function AsignacionCargaPage() {
   useEffect(() => {
     const estId = Number(localStorage.getItem('selectedEstablecimientoId')) || 2;
     setEstablecimientoId(estId);
-    getDocentesEstablecimiento(estId).then(setDocentes);
-    getGradosEstablecimiento(estId).then(setGrados);
-    getCargasEstablecimiento(estId).then(setTodasCargas);
-    
-    getActividadesNoLectivas().then(setActividadesNL);
-    getActividadesExtracurriculares().then(setActividadesExt);
-    getTablaConversion().then(setTablaConversion);
-    getConfiguracionGlobal().then(setConfigGlobal);
-    getEstablecimientoConfig(Number(estId)).then(setEstConfig);
-    getTodasAsignaturas().then(setTodasAsignaturas);
-    getTodosDetallesPlanEstablecimiento(Number(estId)).then(setTodosLosDetalles);
+    getDatosInicialesAsignacion(estId).then((data) => {
+      setDocentes(data.docentes);
+      setGrados(data.grados);
+      setTodasCargas(data.todasCargas);
+      setActividadesNL(data.actividadesNL);
+      setActividadesExt(data.actividadesExt);
+      setTablaConversion(data.tablaConversion);
+      setConfigGlobal(data.configGlobal);
+      setEstConfig(data.estConfig);
+      setTodasAsignaturas(data.todasAsignaturas);
+      setTodosLosDetalles(data.todosLosDetalles);
+    });
   }, []);
 
-  const loadTodasCargas = () => { if (ESTABLECIMIENTO_ID) { getCargasEstablecimiento(ESTABLECIMIENTO_ID).then(setTodasCargas); getDocentesEstablecimiento(ESTABLECIMIENTO_ID).then(setDocentes); } };
+  const loadTodasCargas = () => {
+    if (ESTABLECIMIENTO_ID) {
+      getDatosPostGuardado(ESTABLECIMIENTO_ID).then((data) => {
+        setTodasCargas(data.todasCargas);
+        setDocentes(data.docentes);
+      });
+    }
+  };
 
   useEffect(() => {
     if (gradoSeleccionado) {
-      const [tienCod, grteCod] = gradoSeleccionado.split('-');
-      if (ESTABLECIMIENTO_ID) getAsignaturasPropiasPorGrado(ESTABLECIMIENTO_ID, Number(tienCod), Number(grteCod)).then(setDetallesPlan);
+      const [tienCod, grteCod] = gradoSeleccionado.split('-').map(Number);
+      setDetallesPlan(
+        todosLosDetalles.filter(d => d.tienCod === tienCod && d.grteCod === grteCod)
+      );
     } else {
       setDetallesPlan([]);
     }
-  }, [gradoSeleccionado, ESTABLECIMIENTO_ID]);
+  }, [gradoSeleccionado, todosLosDetalles]);
 
   useEffect(() => {
     if (docenteSeleccionado) {

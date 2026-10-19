@@ -2,41 +2,68 @@
 import bcrypt from 'bcryptjs';
 import * as jose from 'jose';
 import { cookies } from 'next/headers';
-
-
 import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+
+const globalForPrisma = globalThis as unknown as {
+  prisma?: PrismaClient;
+  __cmdsCache?: Map<string, { data: any; expiresAt: number }>;
+};
+
+const prisma = globalForPrisma.prisma ?? new PrismaClient();
+globalForPrisma.prisma = prisma;
+
+const memoryCache =
+  globalForPrisma.__cmdsCache ?? new Map<string, { data: any; expiresAt: number }>();
+globalForPrisma.__cmdsCache = memoryCache;
+
+async function getCached<T>(key: string, fetcher: () => Promise<T>, ttlMs = 300_000): Promise<T> {
+  const now = Date.now();
+  const entry = memoryCache.get(key);
+  if (entry && entry.expiresAt > now) {
+    return entry.data as T;
+  }
+  const data = await fetcher();
+  memoryCache.set(key, { data, expiresAt: now + ttlMs });
+  return data;
+}
+
+function invalidateCache(...keys: string[]) {
+  for (const k of keys) {
+    memoryCache.delete(k);
+  }
+}
 
 export async function getDocentes() {
   return await prisma.docente.findMany({ orderBy: { apellidos: 'asc' } });
 }
 
 export async function getTiposEnsenanza() {
-  return await prisma.tipoEnsenanza.findMany({
-    orderBy: { tienDescripcion: 'asc' }
-  });
+  return await getCached('tipos-ensenanza', () =>
+    prisma.tipoEnsenanza.findMany({
+      orderBy: { tienDescripcion: 'asc' }
+    })
+  );
 }
 
 export async function getGrados() {
-  return await prisma.grado.findMany({ 
-    include: { tipoEnsenanza: true },
-    orderBy: [
-      { tienCod: 'asc' },
-      { grteCod: 'asc' }
-    ]
-  });
+  return await getCached('grados-base', () =>
+    prisma.grado.findMany({
+      include: { tipoEnsenanza: true },
+      orderBy: [{ tienCod: 'asc' }, { grteCod: 'asc' }]
+    })
+  );
 }
 
 export async function getAsignaturasPorGrado(tienCod: number, grteCod: number) {
   // Retorna los detalles del plan para ese grado específico, con la info de la asignatura
   return await prisma.planEstudioDet.findMany({
-    where: { 
+    where: {
       tienCod: tienCod,
-      grteCod: grteCod 
+      grteCod: grteCod
     },
-    include: { 
-      asignatura: true, 
-      planEnc: true 
+    include: {
+      asignatura: true,
+      planEnc: true
     }
   });
 }
@@ -64,22 +91,20 @@ export async function getPlanEstudio(codPlan: number) {
           tipoEnsenanza: true,
           grado: true
         },
-        orderBy: [
-          { tienCod: 'asc' },
-          { grteCod: 'asc' },
-          { codAsignatura: 'asc' }
-        ]
+        orderBy: [{ tienCod: 'asc' }, { grteCod: 'asc' }, { codAsignatura: 'asc' }]
       }
     }
   });
 }
 
 export async function getEstablecimientos() {
-  return await prisma.establecimiento.findMany({
-    orderBy: {
-      esedDescripcion: 'asc'
-    }
-  });
+  return await getCached('establecimientos', () =>
+    prisma.establecimiento.findMany({
+      orderBy: {
+        esedDescripcion: 'asc'
+      }
+    })
+  );
 }
 
 export async function updatePlanEstudioEstado(codPlan: number, nuevoEstado: string) {
@@ -587,16 +612,20 @@ export async function updateDocenteHoras(docenteId: number, horas: number) {
 
 
 export async function getTodasAsignaturas() {
-  return await prisma.asignatura.findMany({
-    orderBy: { asigDescripcion: 'asc' }
-  });
+  return await getCached('asignaturas', () =>
+    prisma.asignatura.findMany({
+      orderBy: { asigDescripcion: 'asc' }
+    })
+  );
 }
 
 export async function updateAsignaturaEspecialista(codAsignatura: string, esEspecialista: boolean) {
-  return await prisma.asignatura.update({
+  const res = await prisma.asignatura.update({
     where: { asigCod: codAsignatura },
     data: { esEspecialistaSiempre: esEspecialista }
   });
+  invalidateCache('asignaturas');
+  return res;
 }
 
 
@@ -626,77 +655,100 @@ export async function updateEstablecimientoTipos(establecimientoId: number, tien
       }))
     });
   }
+  invalidateCache('establecimientos');
 }
 
 export async function getActividadesNoLectivas() {
-  return await prisma.actividadNoLectiva.findMany({
-    orderBy: { descripcion: 'asc' }
-  });
+  return await getCached('actividades-nl', () =>
+    prisma.actividadNoLectiva.findMany({
+      orderBy: { descripcion: 'asc' }
+    })
+  );
 }
 
 export async function createActividadNoLectiva(descripcion: string, esPlanificacion: boolean = false) {
-  return await prisma.actividadNoLectiva.create({
+  const res = await prisma.actividadNoLectiva.create({
     data: { descripcion, esPlanificacion }
   });
+  invalidateCache('actividades-nl');
+  return res;
 }
 
 export async function updateActividadNoLectiva(id: number, esPlanificacion: boolean) {
-  return await prisma.actividadNoLectiva.update({
+  const res = await prisma.actividadNoLectiva.update({
     where: { id },
     data: { esPlanificacion }
   });
+  invalidateCache('actividades-nl');
+  return res;
 }
 
 export async function deleteActividadNoLectiva(id: number) {
-  return await prisma.actividadNoLectiva.delete({
+  const res = await prisma.actividadNoLectiva.delete({
     where: { id }
   });
+  invalidateCache('actividades-nl');
+  return res;
 }
 
 export async function createAsignatura(asigCod: string, asigDescripcion: string) {
-  return await prisma.asignatura.create({
+  const res = await prisma.asignatura.create({
     data: { asigCod, asigDescripcion }
   });
+  invalidateCache('asignaturas');
+  return res;
 }
 
 export async function deleteAsignatura(asigCod: string) {
-  return await prisma.asignatura.delete({
+  const res = await prisma.asignatura.delete({
     where: { asigCod }
   });
+  invalidateCache('asignaturas');
+  return res;
 }
 
 
 export async function getTablaConversion() {
-  return await prisma.tablaConversion.findMany({
-    orderBy: { jornadaSemanal: 'desc' }
-  });
+  return await getCached('tabla-conversion', () =>
+    prisma.tablaConversion.findMany({
+      orderBy: { jornadaSemanal: 'desc' }
+    })
+  );
 }
 
 export async function updateAsignaturaJec(asigCod: string, esTallerJec: boolean) {
-  return await prisma.asignatura.update({
+  const res = await prisma.asignatura.update({
     where: { asigCod },
     data: { esTallerJec }
   });
+  invalidateCache('asignaturas');
+  return res;
 }
 
 export async function updateAsignaturaNombre(asigCod: string, asigDescripcion: string) {
-  return await prisma.asignatura.update({
+  const res = await prisma.asignatura.update({
     where: { asigCod },
     data: { asigDescripcion }
   });
+  invalidateCache('asignaturas');
+  return res;
 }
 
 export async function getDashboardSummary(establecimientoId?: number) {
   if (establecimientoId) {
-    const docentes = await prisma.docenteEstablecimiento.count({ where: { establecimientoId } });
-    const config = await prisma.establecimiento.findUnique({ where: { esedSec: establecimientoId } });
-    const grados = await prisma.establecimientoGrado.findMany({ where: { establecimientoId }, include: { grado: true } });
+    const [docentes, config, grados] = await Promise.all([
+      prisma.docenteEstablecimiento.count({ where: { establecimientoId } }),
+      prisma.establecimiento.findUnique({ where: { esedSec: establecimientoId } }),
+      prisma.establecimientoGrado.findMany({ where: { establecimientoId }, include: { grado: true } })
+    ]);
     const totalCursos = grados.reduce((sum, g) => sum + g.cantidadCursos, 0);
     return { docentes, cursos: totalCursos, tipo: 'ESTABLECIMIENTO', nombre: config?.esedDescripcion || '' };
   } else {
-    const establecimientos = await prisma.establecimiento.count();
-    const docentes = await prisma.docente.count();
-    const asignaturas = await prisma.asignatura.count();
+    const [establecimientos, docentes, asignaturas] = await Promise.all([
+      prisma.establecimiento.count(),
+      prisma.docente.count(),
+      prisma.asignatura.count()
+    ]);
     return { establecimientos, docentes, asignaturas, tipo: 'GLOBAL' };
   }
 }
@@ -704,150 +756,186 @@ export async function getDashboardSummary(establecimientoId?: number) {
 
 // --- EXTRACURRICULARES ---
 export async function getActividadesExtracurriculares() {
-  return await prisma.actividadExtracurricular.findMany({
-    orderBy: { descripcion: 'asc' }
-  });
+  return await getCached('actividades-ext', () =>
+    prisma.actividadExtracurricular.findMany({
+      orderBy: { descripcion: 'asc' }
+    })
+  );
 }
 
 export async function createActividadExtracurricular(descripcion: string, horasDefault?: number | null, topeMaximo?: number | null) {
-  return await prisma.actividadExtracurricular.create({
+  const res = await prisma.actividadExtracurricular.create({
     data: { descripcion, horasDefault: horasDefault || null, topeMaximo: topeMaximo || null }
   });
+  invalidateCache('actividades-ext');
+  return res;
 }
 
 export async function updateActividadExtracurricular(id: number, descripcion: string, horasDefault?: number | null, topeMaximo?: number | null) {
-  return await prisma.actividadExtracurricular.update({
+  const res = await prisma.actividadExtracurricular.update({
     where: { id },
     data: { descripcion, horasDefault: horasDefault || null, topeMaximo: topeMaximo || null }
   });
+  invalidateCache('actividades-ext');
+  return res;
 }
 
 export async function deleteActividadExtracurricular(id: number) {
-  return await prisma.actividadExtracurricular.delete({
+  const res = await prisma.actividadExtracurricular.delete({
     where: { id }
   });
+  invalidateCache('actividades-ext');
+  return res;
 }
 
 // --- CONFIGURACION GLOBAL ---
 export async function getConfiguracionGlobal() {
-  let config = await prisma.configuracionGlobal.findFirst();
-  if (!config) {
-    config = await prisma.configuracionGlobal.create({
-      data: { id: 1, horasColacion: 2, maxHorasPie: 3 }
-    });
-  }
-  return config;
+  return await getCached('config-global', async () => {
+    let config = await prisma.configuracionGlobal.findFirst();
+    if (!config) {
+      config = await prisma.configuracionGlobal.create({
+        data: { id: 1, horasColacion: 2, maxHorasPie: 3 }
+      });
+    }
+    return config;
+  });
 }
 
 export async function updateConfiguracionGlobal(horasColacion: number, maxHorasPie: number, porcentajeMinimoPlanificacion: number = 40) {
-  return await prisma.configuracionGlobal.upsert({
+  const res = await prisma.configuracionGlobal.upsert({
     where: { id: 1 },
     update: { horasColacion, maxHorasPie, porcentajeMinimoPlanificacion },
     create: { id: 1, horasColacion, maxHorasPie, porcentajeMinimoPlanificacion }
   });
+  invalidateCache('config-global');
+  return res;
 }
 
 export async function getDashboardStats() {
-  const ests = await prisma.establecimiento.findMany({
-    orderBy: { esedDescripcion: 'asc' }
-  });
-  const rels = await prisma.docenteEstablecimiento.findMany({
-    include: { docente: true }
-  });
-  
-  let rows = ests.map(e => {
-    const d = rels.filter(r => r.establecimientoId === e.esedSec);
-    const totalHoras = d.reduce((sum, r) => sum + (r.docente.totalDefinitivo || r.docente.totalJornada || r.docente.horasTitular || 0), 0);
-    return {
-      nombre: e.esedDescripcion,
-      docentes: d.length,
-      horas: totalHoras
-    };
-  }).filter(r => r.docentes > 0);
-  
+  const [ests, rels] = await Promise.all([
+    getEstablecimientos(),
+    prisma.docenteEstablecimiento.findMany({
+      include: { docente: true }
+    })
+  ]);
+
+  const relsByEst = new Map<number, any[]>();
+  for (const r of rels) {
+    let list = relsByEst.get(r.establecimientoId);
+    if (!list) {
+      list = [];
+      relsByEst.set(r.establecimientoId, list);
+    }
+    list.push(r);
+  }
+
+  const rows = ests
+    .map(e => {
+      const d = relsByEst.get(e.esedSec) || [];
+      const totalHoras = d.reduce(
+        (sum, r) =>
+          sum + (r.docente.totalDefinitivo || r.docente.totalJornada || r.docente.horasTitular || 0),
+        0
+      );
+      return {
+        nombre: e.esedDescripcion,
+        docentes: d.length,
+        horas: totalHoras
+      };
+    })
+    .filter(r => r.docentes > 0);
+
   return rows;
 }
 
-
-
-  const parseCronoToDecimal = (crono: string) => {
-    if (!crono) return 0;
-    const parts = crono.split(':');
-    if (parts.length !== 2) return 0;
-    return parseInt(parts[0]) + parseInt(parts[1]) / 60;
-  };
+const parseCronoToDecimal = (crono: string) => {
+  if (!crono) return 0;
+  const parts = crono.split(':');
+  if (parts.length !== 2) return 0;
+  return parseInt(parts[0]) + parseInt(parts[1]) / 60;
+};
 
 export async function getSchoolAnalytics(establecimientoId: number) {
-  const est = await prisma.establecimiento.findUnique({ where: { esedSec: establecimientoId } });
-  const establecimientoNombre = est?.esedDescripcion || "Establecimiento";
-  const tablaConversion = await prisma.tablaConversion.findMany();
-  // Get all teachers for this school
-  const rels = await prisma.docenteEstablecimiento.findMany({
-    where: { establecimientoId },
-    include: { docente: true }
-  });
-  
-  // Get all cargas for this school
-  const cargas = await prisma.cargaHoraria.findMany({
-    where: { planEstablecimiento: { establecimientoId } },
-    include: { asignatura: true, actividadExtracurricular: true }
-  });
+  const [est, tablaConversion, rels, cargas, planesDetalles] = await Promise.all([
+    prisma.establecimiento.findUnique({ where: { esedSec: establecimientoId } }),
+    getTablaConversion(),
+    prisma.docenteEstablecimiento.findMany({
+      where: { establecimientoId },
+      include: { docente: true }
+    }),
+    prisma.cargaHoraria.findMany({
+      where: { planEstablecimiento: { establecimientoId } },
+      include: { asignatura: true, actividadExtracurricular: true }
+    }),
+    prisma.planEstablecimientoDet.findMany({
+      where: { planEstablecimiento: { establecimientoId } },
+      include: {
+        asignatura: true,
+        grado: {
+          include: { establecimientoGrados: { where: { establecimientoId } } }
+        }
+      }
+    })
+  ]);
 
-  const planesDetalles = await prisma.planEstablecimientoDet.findMany({
-    where: { planEstablecimiento: { establecimientoId } },
-    include: { 
-      asignatura: true, 
-      grado: { 
-        include: { establecimientoGrados: { where: { establecimientoId } } } 
-      } 
-    }
-  });
+  const establecimientoNombre = est?.esedDescripcion || 'Establecimiento';
+  const convByLectivas = new Map<number, any>();
+  for (const row of tablaConversion) {
+    convByLectivas.set(row.lectivasPedagogicas, row);
+  }
 
-  const subjectNeed: Record<string, { needed: number, assigned: number, name: string }> = {};
+  const subjectNeed: Record<string, { needed: number; assigned: number; name: string }> = {};
 
   planesDetalles.forEach(det => {
     const asig = det.asignatura?.asigDescripcion || 'Desconocida';
     const gInfo = det.grado?.establecimientoGrados?.[0];
     const cursos = gInfo?.cantidadCursos || 1;
-    if (!subjectNeed[det.codAsignatura]) subjectNeed[det.codAsignatura] = { needed: 0, assigned: 0, name: asig };
-    subjectNeed[det.codAsignatura].needed += (det.horas * (det.grupos ?? cursos));
+    if (!subjectNeed[det.codAsignatura])
+      subjectNeed[det.codAsignatura] = { needed: 0, assigned: 0, name: asig };
+    subjectNeed[det.codAsignatura].needed += det.horas * (det.grupos ?? cursos);
   });
 
+  const cargasByDocente = new Map<number, any[]>();
   cargas.forEach(c => {
     if (c.tipoCarga === 'LECTIVA' && c.asignaturaCod && subjectNeed[c.asignaturaCod]) {
-       subjectNeed[c.asignaturaCod].assigned += c.horasAllocadas;
+      subjectNeed[c.asignaturaCod].assigned += c.horasAllocadas;
     }
+    let list = cargasByDocente.get(c.docenteId);
+    if (!list) {
+      list = [];
+      cargasByDocente.set(c.docenteId, list);
+    }
+    list.push(c);
   });
 
   const subjectProgress = Object.values(subjectNeed).sort((a, b) => b.needed - a.needed);
 
-  // Calculate metrics
   let totalHorasContrato = 0;
   let totalHorasAsignadas = 0;
   let totalJecAsignadas = 0;
   let totalBaseAsignadas = 0;
   let docentesAsignados = 0;
-  let extraDistribution: Record<string, number> = {};
+  const extraDistribution: Record<string, number> = {};
 
   for (const rel of rels) {
     const doc = rel.docente;
     const contrato = doc.totalDefinitivo || doc.totalJornada || doc.horasTitular || 0;
     totalHorasContrato += contrato;
-    
-    const docCargas = cargas.filter(c => c.docenteId === doc.id);
+
+    const docCargas = cargasByDocente.get(doc.id) || [];
     let lectivasPed = 0;
     let anlCrono = 0;
     let extraCrono = 0;
-    
+
     const combinados: Record<string, any[]> = {};
     docCargas.forEach(c => {
       if (c.tipoCarga === 'LECTIVA') {
         if (c.esCombinado && c.grupoCombinado) {
           const g = c.grupoCombinado.toUpperCase().trim();
-            const asig = c.asignaturaCod || 'GEN';
-            const key = `${asig}_${g}`;
-            if (!combinados[key]) combinados[key] = [];
-            combinados[key].push(c);
+          const asig = c.asignaturaCod || 'GEN';
+          const key = `${asig}_${g}`;
+          if (!combinados[key]) combinados[key] = [];
+          combinados[key].push(c);
         } else {
           lectivasPed += c.horasAllocadas;
           if (c.asignatura?.esTallerJec) totalJecAsignadas += c.horasAllocadas;
@@ -862,29 +950,31 @@ export async function getSchoolAnalytics(establecimientoId: number) {
       }
     });
     for (const g in combinados) {
-      const maxC = combinados[g].reduce((prev: any, curr: any) => (prev.horasAllocadas > curr.horasAllocadas) ? prev : curr);
+      const maxC = combinados[g].reduce((prev: any, curr: any) =>
+        prev.horasAllocadas > curr.horasAllocadas ? prev : curr
+      );
       lectivasPed += maxC.horasAllocadas;
       if (maxC.asignatura?.esTallerJec) totalJecAsignadas += maxC.horasAllocadas;
       else totalBaseAsignadas += maxC.horasAllocadas;
     }
-    
+
     const colacion = contrato >= 30 ? 2 : 1;
     let recreoDecimal = 0;
     if (lectivasPed > 0) {
-      const row = tablaConversion.find(r => r.lectivasPedagogicas === lectivasPed);
+      const row = convByLectivas.get(lectivasPed);
       if (row) {
-         const [h, m] = row.recreoCronologicas.split(':').map(Number);
-         recreoDecimal = h + (m / 60);
+        const [h, m] = row.recreoCronologicas.split(':').map(Number);
+        recreoDecimal = h + m / 60;
       }
     }
-    
+
     let asigTotal = 0;
     if (lectivasPed > 0 || anlCrono > 0 || extraCrono > 0) {
-      asigTotal = (lectivasPed * 45 / 60) + recreoDecimal + anlCrono + extraCrono + colacion;
+      asigTotal = (lectivasPed * 45) / 60 + recreoDecimal + anlCrono + extraCrono + colacion;
     }
- 
+
     totalHorasAsignadas += asigTotal;
-    
+
     if (docCargas.length > 0) docentesAsignados++;
   }
 
@@ -905,80 +995,106 @@ export async function getSchoolAnalytics(establecimientoId: number) {
 }
 
 export async function getGlobalAnalytics() {
-  const tablaConversion = await prisma.tablaConversion.findMany();
-  const ests = await prisma.establecimiento.findMany({ orderBy: { esedDescripcion: 'asc' } });
-  const rels = await prisma.docenteEstablecimiento.findMany({ include: { docente: true } });
-  const cargas = await prisma.cargaHoraria.findMany();
+  const [tablaConversion, ests, rels, cargas] = await Promise.all([
+    getTablaConversion(),
+    getEstablecimientos(),
+    prisma.docenteEstablecimiento.findMany({ include: { docente: true } }),
+    prisma.cargaHoraria.findMany()
+  ]);
 
-  let schoolStats = [];
+  const convByLectivas = new Map<number, any>();
+  for (const row of tablaConversion) {
+    convByLectivas.set(row.lectivasPedagogicas, row);
+  }
+
+  const relsByEst = new Map<number, any[]>();
+  for (const r of rels) {
+    let list = relsByEst.get(r.establecimientoId);
+    if (!list) {
+      list = [];
+      relsByEst.set(r.establecimientoId, list);
+    }
+    list.push(r);
+  }
+
+  const cargasByDocente = new Map<number, any[]>();
+  for (const c of cargas) {
+    let list = cargasByDocente.get(c.docenteId);
+    if (!list) {
+      list = [];
+      cargasByDocente.set(c.docenteId, list);
+    }
+    list.push(c);
+  }
+
+  const schoolStats = [];
   let totalDocentesComuna = 0;
   let totalHorasComuna = 0;
-  
+
   for (const est of ests) {
-    const sRels = rels.filter(r => r.establecimientoId === est.esedSec);
-    const sCargas = cargas.filter(c => c.planEstablecimientoId && est.esedSec === est.esedSec); // approximate by checking school later
-    
+    const sRels = relsByEst.get(est.esedSec) || [];
+    if (sRels.length === 0) continue;
+
     let estContrato = 0;
     let estAsignado = 0;
     let estDocentesConCarga = 0;
-    
-    sRels.forEach(r => {
-      const contrato = r.docente.totalDefinitivo || r.docente.totalJornada || r.docente.horasTitular || 0;
+
+    for (const r of sRels) {
+      const contrato =
+        r.docente.totalDefinitivo || r.docente.totalJornada || r.docente.horasTitular || 0;
       estContrato += contrato;
       totalDocentesComuna++;
       totalHorasComuna += contrato;
-      
-      const docCargas = cargas.filter(c => c.docenteId === r.docente.id);
-      let lectPed = 0, noLect = 0, extra = 0;
+
+      const docCargas = cargasByDocente.get(r.docente.id) || [];
+      let lectPed = 0,
+        noLect = 0,
+        extra = 0;
       const combinadosRpt: Record<string, number[]> = {};
-      docCargas.forEach(c => {
-        if(c.tipoCarga==='LECTIVA') {
+      for (const c of docCargas) {
+        if (c.tipoCarga === 'LECTIVA') {
           if (c.esCombinado && c.grupoCombinado) {
             const g = c.grupoCombinado.toUpperCase().trim();
-              const asig = c.asignaturaCod || 'GEN';
-              const key = `${asig}_${g}`;
-              if (!combinadosRpt[key]) combinadosRpt[key] = [];
-              combinadosRpt[key].push(c.horasAllocadas);
+            const asig = c.asignaturaCod || 'GEN';
+            const key = `${asig}_${g}`;
+            if (!combinadosRpt[key]) combinadosRpt[key] = [];
+            combinadosRpt[key].push(c.horasAllocadas);
           } else {
             lectPed += c.horasAllocadas;
           }
         }
-        if(c.tipoCarga==='NO_LECTIVA') noLect += c.horasAllocadas;
-        if(c.tipoCarga==='EXTRACURRICULAR') extra += c.horasAllocadas;
-      });
+        if (c.tipoCarga === 'NO_LECTIVA') noLect += c.horasAllocadas;
+        if (c.tipoCarga === 'EXTRACURRICULAR') extra += c.horasAllocadas;
+      }
       for (const g in combinadosRpt) {
         lectPed += Math.max(...combinadosRpt[g]);
       }
-      
-      let colacion = contrato >= 30 ? 2 : 1;
+
+      const colacion = contrato >= 30 ? 2 : 1;
       let recreoDecimal = 0;
       if (lectPed > 0) {
-        const row = tablaConversion.find(r => r.lectivasPedagogicas === lectPed);
+        const row = convByLectivas.get(lectPed);
         if (row) recreoDecimal = parseCronoToDecimal(row.recreoCronologicas);
       }
-      
+
       if (lectPed > 0 || noLect > 0 || extra > 0) {
-        estAsignado += Math.ceil((lectPed * 45 / 60) + recreoDecimal + noLect + extra + colacion);
+        estAsignado += Math.ceil((lectPed * 45) / 60 + recreoDecimal + noLect + extra + colacion);
         estDocentesConCarga++;
       }
-
-    });
-
-    if (sRels.length > 0) {
-      schoolStats.push({
-        nombre: est.esedDescripcion,
-        contrato: estContrato,
-        asignado: estAsignado,
-        ociosas: estContrato - estAsignado,
-        totalDocentes: sRels.length,
-        docentesConCarga: estDocentesConCarga
-      });
     }
+
+    schoolStats.push({
+      nombre: est.esedDescripcion,
+      contrato: estContrato,
+      asignado: estAsignado,
+      ociosas: estContrato - estAsignado,
+      totalDocentes: sRels.length,
+      docentesConCarga: estDocentesConCarga
+    });
   }
 
-  // Sort by ociosas (Deficit vs Eficiencia)
   schoolStats.sort((a, b) => b.ociosas - a.ociosas);
-  
+
   const topDeficit = schoolStats.slice(0, 5);
   const topEfficient = schoolStats.slice(-5).reverse();
 
@@ -1465,5 +1581,93 @@ export async function convertirDocenteEnVacante(
 
   return nuevoComodin;
 }
+
+export async function getDatosInicialesAsignacion(establecimientoId: number) {
+  const [
+    docentes,
+    grados,
+    todasCargas,
+    actividadesNL,
+    actividadesExt,
+    tablaConversion,
+    configGlobal,
+    estConfig,
+    todasAsignaturas,
+    todosLosDetalles
+  ] = await Promise.all([
+    getDocentesEstablecimiento(establecimientoId),
+    getGradosEstablecimiento(establecimientoId),
+    getCargasEstablecimiento(establecimientoId),
+    getActividadesNoLectivas(),
+    getActividadesExtracurriculares(),
+    getTablaConversion(),
+    getConfiguracionGlobal(),
+    getEstablecimientoConfig(establecimientoId),
+    getTodasAsignaturas(),
+    getTodosDetallesPlanEstablecimiento(establecimientoId)
+  ]);
+
+  return {
+    docentes,
+    grados,
+    todasCargas,
+    actividadesNL,
+    actividadesExt,
+    tablaConversion,
+    configGlobal,
+    estConfig,
+    todasAsignaturas,
+    todosLosDetalles
+  };
+}
+
+export async function getDatosPostGuardado(establecimientoId: number) {
+  const [todasCargas, docentes] = await Promise.all([
+    getCargasEstablecimiento(establecimientoId),
+    getDocentesEstablecimiento(establecimientoId)
+  ]);
+  return { todasCargas, docentes };
+}
+
+export async function getDatosSabanaClasica(establecimientoId: number) {
+  const [
+    docentes,
+    cargas,
+    grados,
+    tablaConversion,
+    catAnl,
+    catExt,
+    config
+  ] = await Promise.all([
+    getDocentesEstablecimiento(establecimientoId),
+    getCargasEstablecimiento(establecimientoId),
+    getGradosEstablecimiento(establecimientoId),
+    getTablaConversion(),
+    getActividadesNoLectivas(),
+    getActividadesExtracurriculares(),
+    getConfiguracionGlobal()
+  ]);
+
+  return {
+    docentes,
+    cargas,
+    grados,
+    tablaConversion,
+    catAnl,
+    catExt,
+    config
+  };
+}
+
+export async function getDatosDocentesPage(establecimientoId: number) {
+  const [docentes, todasCargas, tablaConversion] = await Promise.all([
+    getDocentesEstablecimiento(establecimientoId),
+    getCargasEstablecimiento(establecimientoId),
+    getTablaConversion()
+  ]);
+
+  return { docentes, todasCargas, tablaConversion };
+}
+
 
 

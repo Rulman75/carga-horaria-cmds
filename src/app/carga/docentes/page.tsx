@@ -2,16 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  getDocentesEstablecimiento,
   updateDocenteHoras,
   createOrUpdateDocente,
   deleteDocente,
   getCargaDocenteUnico,
-  getTablaConversion,
-  getCargasEstablecimiento,
   crearDocenteComodin,
   reemplazarDocenteComodin,
-  convertirDocenteEnVacante
+  convertirDocenteEnVacante,
+  getDatosDocentesPage,
+  getDatosPostGuardado
 } from '../../actions';
 import * as XLSX from 'xlsx';
 
@@ -93,13 +92,18 @@ export default function DocentesPage() {
       } catch (e) {}
     }
     setEstablecimientoId(estId);
-    loadDocentes(estId);
-    getTablaConversion().then(setTablaConversion);
+    getDatosDocentesPage(estId).then((data) => {
+      setDocentes(data.docentes);
+      setTodasCargas(data.todasCargas);
+      setTablaConversion(data.tablaConversion);
+    });
   }, []);
 
   const loadDocentes = (estId: number = establecimientoId) => {
-    getDocentesEstablecimiento(estId).then(setDocentes);
-    getCargasEstablecimiento(estId).then(setTodasCargas);
+    getDatosPostGuardado(estId).then((data) => {
+      setDocentes(data.docentes);
+      setTodasCargas(data.todasCargas);
+    });
   };
 
   const handleEdit = (doc: any) => {

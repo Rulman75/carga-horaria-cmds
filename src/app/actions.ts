@@ -1376,3 +1376,94 @@ export async function reemplazarDocenteComodin(
   });
 }
 
+export async function convertirDocenteEnVacante(
+  docenteId: number,
+  establecimientoId: number,
+  glosa?: string,
+  desvincularSaliente: boolean = true
+) {
+  const docSaliente = await prisma.docente.findUnique({
+    where: { id: docenteId }
+  });
+  if (!docSaliente) {
+    throw new Error('Docente no encontrado');
+  }
+
+  const relSaliente = await prisma.docenteEstablecimiento.findUnique({
+    where: {
+      docenteId_establecimientoId: {
+        docenteId,
+        establecimientoId
+      }
+    }
+  });
+
+  const horasVacante =
+    docSaliente.totalDefinitivo ||
+    docSaliente.totalJornada ||
+    docSaliente.horasTitular ||
+    44;
+
+  const glosaFinal =
+    glosa && glosa.trim()
+      ? glosa.trim().toUpperCase()
+      : `REEMP. ${docSaliente.apellidoPaterno || docSaliente.nombres}`.trim().toUpperCase();
+
+  // Crear el comodín NN en este establecimiento
+  const nuevoComodin = await crearDocenteComodin(
+    establecimientoId,
+    horasVacante,
+    glosaFinal,
+    'VACANTE'
+  );
+
+  // Copiar observación de carga si existía
+  if (relSaliente?.observacionCarga) {
+    await prisma.docenteEstablecimiento.update({
+      where: {
+        docenteId_establecimientoId: {
+          docenteId: nuevoComodin.id,
+          establecimientoId
+        }
+      },
+      data: {
+        observacionCarga: relSaliente.observacionCarga
+      }
+    });
+  }
+
+  // Traspasar toda la carga horaria de este establecimiento al nuevo comodín NN
+  await prisma.cargaHoraria.updateMany({
+    where: {
+      docenteId,
+      planEstablecimiento: { establecimientoId }
+    },
+    data: {
+      docenteId: nuevoComodin.id
+    }
+  });
+
+  // Desvincular al docente saliente de este establecimiento si se solicitó
+  if (desvincularSaliente) {
+    await prisma.docenteEstablecimiento.deleteMany({
+      where: {
+        docenteId,
+        establecimientoId
+      }
+    });
+  } else if (relSaliente?.observacionCarga) {
+    await prisma.docenteEstablecimiento.update({
+      where: {
+        docenteId_establecimientoId: {
+          docenteId,
+          establecimientoId
+        }
+      },
+      data: { observacionCarga: null }
+    });
+  }
+
+  return nuevoComodin;
+}
+
+

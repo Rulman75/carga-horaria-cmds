@@ -10,7 +10,8 @@ import {
   getTablaConversion,
   getCargasEstablecimiento,
   crearDocenteComodin,
-  reemplazarDocenteComodin
+  reemplazarDocenteComodin,
+  convertirDocenteEnVacante
 } from '../../actions';
 import * as XLSX from 'xlsx';
 
@@ -66,6 +67,13 @@ export default function DocentesPage() {
     apellidoMaterno: '',
     horasTitular: 44,
     contrato: 'CONTRATA'
+  });
+
+  const [showPasarVacanteModal, setShowPasarVacanteModal] = useState(false);
+  const [docenteAPasarVacante, setDocenteAPasarVacante] = useState<any>(null);
+  const [pasarVacanteForm, setPasarVacanteForm] = useState({
+    glosa: '',
+    desvincularSaliente: true
   });
 
   const [showCargaModal, setShowCargaModal] = useState(false);
@@ -170,6 +178,33 @@ export default function DocentesPage() {
       loadDocentes();
     } catch (e: any) {
       alert(e.message || 'Error reemplazando vacante con docente real');
+    }
+  };
+
+  const abrirModalPasarVacante = (doc: any) => {
+    setDocenteAPasarVacante(doc);
+    setPasarVacanteForm({
+      glosa: `EX ${doc.apellidoPaterno || doc.nombres}`.trim().toUpperCase(),
+      desvincularSaliente: true
+    });
+    setShowPasarVacanteModal(true);
+  };
+
+  const handlePasarAVacante = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!docenteAPasarVacante) return;
+    try {
+      await convertirDocenteEnVacante(
+        docenteAPasarVacante.id,
+        establecimientoId,
+        pasarVacanteForm.glosa,
+        pasarVacanteForm.desvincularSaliente
+      );
+      setShowPasarVacanteModal(false);
+      setDocenteAPasarVacante(null);
+      loadDocentes();
+    } catch (e: any) {
+      alert(e.message || 'Error al convertir docente en vacante');
     }
   };
 
@@ -325,20 +360,22 @@ export default function DocentesPage() {
             Exportar Excel
           </button>
 
-          <button
-            onClick={() => setShowComodinModal(true)}
-            className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-          >
-            + Crear Vacante ({calcularProximoNN()})
-          </button>
-
           {userRol === 'ADMIN' && (
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="bg-[#39BABD] hover:bg-[#2b9799] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-            >
-              + Agregar Docente
-            </button>
+            <>
+              <button
+                onClick={() => setShowComodinModal(true)}
+                className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                + Crear Vacante ({calcularProximoNN()})
+              </button>
+
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="bg-[#39BABD] hover:bg-[#2b9799] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                + Agregar Docente
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -346,7 +383,7 @@ export default function DocentesPage() {
       <div className="flex-1 bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden flex flex-col">
         <div className="p-4 border-b border-[#e2e8f0] bg-[#f8fafc]">
           <p className="text-[#64748b] text-sm">
-            Administración de docentes y sus horas. Puedes crear vacantes temporales (NN1, NN2...) para cargas aún sin docente asignado.
+            Administración de docentes y sus horas. Vista detallada según base de datos corporativa.
           </p>
         </div>
 
@@ -453,7 +490,7 @@ export default function DocentesPage() {
                             : 'Ver Carga (Vacía)'}
                         </button>
 
-                        {esComodin && (
+                        {userRol === 'ADMIN' && esComodin && (
                           <button
                             onClick={() => abrirModalReemplazar(docente)}
                             className="text-amber-700 hover:text-amber-900 text-xs font-semibold bg-amber-100 hover:bg-amber-200 border border-amber-300 px-2 py-1 rounded"
@@ -463,7 +500,17 @@ export default function DocentesPage() {
                           </button>
                         )}
 
-                        {(userRol === 'ADMIN' || esComodin) && (
+                        {userRol === 'ADMIN' && !esComodin && (
+                          <button
+                            onClick={() => abrirModalPasarVacante(docente)}
+                            className="text-purple-700 hover:text-purple-900 text-xs font-semibold bg-purple-50 hover:bg-purple-100 border border-purple-200 px-2 py-1 rounded"
+                            title="Convertir este docente y toda su carga actual en una Vacante (NN) para el próximo año"
+                          >
+                            Pasar a Vacante
+                          </button>
+                        )}
+
+                        {userRol === 'ADMIN' && (
                           <button
                             onClick={() => handleDeleteDocente(docente.id)}
                             className="text-red-600 hover:text-red-800 text-xs font-medium bg-red-50 px-2 py-1 rounded"
@@ -487,6 +534,90 @@ export default function DocentesPage() {
           </table>
         </div>
       </div>
+
+      {/* Modal Pasar Docente Actual a Vacante (NN) */}
+      {showPasarVacanteModal && docenteAPasarVacante && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-2xl p-6 w-[440px]">
+            <h2 className="text-xl font-bold text-[#016098] mb-1">
+              Convertir en Vacante ({calcularProximoNN()})
+            </h2>
+            <p className="text-xs text-gray-600 mb-4">
+              Se creará la vacante <strong>{calcularProximoNN()} VACANTE</strong> con las mismas horas (
+              <strong>
+                {docenteAPasarVacante.totalDefinitivo ||
+                  docenteAPasarVacante.totalJornada ||
+                  docenteAPasarVacante.horasTitular ||
+                  44}{' '}
+                hrs
+              </strong>
+              ) y se le traspasará automáticamente toda la carga actual de{' '}
+              <strong>
+                {docenteAPasarVacante.nombres} {docenteAPasarVacante.apellidoPaterno}
+              </strong>
+              .
+            </p>
+            <form onSubmit={handlePasarAVacante} className="flex flex-col gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Glosa / Referencia para la Vacante
+                </label>
+                <input
+                  type="text"
+                  value={pasarVacanteForm.glosa}
+                  onChange={e =>
+                    setPasarVacanteForm({ ...pasarVacanteForm, glosa: e.target.value })
+                  }
+                  className="w-full border p-2 rounded text-sm"
+                  placeholder="Ej: EX PEREZ, MATEMÁTICA, etc."
+                />
+                <span className="text-[11px] text-gray-400">
+                  Quedará como: {calcularProximoNN()} VACANTE,{' '}
+                  {pasarVacanteForm.glosa.trim()
+                    ? pasarVacanteForm.glosa.trim().toUpperCase()
+                    : 'POR ASIGNAR'}
+                </span>
+              </div>
+
+              <label className="flex items-start gap-2 bg-amber-50 border border-amber-200 p-3 rounded-lg cursor-pointer mt-1">
+                <input
+                  type="checkbox"
+                  checked={pasarVacanteForm.desvincularSaliente}
+                  onChange={e =>
+                    setPasarVacanteForm({
+                      ...pasarVacanteForm,
+                      desvincularSaliente: e.target.checked
+                    })
+                  }
+                  className="mt-0.5 rounded border-gray-300 text-[#016098]"
+                />
+                <span className="text-xs text-amber-900">
+                  <strong>Retirar al docente saliente de este establecimiento</strong> (recomendado para que no se dupliquen sus horas de contrato en la dotación del colegio).
+                </span>
+              </label>
+
+              <div className="flex justify-end gap-2 mt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPasarVacanteModal(false);
+                    setDocenteAPasarVacante(null);
+                  }}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium"
+                >
+                  Convertir en {calcularProximoNN()}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Modal Crear Docente Comodín (NN) */}
       {showComodinModal && (

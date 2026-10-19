@@ -1,26 +1,37 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getDocentesEstablecimiento, updateDocenteHoras, createOrUpdateDocente, deleteDocente, getCargaDocenteUnico, getTablaConversion, getCargasEstablecimiento } from '../../actions';
+import {
+  getDocentesEstablecimiento,
+  updateDocenteHoras,
+  createOrUpdateDocente,
+  deleteDocente,
+  getCargaDocenteUnico,
+  getTablaConversion,
+  getCargasEstablecimiento,
+  crearDocenteComodin,
+  reemplazarDocenteComodin
+} from '../../actions';
 import * as XLSX from 'xlsx';
 
 export default function DocentesPage() {
-const parseCronoToDecimal = (cronoVal: string | number) => {
-  if (!cronoVal) return 0;
-  if (typeof cronoVal === 'number') return cronoVal;
-  const parts = cronoVal.toString().split(':');
-  if (parts.length === 2) {
-    return parseInt(parts[0], 10) + parseInt(parts[1], 10) / 60;
-  }
-  return Number(cronoVal);
-};
+  const parseCronoToDecimal = (cronoVal: string | number) => {
+    if (!cronoVal) return 0;
+    if (typeof cronoVal === 'number') return cronoVal;
+    const parts = cronoVal.toString().split(':');
+    if (parts.length === 2) {
+      return parseInt(parts[0], 10) + parseInt(parts[1], 10) / 60;
+    }
+    return Number(cronoVal);
+  };
 
-const formatCronoDecimal = (decimal: number) => {
-  const horas = Math.floor(decimal);
-  const mins = Math.round((decimal - horas) * 60);
-  if (mins === 60) return `${horas + 1}:00`;
-  return `${horas}:${mins.toString().padStart(2, '0')}`;
-};
+  const formatCronoDecimal = (decimal: number) => {
+    const horas = Math.floor(decimal);
+    const mins = Math.round((decimal - horas) * 60);
+    if (mins === 60) return `${horas + 1}:00`;
+    return `${horas}:${mins.toString().padStart(2, '0')}`;
+  };
+
   const [docentes, setDocentes] = useState<any[]>([]);
   const [todasCargas, setTodasCargas] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -30,24 +41,49 @@ const formatCronoDecimal = (decimal: number) => {
   const [establecimientoId, setEstablecimientoId] = useState<number>(2);
 
   const [showAddModal, setShowAddModal] = useState(false);
-  const [addForm, setAddForm] = useState({ rut: '', nombres: '', apellidoPaterno: '', apellidoMaterno: '', horasTitular: 44, contrato: 'TITULAR' });
+  const [addForm, setAddForm] = useState({
+    rut: '',
+    nombres: '',
+    apellidoPaterno: '',
+    apellidoMaterno: '',
+    horasTitular: 44,
+    contrato: 'TITULAR'
+  });
+
+  const [showComodinModal, setShowComodinModal] = useState(false);
+  const [comodinForm, setComodinForm] = useState({
+    glosa: '',
+    horasTitular: 44,
+    contrato: 'VACANTE'
+  });
+
+  const [showReemplazarModal, setShowReemplazarModal] = useState(false);
+  const [comodinAReemplazar, setComodinAReemplazar] = useState<any>(null);
+  const [reemplazarForm, setReemplazarForm] = useState({
+    rut: '',
+    nombres: '',
+    apellidoPaterno: '',
+    apellidoMaterno: '',
+    horasTitular: 44,
+    contrato: 'CONTRATA'
+  });
 
   const [showCargaModal, setShowCargaModal] = useState(false);
   const [cargaDocente, setCargaDocente] = useState<any[]>([]);
   const [docenteSeleccionado, setDocenteSeleccionado] = useState<any>(null);
-  
+
   const [tablaConversion, setTablaConversion] = useState<any[]>([]);
   const [docenteCargaObs, setDocenteCargaObs] = useState('');
 
   useEffect(() => {
     const estId = Number(localStorage.getItem('selectedEstablecimientoId')) || 2;
-      const userStr = localStorage.getItem('user');
-      if (userStr) {
-        try {
-          const u = JSON.parse(userStr);
-          setUserRol(u.rol || '');
-        } catch(e) {}
-      }
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        setUserRol(u.rol || '');
+      } catch (e) {}
+    }
     setEstablecimientoId(estId);
     loadDocentes(estId);
     getTablaConversion().then(setTablaConversion);
@@ -80,10 +116,60 @@ const formatCronoDecimal = (decimal: number) => {
     try {
       await createOrUpdateDocente(establecimientoId, addForm);
       setShowAddModal(false);
-      setAddForm({ rut: '', nombres: '', apellidoPaterno: '', apellidoMaterno: '', horasTitular: 44, contrato: 'TITULAR' });
+      setAddForm({
+        rut: '',
+        nombres: '',
+        apellidoPaterno: '',
+        apellidoMaterno: '',
+        horasTitular: 44,
+        contrato: 'TITULAR'
+      });
       loadDocentes();
     } catch (e: any) {
       alert(e.message || 'Error agregando docente');
+    }
+  };
+
+  const handleCrearComodin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await crearDocenteComodin(
+        establecimientoId,
+        comodinForm.horasTitular,
+        comodinForm.glosa,
+        comodinForm.contrato
+      );
+      setShowComodinModal(false);
+      setComodinForm({ glosa: '', horasTitular: 44, contrato: 'VACANTE' });
+      loadDocentes();
+    } catch (e: any) {
+      alert(e.message || 'Error creando docente comodín');
+    }
+  };
+
+  const abrirModalReemplazar = (doc: any) => {
+    setComodinAReemplazar(doc);
+    setReemplazarForm({
+      rut: '',
+      nombres: '',
+      apellidoPaterno: '',
+      apellidoMaterno: '',
+      horasTitular: doc.horasTitular || 44,
+      contrato: 'CONTRATA'
+    });
+    setShowReemplazarModal(true);
+  };
+
+  const handleReemplazarComodin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!comodinAReemplazar) return;
+    try {
+      await reemplazarDocenteComodin(comodinAReemplazar.id, establecimientoId, reemplazarForm);
+      setShowReemplazarModal(false);
+      setComodinAReemplazar(null);
+      loadDocentes();
+    } catch (e: any) {
+      alert(e.message || 'Error reemplazando vacante con docente real');
     }
   };
 
@@ -106,7 +192,7 @@ const formatCronoDecimal = (decimal: number) => {
     const estRels = doc.establecimientos || [];
     const rel = estRels.find((r: any) => r.establecimientoId === establecimientoId);
     setDocenteCargaObs(rel?.observacionCarga || '');
-    
+
     const cargas = await getCargaDocenteUnico(doc.id, establecimientoId);
     setCargaDocente(cargas);
     setShowCargaModal(true);
@@ -128,90 +214,142 @@ const formatCronoDecimal = (decimal: number) => {
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Docentes");
-    XLSX.writeFile(workbook, "Listado_Docentes.xlsx");
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Docentes');
+    XLSX.writeFile(workbook, 'Listado_Docentes.xlsx');
+  };
+
+  // Calcular cuál será el próximo correlativo NN sugerido
+  const calcularProximoNN = () => {
+    let maxNum = 0;
+    docentes.forEach(d => {
+      const m1 = d.apellidoPaterno?.match(/^NN(\d+)$/i);
+      if (m1) {
+        const n = parseInt(m1[1], 10);
+        if (n > maxNum) maxNum = n;
+      }
+      const m2 = d.rut?.match(/^NN-[^-]+-(\d+)$/i);
+      if (m2) {
+        const n = parseInt(m2[1], 10);
+        if (n > maxNum) maxNum = n;
+      }
+    });
+    return `NN${maxNum + 1}`;
   };
 
   let horasLectivasAsignadas = 0;
   let horasNoLectivasAsignadas = 0;
   let horasExtraAsignadas = 0;
-  
+
   let maxLectivasPedagogicas = 0;
   let maxNoLectivasStr = '0:00';
   let maxNoLectivasDecimal = 0;
   let recreoDecimal = 0;
   let pctLectivas = 0;
   let pctNoLectivas = 0;
-  
+
   let totalHorasContrato = 0;
   let colacion = 0;
-  
+
   if (showCargaModal && docenteSeleccionado) {
-          const lectivasDocente = cargaDocente.filter(c => c.tipoCarga === 'LECTIVA');
-      let tmpLectivas = 0;
-      const combinadosDoc: Record<string, number[]> = {};
-      lectivasDocente.forEach(c => {
-        if (c.esCombinado && c.grupoCombinado) {
-          const g = c.grupoCombinado.toUpperCase().trim();
-          const asig = c.asignaturaCod || c.codAsignatura || 'GEN';
-          const key = `${asig}_${g}`;
-          if (!combinadosDoc[key]) combinadosDoc[key] = [];
-          combinadosDoc[key].push(c.horasAllocadas || c.horas || 0);
-        } else {
-          tmpLectivas += (c.horasAllocadas || c.horas || 0);
-        }
-      });
-      for (const key in combinadosDoc) {
-        tmpLectivas += Math.max(...combinadosDoc[key]);
+    const lectivasDocente = cargaDocente.filter(c => c.tipoCarga === 'LECTIVA');
+    let tmpLectivas = 0;
+    const combinadosDoc: Record<string, number[]> = {};
+    lectivasDocente.forEach(c => {
+      if (c.esCombinado && c.grupoCombinado) {
+        const g = c.grupoCombinado.toUpperCase().trim();
+        const asig = c.asignaturaCod || c.codAsignatura || 'GEN';
+        const key = `${asig}_${g}`;
+        if (!combinadosDoc[key]) combinadosDoc[key] = [];
+        combinadosDoc[key].push(c.horasAllocadas || c.horas || 0);
+      } else {
+        tmpLectivas += c.horasAllocadas || c.horas || 0;
       }
-      horasLectivasAsignadas = tmpLectivas;
-    horasNoLectivasAsignadas = cargaDocente.filter(c => c.tipoCarga === 'NO_LECTIVA').reduce((sum, c) => sum + (c.horasAllocadas || c.horas || 0), 0);
-    horasExtraAsignadas = cargaDocente.filter(c => c.tipoCarga === 'EXTRACURRICULAR').reduce((sum, c) => sum + (c.horasAllocadas || c.horas || 0), 0);
-    
-    totalHorasContrato = docenteSeleccionado?.totalDefinitivo || docenteSeleccionado?.totalJornada || docenteSeleccionado?.horasTitular || 0;
+    });
+    for (const key in combinadosDoc) {
+      tmpLectivas += Math.max(...combinadosDoc[key]);
+    }
+    horasLectivasAsignadas = tmpLectivas;
+    horasNoLectivasAsignadas = cargaDocente
+      .filter(c => c.tipoCarga === 'NO_LECTIVA')
+      .reduce((sum, c) => sum + (c.horasAllocadas || c.horas || 0), 0);
+    horasExtraAsignadas = cargaDocente
+      .filter(c => c.tipoCarga === 'EXTRACURRICULAR')
+      .reduce((sum, c) => sum + (c.horasAllocadas || c.horas || 0), 0);
+
+    totalHorasContrato =
+      docenteSeleccionado?.totalDefinitivo ||
+      docenteSeleccionado?.totalJornada ||
+      docenteSeleccionado?.horasTitular ||
+      0;
     colacion = totalHorasContrato >= 30 ? 2 : 1;
     const baseAsignable = Math.max(0, totalHorasContrato - colacion);
-    
+
     const conversionData = tablaConversion.find((t: any) => t.jornadaSemanal === baseAsignable);
-    
-    maxLectivasPedagogicas = conversionData ? conversionData.lectivasPedagogicas : Math.floor(baseAsignable * (65/45));
-    maxNoLectivasStr = conversionData ? conversionData.noLectivasCronologicas : `${Math.floor(baseAsignable*0.35)}:00`;
+
+    maxLectivasPedagogicas = conversionData
+      ? conversionData.lectivasPedagogicas
+      : Math.floor(baseAsignable * (65 / 45));
+    maxNoLectivasStr = conversionData
+      ? conversionData.noLectivasCronologicas
+      : `${Math.floor(baseAsignable * 0.35)}:00`;
     maxNoLectivasDecimal = parseCronoToDecimal(maxNoLectivasStr);
 
-    const currentConversionData = tablaConversion.find((t: any) => t.lectivasPedagogicas === Math.round(horasLectivasAsignadas));
-    recreoDecimal = currentConversionData ? parseCronoToDecimal(currentConversionData.recreoCronologicas) : 0;
-    
+    const currentConversionData = tablaConversion.find(
+      (t: any) => t.lectivasPedagogicas === Math.round(horasLectivasAsignadas)
+    );
+    recreoDecimal = currentConversionData
+      ? parseCronoToDecimal(currentConversionData.recreoCronologicas)
+      : 0;
+
     pctLectivas = Math.min(100, (horasLectivasAsignadas / maxLectivasPedagogicas) * 100) || 0;
     pctNoLectivas = Math.min(100, (horasNoLectivasAsignadas / maxNoLectivasDecimal) * 100) || 0;
   }
 
   return (
     <div className="flex flex-col gap-6 h-full">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-2">
         <h1 className="text-2xl font-semibold text-[#016098]">Registro de Docentes</h1>
-        <div className="flex gap-2">
-          <button 
+        <div className="flex gap-2 flex-wrap">
+          <button
             onClick={exportToExcel}
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              ></path>
+            </svg>
             Exportar Excel
           </button>
+
+          <button
+            onClick={() => setShowComodinModal(true)}
+            className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          >
+            + Crear Vacante ({calcularProximoNN()})
+          </button>
+
           {userRol === 'ADMIN' && (
-              <button onClick={() => setShowAddModal(true)} className="bg-[#39BABD] hover:bg-[#2b9799] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                + Agregar Docente
-              </button>
-            )}
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="bg-[#39BABD] hover:bg-[#2b9799] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              + Agregar Docente
+            </button>
+          )}
         </div>
       </div>
 
       <div className="flex-1 bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden flex flex-col">
         <div className="p-4 border-b border-[#e2e8f0] bg-[#f8fafc]">
           <p className="text-[#64748b] text-sm">
-            Administración de docentes y sus horas. Vista detallada según base de datos corporativa.
+            Administración de docentes y sus horas. Puedes crear vacantes temporales (NN1, NN2...) para cargas aún sin docente asignado.
           </p>
         </div>
-        
+
         <div className="flex-1 overflow-auto custom-scrollbar">
           <table className="w-full text-sm text-left">
             <thead className="text-[11px] text-[#64748b] uppercase bg-[#f1f5f9] sticky top-0 shadow-sm z-10 whitespace-nowrap">
@@ -228,64 +366,326 @@ const formatCronoDecimal = (decimal: number) => {
               </tr>
             </thead>
             <tbody>
-              {docentes.map(docente => (
-                <tr key={docente.id} className={`border-b border-[#e2e8f0] transition-colors whitespace-nowrap ${todasCargas.some(c => c.docenteId === docente.id) ? 'bg-emerald-50 hover:bg-emerald-100' : 'bg-white hover:bg-[#f8fafc]'}`}>
-                  <td className="px-4 py-3 font-mono text-xs text-[#64748b]">{docente.rut}</td>
-                  <td className="px-4 py-3 font-medium text-[#1e293b]">{docente.nombres}</td>
-                  <td className="px-4 py-3 text-[#1e293b]">{docente.apellidoPaterno}</td>
-                  <td className="px-4 py-3 text-[#1e293b]">{docente.apellidoMaterno}</td>
-                  <td className="px-4 py-3 text-center text-xs">
-                    <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded border border-gray-200">
-                      {docente.contrato || 'N/A'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-center font-semibold text-[#016098]">
-                    {editingId === docente.id ? (
-                      <input 
-                        type="number" 
-                        min="1" 
-                        max="44" 
-                        value={editHoras} 
-                        onChange={(e) => setEditHoras(Number(e.target.value))}
-                        className="w-16 px-1 py-1 border rounded text-center focus:outline-none focus:border-blue-500 font-normal"
-                        autoFocus
-                      />
-                    ) : (
-                      docente.horasTitular
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-center text-gray-600">{docente.horasContrato || '-'}</td>
-                  <td className="px-4 py-3 text-center font-bold text-[#39BABD]">{docente.totalJornada || '-'}</td>
-                  <td className="px-4 py-3 text-center w-48">
-                    <div className="flex justify-center items-center gap-2">
+              {docentes.map(docente => {
+                const esComodin =
+                  docente.rut?.startsWith('NN-') || /^NN\d+$/i.test(docente.apellidoPaterno || '');
+                return (
+                  <tr
+                    key={docente.id}
+                    className={`border-b border-[#e2e8f0] transition-colors whitespace-nowrap ${
+                      todasCargas.some(c => c.docenteId === docente.id)
+                        ? 'bg-emerald-50 hover:bg-emerald-100'
+                        : esComodin
+                        ? 'bg-amber-50/40 hover:bg-amber-50'
+                        : 'bg-white hover:bg-[#f8fafc]'
+                    }`}
+                  >
+                    <td className="px-4 py-3 font-mono text-xs text-[#64748b]">{docente.rut}</td>
+                    <td className="px-4 py-3 font-medium text-[#1e293b]">{docente.nombres}</td>
+                    <td className="px-4 py-3 text-[#1e293b] font-semibold">{docente.apellidoPaterno}</td>
+                    <td className="px-4 py-3 text-[#1e293b]">{docente.apellidoMaterno}</td>
+                    <td className="px-4 py-3 text-center text-xs">
+                      <span
+                        className={`px-2 py-1 rounded border ${
+                          esComodin
+                            ? 'bg-amber-100 text-amber-800 border-amber-300 font-bold'
+                            : 'bg-gray-100 text-gray-700 border-gray-200'
+                        }`}
+                      >
+                        {docente.contrato || 'N/A'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-center font-semibold text-[#016098]">
                       {editingId === docente.id ? (
-                        <>
-                          <button onClick={() => handleSave(docente.id)} className="text-green-600 hover:text-green-800 text-xs font-bold">Guardar</button>
-                          <button onClick={() => setEditingId(null)} className="text-gray-500 hover:text-gray-700 text-xs">Cancelar</button>
-                        </>
+                        <input
+                          type="number"
+                          min="1"
+                          max="44"
+                          value={editHoras}
+                          onChange={e => setEditHoras(Number(e.target.value))}
+                          className="w-16 px-1 py-1 border rounded text-center focus:outline-none focus:border-blue-500 font-normal"
+                          autoFocus
+                        />
                       ) : (
-                        <button onClick={() => handleEdit(docente)} className="text-blue-600 hover:text-blue-800 text-xs font-medium bg-blue-50 px-2 py-1 rounded">Editar Horas</button>
+                        docente.horasTitular
                       )}
-                      
-                      <button onClick={() => handleVerCarga(docente)} className={`text-xs font-medium px-2 py-1 rounded transition-colors ${todasCargas.some(c => c.docenteId === docente.id) ? 'text-emerald-700 bg-emerald-200 hover:bg-emerald-300 shadow-sm border border-emerald-400 font-bold' : 'text-gray-500 bg-gray-50 hover:bg-gray-100 border border-gray-200'}`}>
-                          {todasCargas.some(c => c.docenteId === docente.id) ? 'Ver Carga (Activa)' : 'Ver Carga (Vacía)'}
-                        </button>
-                      {userRol === 'ADMIN' && (
-                          <button onClick={() => handleDeleteDocente(docente.id)} className="text-red-600 hover:text-red-800 text-xs font-medium bg-red-50 px-2 py-1 rounded">Eliminar</button>
+                    </td>
+                    <td className="px-4 py-3 text-center text-gray-600">{docente.horasContrato || '-'}</td>
+                    <td className="px-4 py-3 text-center font-bold text-[#39BABD]">
+                      {docente.totalJornada || '-'}
+                    </td>
+                    <td className="px-4 py-3 text-center w-48">
+                      <div className="flex justify-center items-center gap-2">
+                        {editingId === docente.id ? (
+                          <>
+                            <button
+                              onClick={() => handleSave(docente.id)}
+                              className="text-green-600 hover:text-green-800 text-xs font-bold"
+                            >
+                              Guardar
+                            </button>
+                            <button
+                              onClick={() => setEditingId(null)}
+                              className="text-gray-500 hover:text-gray-700 text-xs"
+                            >
+                              Cancelar
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => handleEdit(docente)}
+                            className="text-blue-600 hover:text-blue-800 text-xs font-medium bg-blue-50 px-2 py-1 rounded"
+                          >
+                            Editar Horas
+                          </button>
                         )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+
+                        <button
+                          onClick={() => handleVerCarga(docente)}
+                          className={`text-xs font-medium px-2 py-1 rounded transition-colors ${
+                            todasCargas.some(c => c.docenteId === docente.id)
+                              ? 'text-emerald-700 bg-emerald-200 hover:bg-emerald-300 shadow-sm border border-emerald-400 font-bold'
+                              : 'text-gray-500 bg-gray-50 hover:bg-gray-100 border border-gray-200'
+                          }`}
+                        >
+                          {todasCargas.some(c => c.docenteId === docente.id)
+                            ? 'Ver Carga (Activa)'
+                            : 'Ver Carga (Vacía)'}
+                        </button>
+
+                        {esComodin && (
+                          <button
+                            onClick={() => abrirModalReemplazar(docente)}
+                            className="text-amber-700 hover:text-amber-900 text-xs font-semibold bg-amber-100 hover:bg-amber-200 border border-amber-300 px-2 py-1 rounded"
+                            title="Reemplazar este comodín por el docente definitivo conservando su carga"
+                          >
+                            Asignar Titular Real
+                          </button>
+                        )}
+
+                        {(userRol === 'ADMIN' || esComodin) && (
+                          <button
+                            onClick={() => handleDeleteDocente(docente.id)}
+                            className="text-red-600 hover:text-red-800 text-xs font-medium bg-red-50 px-2 py-1 rounded"
+                          >
+                            Eliminar
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
               {docentes.length === 0 && (
                 <tr>
-                  <td colSpan={15} className="px-6 py-8 text-center text-[#94a3b8]">No hay docentes.</td>
+                  <td colSpan={15} className="px-6 py-8 text-center text-[#94a3b8]">
+                    No hay docentes.
+                  </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Modal Crear Docente Comodín (NN) */}
+      {showComodinModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-2xl p-6 w-[420px]">
+            <h2 className="text-xl font-bold text-[#016098] mb-1">
+              Crear Docente Vacante ({calcularProximoNN()})
+            </h2>
+            <p className="text-xs text-gray-500 mb-4">
+              El sistema asignará automáticamente un código único para este establecimiento y el apellido{' '}
+              <strong>{calcularProximoNN()} VACANTE</strong>.
+            </p>
+            <form onSubmit={handleCrearComodin} className="flex flex-col gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Glosa / Asignatura / Cargo (Opcional)
+                </label>
+                <input
+                  type="text"
+                  value={comodinForm.glosa}
+                  onChange={e => setComodinForm({ ...comodinForm, glosa: e.target.value })}
+                  className="w-full border p-2 rounded text-sm"
+                  placeholder="Ej: MATEMÁTICA, INGLÉS, PIE (o dejar en blanco)"
+                />
+                <span className="text-[11px] text-gray-400">
+                  Se verá como: {calcularProximoNN()} VACANTE,{' '}
+                  {comodinForm.glosa.trim() ? comodinForm.glosa.trim().toUpperCase() : 'POR ASIGNAR'}
+                </span>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Horas de la Vacante (Jornada)
+                </label>
+                <input
+                  required
+                  type="number"
+                  min="1"
+                  max="44"
+                  value={comodinForm.horasTitular}
+                  onChange={e =>
+                    setComodinForm({ ...comodinForm, horasTitular: Number(e.target.value) })
+                  }
+                  className="w-full border p-2 rounded text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Tipo Contrato
+                </label>
+                <select
+                  value={comodinForm.contrato}
+                  onChange={e => setComodinForm({ ...comodinForm, contrato: e.target.value })}
+                  className="w-full border p-2 rounded text-sm"
+                >
+                  <option value="VACANTE">VACANTE</option>
+                  <option value="CONTRATA">CONTRATA</option>
+                  <option value="REEMPLAZO">REEMPLAZO</option>
+                  <option value="SEP">SEP</option>
+                  <option value="PIE">PIE</option>
+                </select>
+              </div>
+              <div className="flex justify-end gap-2 mt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowComodinModal(false)}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-medium"
+                >
+                  Crear {calcularProximoNN()}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Reemplazar Vacante NN por Docente Real */}
+      {showReemplazarModal && comodinAReemplazar && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-2xl p-6 w-[420px]">
+            <h2 className="text-xl font-bold text-[#016098] mb-1">
+              Asignar Docente Real a {comodinAReemplazar.apellidoPaterno}
+            </h2>
+            <p className="text-xs text-gray-500 mb-4">
+              Toda la carga horaria de <strong>{comodinAReemplazar.apellidoPaterno}</strong> pasará automáticamente a este docente (incluso si ya trabaja en otro establecimiento CMDS).
+            </p>
+            <form onSubmit={handleReemplazarComodin} className="flex flex-col gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">RUT Definitivo</label>
+                <input
+                  required
+                  type="text"
+                  value={reemplazarForm.rut}
+                  onChange={e => setReemplazarForm({ ...reemplazarForm, rut: e.target.value })}
+                  className="w-full border p-2 rounded text-sm"
+                  placeholder="12345678-9"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Nombres</label>
+                <input
+                  required
+                  type="text"
+                  value={reemplazarForm.nombres}
+                  onChange={e => setReemplazarForm({ ...reemplazarForm, nombres: e.target.value })}
+                  className="w-full border p-2 rounded text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Apellido Paterno
+                </label>
+                <input
+                  required
+                  type="text"
+                  value={reemplazarForm.apellidoPaterno}
+                  onChange={e =>
+                    setReemplazarForm({ ...reemplazarForm, apellidoPaterno: e.target.value })
+                  }
+                  className="w-full border p-2 rounded text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Apellido Materno
+                </label>
+                <input
+                  type="text"
+                  value={reemplazarForm.apellidoMaterno}
+                  onChange={e =>
+                    setReemplazarForm({ ...reemplazarForm, apellidoMaterno: e.target.value })
+                  }
+                  className="w-full border p-2 rounded text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Tipo Contrato
+                </label>
+                <select
+                  value={reemplazarForm.contrato}
+                  onChange={e => setReemplazarForm({ ...reemplazarForm, contrato: e.target.value })}
+                  className="w-full border p-2 rounded text-sm"
+                >
+                  <option value="TITULAR">TITULAR</option>
+                  <option value="CONTRATA">CONTRATA</option>
+                  <option value="INDEFINIDO">INDEFINIDO</option>
+                  <option value="PLAZO FIJO">PLAZO FIJO</option>
+                  <option value="REEMPLAZO">REEMPLAZO</option>
+                  <option value="SEP">SEP</option>
+                  <option value="PIE">PIE</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Horas Contrato / Titular
+                </label>
+                <input
+                  required
+                  type="number"
+                  min="1"
+                  max="44"
+                  value={reemplazarForm.horasTitular}
+                  onChange={e =>
+                    setReemplazarForm({
+                      ...reemplazarForm,
+                      horasTitular: Number(e.target.value)
+                    })
+                  }
+                  className="w-full border p-2 rounded text-sm"
+                />
+              </div>
+              <div className="flex justify-end gap-2 mt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowReemplazarModal(false);
+                    setComodinAReemplazar(null);
+                  }}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#016098] text-white rounded-lg text-sm font-medium"
+                >
+                  Guardar y Traspasar Carga
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
@@ -294,23 +694,57 @@ const formatCronoDecimal = (decimal: number) => {
             <form onSubmit={handleAddDocente} className="flex flex-col gap-3">
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">RUT</label>
-                <input required type="text" value={addForm.rut} onChange={e => setAddForm({...addForm, rut: e.target.value})} className="w-full border p-2 rounded text-sm" placeholder="12345678-9" />
+                <input
+                  required
+                  type="text"
+                  value={addForm.rut}
+                  onChange={e => setAddForm({ ...addForm, rut: e.target.value })}
+                  className="w-full border p-2 rounded text-sm"
+                  placeholder="12345678-9"
+                />
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Nombres</label>
-                <input required type="text" value={addForm.nombres} onChange={e => setAddForm({...addForm, nombres: e.target.value})} className="w-full border p-2 rounded text-sm" />
+                <input
+                  required
+                  type="text"
+                  value={addForm.nombres}
+                  onChange={e => setAddForm({ ...addForm, nombres: e.target.value })}
+                  className="w-full border p-2 rounded text-sm"
+                />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Apellido Paterno</label>
-                <input required type="text" value={addForm.apellidoPaterno} onChange={e => setAddForm({...addForm, apellidoPaterno: e.target.value})} className="w-full border p-2 rounded text-sm" />
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Apellido Paterno
+                </label>
+                <input
+                  required
+                  type="text"
+                  value={addForm.apellidoPaterno}
+                  onChange={e => setAddForm({ ...addForm, apellidoPaterno: e.target.value })}
+                  className="w-full border p-2 rounded text-sm"
+                />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Apellido Materno</label>
-                <input type="text" value={addForm.apellidoMaterno} onChange={e => setAddForm({...addForm, apellidoMaterno: e.target.value})} className="w-full border p-2 rounded text-sm" />
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Apellido Materno
+                </label>
+                <input
+                  type="text"
+                  value={addForm.apellidoMaterno}
+                  onChange={e => setAddForm({ ...addForm, apellidoMaterno: e.target.value })}
+                  className="w-full border p-2 rounded text-sm"
+                />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Tipo Contrato</label>
-                <select value={addForm.contrato} onChange={e => setAddForm({...addForm, contrato: e.target.value})} className="w-full border p-2 rounded text-sm">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Tipo Contrato
+                </label>
+                <select
+                  value={addForm.contrato}
+                  onChange={e => setAddForm({ ...addForm, contrato: e.target.value })}
+                  className="w-full border p-2 rounded text-sm"
+                >
                   <option value="TITULAR">TITULAR</option>
                   <option value="CONTRATA">CONTRATA</option>
                   <option value="REEMPLAZO">REEMPLAZO</option>
@@ -319,12 +753,33 @@ const formatCronoDecimal = (decimal: number) => {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Horas Titular</label>
-                <input required type="number" min="1" max="44" value={addForm.horasTitular} onChange={e => setAddForm({...addForm, horasTitular: Number(e.target.value)})} className="w-full border p-2 rounded text-sm" />
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Horas Titular
+                </label>
+                <input
+                  required
+                  type="number"
+                  min="1"
+                  max="44"
+                  value={addForm.horasTitular}
+                  onChange={e => setAddForm({ ...addForm, horasTitular: Number(e.target.value) })}
+                  className="w-full border p-2 rounded text-sm"
+                />
               </div>
               <div className="flex justify-end gap-2 mt-4">
-                <button type="button" onClick={() => setShowAddModal(false)} className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium">Cancelar</button>
-                <button type="submit" className="px-4 py-2 bg-[#016098] text-white rounded-lg text-sm font-medium">Guardar</button>
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#016098] text-white rounded-lg text-sm font-medium"
+                >
+                  Guardar
+                </button>
               </div>
             </form>
           </div>
@@ -337,32 +792,72 @@ const formatCronoDecimal = (decimal: number) => {
             <div className="flex justify-between items-start mb-4 border-b pb-3">
               <div>
                 <h2 className="text-xl font-bold text-[#016098]">Resumen de Carga Horaria</h2>
-                <p className="text-sm text-gray-600">{docenteSeleccionado.nombres} {docenteSeleccionado.apellidos}</p>
+                <p className="text-sm text-gray-600">
+                  {docenteSeleccionado.nombres} {docenteSeleccionado.apellidos}
+                </p>
               </div>
-              <button onClick={() => setShowCargaModal(false)} className="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
+              <button
+                onClick={() => setShowCargaModal(false)}
+                className="text-gray-400 hover:text-gray-600 font-bold text-xl"
+              >
+                &times;
+              </button>
             </div>
-            
+
             <div className="overflow-y-auto flex-1 flex flex-col gap-4 p-1">
-              
               <div className="flex flex-col md:flex-row gap-6 p-4 border rounded-xl bg-white shadow-sm">
                 <div className="flex-1 flex flex-col justify-center gap-3">
                   <div>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="font-medium text-[#39BABD]">Aula + JEC (Mx: {maxLectivasPedagogicas} ped)</span>
-                      <span className={`font-bold ${horasLectivasAsignadas > maxLectivasPedagogicas ? 'text-red-500' : 'text-[#64748b]'}`}>{Math.round(horasLectivasAsignadas)} / {Math.round(maxLectivasPedagogicas)}</span>
+                      <span className="font-medium text-[#39BABD]">
+                        Aula + JEC (Mx: {maxLectivasPedagogicas} ped)
+                      </span>
+                      <span
+                        className={`font-bold ${
+                          horasLectivasAsignadas > maxLectivasPedagogicas
+                            ? 'text-red-500'
+                            : 'text-[#64748b]'
+                        }`}
+                      >
+                        {Math.round(horasLectivasAsignadas)} / {Math.round(maxLectivasPedagogicas)}
+                      </span>
                     </div>
                     <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
-                      <div className={`h-1.5 rounded-full transition-all duration-500 ${horasLectivasAsignadas > maxLectivasPedagogicas ? 'bg-red-500' : 'bg-[#39BABD]'}`} style={{ width: `${Math.min(100, pctLectivas)}%` }}></div>
+                      <div
+                        className={`h-1.5 rounded-full transition-all duration-500 ${
+                          horasLectivasAsignadas > maxLectivasPedagogicas
+                            ? 'bg-red-500'
+                            : 'bg-[#39BABD]'
+                        }`}
+                        style={{ width: `${Math.min(100, pctLectivas)}%` }}
+                      ></div>
                     </div>
                   </div>
-                  
+
                   <div>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="font-medium text-[#F59E0B]">No Lectivas (Max Crono: {maxNoLectivasStr})</span>
-                      <span className={`font-bold ${horasNoLectivasAsignadas > maxNoLectivasDecimal ? 'text-red-500' : 'text-[#64748b]'}`}>{horasNoLectivasAsignadas} / {maxNoLectivasDecimal.toFixed(1)} hrs</span>
+                      <span className="font-medium text-[#F59E0B]">
+                        No Lectivas (Max Crono: {maxNoLectivasStr})
+                      </span>
+                      <span
+                        className={`font-bold ${
+                          horasNoLectivasAsignadas > maxNoLectivasDecimal
+                            ? 'text-red-500'
+                            : 'text-[#64748b]'
+                        }`}
+                      >
+                        {horasNoLectivasAsignadas} / {maxNoLectivasDecimal.toFixed(1)} hrs
+                      </span>
                     </div>
                     <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
-                      <div className={`h-1.5 rounded-full transition-all duration-500 ${horasNoLectivasAsignadas > maxNoLectivasDecimal ? 'bg-red-500' : 'bg-[#F59E0B]'}`} style={{ width: `${Math.min(100, pctNoLectivas)}%` }}></div>
+                      <div
+                        className={`h-1.5 rounded-full transition-all duration-500 ${
+                          horasNoLectivasAsignadas > maxNoLectivasDecimal
+                            ? 'bg-red-500'
+                            : 'bg-[#F59E0B]'
+                        }`}
+                        style={{ width: `${Math.min(100, pctNoLectivas)}%` }}
+                      ></div>
                     </div>
                   </div>
                 </div>
@@ -370,24 +865,85 @@ const formatCronoDecimal = (decimal: number) => {
                 <div className="w-full md:w-auto xl:w-[45%] shrink-0 md:border-l md:pl-6 border-gray-200 flex flex-col justify-center">
                   <div className="flex flex-col sm:flex-row xl:items-center gap-4">
                     <div className="shrink-0">
-                      <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1 block">Total Asignado (Aprox)</span>
+                      <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1 block">
+                        Total Asignado (Aprox)
+                      </span>
                       <div className="flex items-baseline gap-2">
-                        <span className={`text-2xl font-bold ${((horasLectivasAsignadas * 45 / 60) + recreoDecimal) + horasNoLectivasAsignadas + horasExtraAsignadas + colacion > totalHorasContrato ? 'text-red-500' : 'text-green-600'}`}>
-                          {Math.ceil(((horasLectivasAsignadas * 45 / 60) + recreoDecimal) + horasNoLectivasAsignadas + horasExtraAsignadas + colacion)} H
+                        <span
+                          className={`text-2xl font-bold ${
+                            (horasLectivasAsignadas * 45) / 60 +
+                              recreoDecimal +
+                              horasNoLectivasAsignadas +
+                              horasExtraAsignadas +
+                              colacion >
+                            totalHorasContrato
+                              ? 'text-red-500'
+                              : 'text-green-600'
+                          }`}
+                        >
+                          {Math.ceil(
+                            (horasLectivasAsignadas * 45) / 60 +
+                              recreoDecimal +
+                              horasNoLectivasAsignadas +
+                              horasExtraAsignadas +
+                              colacion
+                          )}{' '}
+                          H
                         </span>
-                        <span className="text-xs font-medium text-gray-400">/ {totalHorasContrato} hrs</span>
+                        <span className="text-xs font-medium text-gray-400">
+                          / {totalHorasContrato} hrs
+                        </span>
                       </div>
                     </div>
-                    
+
                     <div className="bg-[#f8fafc] border border-gray-200 rounded text-[9px] text-gray-600 flex-1 w-full flex flex-col">
-                      <div className="flex justify-between border-b border-gray-100 p-1.5 px-2"><span>HA:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(horasLectivasAsignadas * 45 / 60)}</span></div>
-                      <div className="flex justify-between border-b border-gray-100 p-1.5 px-2"><span>Recreo:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(recreoDecimal)}</span></div>
-                      {horasNoLectivasAsignadas > 0 && <div className="flex justify-between border-b border-gray-100 p-1.5 px-2"><span>HNL:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(horasNoLectivasAsignadas)}</span></div>}
-                      {horasExtraAsignadas > 0 && <div className="flex justify-between border-b border-gray-100 p-1.5 px-2"><span>HE:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(horasExtraAsignadas)}</span></div>}
-                      {colacion > 0 && <div className="flex justify-between border-b border-gray-100 p-1.5 px-2"><span>Colacin:</span> <span className="font-semibold text-gray-800">{formatCronoDecimal(colacion)}</span></div>}
+                      <div className="flex justify-between border-b border-gray-100 p-1.5 px-2">
+                        <span>HA:</span>{' '}
+                        <span className="font-semibold text-gray-800">
+                          {formatCronoDecimal((horasLectivasAsignadas * 45) / 60)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between border-b border-gray-100 p-1.5 px-2">
+                        <span>Recreo:</span>{' '}
+                        <span className="font-semibold text-gray-800">
+                          {formatCronoDecimal(recreoDecimal)}
+                        </span>
+                      </div>
+                      {horasNoLectivasAsignadas > 0 && (
+                        <div className="flex justify-between border-b border-gray-100 p-1.5 px-2">
+                          <span>HNL:</span>{' '}
+                          <span className="font-semibold text-gray-800">
+                            {formatCronoDecimal(horasNoLectivasAsignadas)}
+                          </span>
+                        </div>
+                      )}
+                      {horasExtraAsignadas > 0 && (
+                        <div className="flex justify-between border-b border-gray-100 p-1.5 px-2">
+                          <span>HE:</span>{' '}
+                          <span className="font-semibold text-gray-800">
+                            {formatCronoDecimal(horasExtraAsignadas)}
+                          </span>
+                        </div>
+                      )}
+                      {colacion > 0 && (
+                        <div className="flex justify-between border-b border-gray-100 p-1.5 px-2">
+                          <span>Colación:</span>{' '}
+                          <span className="font-semibold text-gray-800">
+                            {formatCronoDecimal(colacion)}
+                          </span>
+                        </div>
+                      )}
                       <div className="flex justify-between p-1.5 px-2 bg-gray-50 text-[#016098] font-bold rounded-b">
                         <span>TOTAL EXACTO:</span>
-                        <span>{formatCronoDecimal(((horasLectivasAsignadas * 45 / 60) + recreoDecimal) + horasNoLectivasAsignadas + horasExtraAsignadas + colacion)}</span>
+                        <span>
+                          {formatCronoDecimal(
+                            (horasLectivasAsignadas * 45) / 60 +
+                              recreoDecimal +
+                              horasNoLectivasAsignadas +
+                              horasExtraAsignadas +
+                              colacion
+                          )}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -396,29 +952,46 @@ const formatCronoDecimal = (decimal: number) => {
 
               {docenteCargaObs && (
                 <div className="bg-amber-50 border border-amber-200 rounded p-3">
-                  <span className="text-xs font-bold text-amber-800 uppercase block mb-1">Observaciones / Nombramientos:</span>
+                  <span className="text-xs font-bold text-amber-800 uppercase block mb-1">
+                    Observaciones / Nombramientos:
+                  </span>
                   <p className="text-sm text-amber-900 whitespace-pre-wrap">{docenteCargaObs}</p>
                 </div>
               )}
 
               <div className="border rounded-lg bg-gray-50 p-2">
-                <h3 className="text-sm font-bold text-[#1e293b] mb-2 px-1">Detalle de Asignaciones</h3>
+                <h3 className="text-sm font-bold text-[#1e293b] mb-2 px-1">
+                  Detalle de Asignaciones
+                </h3>
                 {cargaDocente.length === 0 ? (
-                  <p className="text-center text-sm text-gray-500 py-8">No tiene carga asignada en este establecimiento.</p>
+                  <p className="text-center text-sm text-gray-500 py-8">
+                    No tiene carga asignada en este establecimiento.
+                  </p>
                 ) : (
                   <ul className="flex flex-col gap-2">
                     {cargaDocente.map(c => {
-                       let text = '';
-                       let horas = c.horas || c.horasAllocadas || 0;
-                       if (c.tipoCarga === 'LECTIVA') text = (c.asignatura?.asigDescripcion || 'Asignatura') + (c.especialidad ? ` (${c.especialidad})` : '');
-                       if (c.tipoCarga === 'NO_LECTIVA') text = c.actividadNoLectiva?.descripcion || 'No Lectiva';
-                       if (c.tipoCarga === 'EXTRACURRICULAR') text = c.actividadExtracurricular?.descripcion || 'Extracurricular';
-                       
-                       return (
-                        <li key={c.id} className="bg-white p-3 border rounded shadow-sm flex justify-between items-center">
+                      let text = '';
+                      let horas = c.horas || c.horasAllocadas || 0;
+                      if (c.tipoCarga === 'LECTIVA')
+                        text =
+                          (c.asignatura?.asigDescripcion || 'Asignatura') +
+                          (c.especialidad ? ` (${c.especialidad})` : '');
+                      if (c.tipoCarga === 'NO_LECTIVA')
+                        text = c.actividadNoLectiva?.descripcion || 'No Lectiva';
+                      if (c.tipoCarga === 'EXTRACURRICULAR')
+                        text = c.actividadExtracurricular?.descripcion || 'Extracurricular';
+
+                      return (
+                        <li
+                          key={c.id}
+                          className="bg-white p-3 border rounded shadow-sm flex justify-between items-center"
+                        >
                           <div>
                             {c.tipoCarga === 'LECTIVA' && (
-                              <span className="text-sm font-medium text-[#1e293b]">📚 {text} - {c.grado?.grteDescrip || ''} {c.letraCurso || ''} {c.esDesdoble ? `[${c.grupoDesdoble || 'Grupo'}]` : ''}</span>
+                              <span className="text-sm font-medium text-[#1e293b]">
+                                📚 {text} - {c.grado?.grteDescrip || ''} {c.letraCurso || ''}{' '}
+                                {c.esDesdoble ? `[${c.grupoDesdoble || 'Grupo'}]` : ''}
+                              </span>
                             )}
                             {c.tipoCarga === 'NO_LECTIVA' && (
                               <span className="text-sm font-medium text-amber-700">📝 {text}</span>
@@ -426,11 +999,15 @@ const formatCronoDecimal = (decimal: number) => {
                             {c.tipoCarga === 'EXTRACURRICULAR' && (
                               <span className="text-sm font-medium text-emerald-700">⭐ {text}</span>
                             )}
-                            <p className="text-xs text-gray-500 mt-1 uppercase">Origen: {c.financiamientoOrigen || 'Normal'}</p>
+                            <p className="text-xs text-gray-500 mt-1 uppercase">
+                              Origen: {c.financiamientoOrigen || 'Normal'}
+                            </p>
                           </div>
-                          <span className="bg-gray-100 px-2 py-1 rounded font-bold text-[#016098] text-xs">{horas} Hrs</span>
+                          <span className="bg-gray-100 px-2 py-1 rounded font-bold text-[#016098] text-xs">
+                            {horas} Hrs
+                          </span>
                         </li>
-                       );
+                      );
                     })}
                   </ul>
                 )}
@@ -439,7 +1016,6 @@ const formatCronoDecimal = (decimal: number) => {
           </div>
         </div>
       )}
-
     </div>
   );
 }

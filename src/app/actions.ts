@@ -1223,3 +1223,156 @@ export async function updateEspecialidadAsignaturaPropia(
     }
   });
 }
+
+export async function crearDocenteComodin(
+  establecimientoId: number,
+  horasTitular: number,
+  glosa?: string,
+  contrato: string = 'VACANTE'
+) {
+  const est = await prisma.establecimiento.findUnique({
+    where: { esedSec: establecimientoId }
+  });
+  const rbdPrefix = est?.esedCod || String(establecimientoId);
+
+  const docentesEst = await prisma.docente.findMany({
+    where: {
+      establecimientos: { some: { establecimientoId } }
+    }
+  });
+
+  // Buscar el mayor correlativo NN existente en este establecimiento
+  let maxNum = 0;
+  docentesEst.forEach(d => {
+    const matchApellido = d.apellidoPaterno?.match(/^NN(\d+)$/i);
+    if (matchApellido) {
+      const n = parseInt(matchApellido[1], 10);
+      if (n > maxNum) maxNum = n;
+    }
+    const matchRut = d.rut?.match(/^NN-[^-]+-(\d+)$/i);
+    if (matchRut) {
+      const n = parseInt(matchRut[1], 10);
+      if (n > maxNum) maxNum = n;
+    }
+  });
+
+  let nextNum = maxNum + 1;
+  let rutComodin = `NN-${rbdPrefix}-${nextNum}`;
+
+  // Asegurar que el RUT no exista globalmente
+  while (await prisma.docente.findUnique({ where: { rut: rutComodin } })) {
+    nextNum++;
+    rutComodin = `NN-${rbdPrefix}-${nextNum}`;
+  }
+
+  const codigoNN = `NN${nextNum}`;
+  const nombreFinal = glosa && glosa.trim() ? glosa.trim().toUpperCase() : 'POR ASIGNAR';
+  const apellidoPaterno = codigoNN;
+  const apellidoMaterno = 'VACANTE';
+
+  const doc = await prisma.docente.create({
+    data: {
+      rut: rutComodin,
+      nombres: nombreFinal,
+      apellidoPaterno,
+      apellidoMaterno,
+      apellidos: `${apellidoPaterno} ${apellidoMaterno}`,
+      horasTitular,
+      contrato
+    }
+  });
+
+  await prisma.docenteEstablecimiento.create({
+    data: {
+      docenteId: doc.id,
+      establecimientoId
+    }
+  });
+
+  return doc;
+}
+
+export async function reemplazarDocenteComodin(
+  docenteComodinId: number,
+  establecimientoId: number,
+  data: {
+    rut: string;
+    nombres: string;
+    apellidoPaterno: string;
+    apellidoMaterno: string;
+    horasTitular: number;
+    contrato: string;
+  }
+) {
+  const rutClean = data.rut.trim();
+  const apellidosFull = `${data.apellidoPaterno} ${data.apellidoMaterno}`.trim();
+  const existente = await prisma.docente.findUnique({ where: { rut: rutClean } });
+
+  // Si el docente real ya existe en la BD (ej. trabaja en otro colegio de la CMDS)
+  if (existente && existente.id !== docenteComodinId) {
+    const relComodin = await prisma.docenteEstablecimiento.findUnique({
+      where: {
+        docenteId_establecimientoId: {
+          docenteId: docenteComodinId,
+          establecimientoId
+        }
+      }
+    });
+
+    await prisma.docenteEstablecimiento.upsert({
+      where: {
+        docenteId_establecimientoId: {
+          docenteId: existente.id,
+          establecimientoId
+        }
+      },
+      update: {
+        observacionCarga: relComodin?.observacionCarga || undefined
+      },
+      create: {
+        docenteId: existente.id,
+        establecimientoId,
+        observacionCarga: relComodin?.observacionCarga || null
+      }
+    });
+
+    // Traspasar todas las cargas de este establecimiento del comodín al docente real
+    await prisma.cargaHoraria.updateMany({
+      where: {
+        docenteId: docenteComodinId,
+        planEstablecimiento: { establecimientoId }
+      },
+      data: {
+        docenteId: existente.id
+      }
+    });
+
+    // Eliminar vínculo y registro del comodín
+    await prisma.docenteEstablecimiento.deleteMany({
+      where: { docenteId: docenteComodinId, establecimientoId }
+    });
+    const otrosVinculos = await prisma.docenteEstablecimiento.count({
+      where: { docenteId: docenteComodinId }
+    });
+    if (otrosVinculos === 0) {
+      await prisma.docente.delete({ where: { id: docenteComodinId } });
+    }
+
+    return existente;
+  }
+
+  // Si el RUT no existe aún, simplemente actualizamos el registro del comodín con los datos reales
+  return await prisma.docente.update({
+    where: { id: docenteComodinId },
+    data: {
+      rut: rutClean,
+      nombres: data.nombres.trim().toUpperCase(),
+      apellidoPaterno: data.apellidoPaterno.trim().toUpperCase(),
+      apellidoMaterno: data.apellidoMaterno.trim().toUpperCase(),
+      apellidos: apellidosFull.toUpperCase(),
+      horasTitular: data.horasTitular,
+      contrato: data.contrato
+    }
+  });
+}
+

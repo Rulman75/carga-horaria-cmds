@@ -1,9 +1,8 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { logoutUsuario } from '../app/actions';
+import { logoutUsuario, getEstablecimientos } from '../app/actions';
 import { usePathname } from 'next/navigation';
-import { getEstablecimientos } from '../app/actions';
 
 export default function SidebarLayout({
   children,
@@ -16,37 +15,55 @@ export default function SidebarLayout({
   const [menuConfigOpen, setMenuConfigOpen] = useState(true);
   const [menuEstablecimientoOpen, setMenuEstablecimientoOpen] = useState(true);
 
-  const [userData, setUserData] = useState<{ nombre?: string, rol?: string, establecimientoNombre?: string }>({});
+  const [userData, setUserData] = useState<{
+    nombre?: string;
+    rol?: string;
+    establecimientoId?: number;
+    establecimientoNombre?: string;
+  }>({});
   const [establecimientos, setEstablecimientos] = useState<any[]>([]);
   const [selectedRbd, setSelectedRbd] = useState<string>('');
+  const [estBloqueado, setEstBloqueado] = useState<boolean>(false);
 
   useEffect(() => {
     const userStr = localStorage.getItem('user');
     let rol = '';
+    let userEstId: number | undefined;
     if (userStr) {
       try {
         const u = JSON.parse(userStr);
-        setUserData({ 
-          nombre: u.nombre || u.username, 
+        setUserData({
+          nombre: u.nombre || u.username,
           rol: u.rol,
+          establecimientoId: u.establecimientoId,
           establecimientoNombre: u.establecimientoNombre
         });
         rol = u.rol;
-      } catch(e){}
+        userEstId = u.establecimientoId;
+        if (u.establecimientoBloqueado) {
+          setEstBloqueado(true);
+        }
+      } catch (e) {}
     }
-    
-    if (rol === 'ADMIN') {
-      getEstablecimientos().then(setEstablecimientos);
-    }
-    
+
     const saved = localStorage.getItem('selectedEstablecimientoId');
     if (saved) setSelectedRbd(saved);
+
+    getEstablecimientos().then((ests) => {
+      setEstablecimientos(ests);
+      const targetId = rol === 'ADMIN' ? Number(saved) : userEstId;
+      if (targetId) {
+        const found = ests.find((e: any) => e.esedSec === targetId);
+        if (found) {
+          setEstBloqueado(!!found.bloqueado);
+        }
+      }
+    });
   }, []);
 
   const handleSelectEstablecimiento = (id: string) => {
     setSelectedRbd(id);
     localStorage.setItem('selectedEstablecimientoId', id);
-    // Reload page to reflect new context
     window.location.reload();
   };
 
@@ -68,9 +85,8 @@ export default function SidebarLayout({
 
   return (
     <div className="flex h-screen bg-[#f8fafc] font-sans overflow-hidden">
-      
       {/* Botón menú móvil */}
-      <button 
+      <button
         className="md:hidden fixed top-4 right-4 z-50 p-2 bg-white rounded-md shadow-md text-[#016098] print:hidden"
         onClick={() => setIsMobileOpen(!isMobileOpen)}
       >
@@ -79,14 +95,14 @@ export default function SidebarLayout({
 
       {/* Overlay Móvil */}
       {isMobileOpen && (
-        <div 
+        <div
           className="md:hidden fixed inset-0 bg-black/50 z-40"
           onClick={() => setIsMobileOpen(false)}
         />
       )}
 
       {/* Sidebar Principal */}
-      <aside 
+      <aside
         className={`
           fixed md:static inset-y-0 left-0 z-40 print:hidden
           w-72 bg-white border-r border-[#e2e8f0] shadow-sm
@@ -101,9 +117,16 @@ export default function SidebarLayout({
           <h1 className="text-xl font-bold tracking-widest text-yellow-400">CMDS</h1>
           <p className="text-[10px] uppercase tracking-wider text-blue-200 mt-1 font-semibold">Carga Docente</p>
         </div>
-        
+
         <div className="px-4 py-4 bg-blue-50 border-b border-[#e2e8f0]">
-          <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Establecimiento</p>
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-xs text-gray-500 uppercase font-semibold">Establecimiento</p>
+            {estBloqueado && (
+              <span className="px-1.5 py-0.5 bg-red-100 text-red-700 border border-red-300 rounded text-[10px] font-bold">
+                🔒 Bloqueado
+              </span>
+            )}
+          </div>
           <p className="text-sm font-bold text-[#016098] truncate mb-3" title={nombreColegioVisible}>
             {nombreColegioVisible}
           </p>
@@ -113,18 +136,20 @@ export default function SidebarLayout({
           <span className="inline-block mt-1 px-2 py-0.5 bg-[#39BABD] text-white text-[10px] font-bold rounded">
             {userData.rol}
           </span>
-          
+
           {isAdmin && (
             <div className="mt-4 pt-3 border-t border-blue-200">
               <label className="block text-xs font-semibold text-gray-600 mb-1">Seleccionar Establecimiento:</label>
-              <select 
+              <select
                 className="w-full text-xs p-2 border border-blue-300 rounded text-gray-700 focus:outline-none focus:border-[#016098]"
                 value={selectedRbd}
                 onChange={(e) => handleSelectEstablecimiento(e.target.value)}
               >
                 <option value="">-- Global (Seleccione) --</option>
                 {establecimientos.map(e => (
-                  <option key={e.esedSec} value={e.esedSec}>{e.esedCod} - {e.esedDescripcion}</option>
+                  <option key={e.esedSec} value={e.esedSec}>
+                    {e.bloqueado ? '🔒 ' : ''}{e.esedCod} - {e.esedDescripcion}
+                  </option>
                 ))}
               </select>
             </div>
@@ -134,12 +159,12 @@ export default function SidebarLayout({
         <div className="flex-1 overflow-y-auto custom-scrollbar py-4 px-3 space-y-1">
           <ul className="space-y-1">
             <li>
-              <Link 
-                href="/" 
+              <Link
+                href="/"
                 className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                  isActive('/') && pathname === '/' 
-                  ? 'bg-[#016098] text-white shadow-md shadow-blue-900/20' 
-                  : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
+                  isActive('/') && pathname === '/'
+                    ? 'bg-[#016098] text-white shadow-md shadow-blue-900/20'
+                    : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
                 }`}
               >
                 Dashboard
@@ -149,7 +174,7 @@ export default function SidebarLayout({
             {showColegioMenus && (
               <>
                 <li className="pt-2">
-                  <button 
+                  <button
                     onClick={() => setMenuCargaOpen(!menuCargaOpen)}
                     className={`flex justify-between items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
                       menuCargaOpen ? 'text-[#016098]' : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
@@ -161,42 +186,48 @@ export default function SidebarLayout({
                   {menuCargaOpen && (
                     <ul className="mt-1 space-y-1 pl-4">
                       <li>
-                        <Link 
-                          href="/carga/asignacion" 
+                        <Link
+                          href="/carga/asignacion"
                           className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                            isActive('/carga/asignacion') 
-                            ? 'bg-[#016098] text-white' 
-                            : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
+                            isActive('/carga/asignacion')
+                              ? 'bg-[#016098] text-white'
+                              : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
                           }`}
-                        >Asignación de Horas</Link>
+                        >
+                          Asignación de Horas
+                        </Link>
                       </li>
-                      
+
                       <li>
-                        <Link 
-                          href="/carga/matriz-clasica" 
+                        <Link
+                          href="/carga/matriz-clasica"
                           className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                            isActive('/carga/matriz-clasica') 
-                            ? 'bg-[#016098] text-white' 
-                            : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
+                            isActive('/carga/matriz-clasica')
+                              ? 'bg-[#016098] text-white'
+                              : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
                           }`}
-                        >Sábana Clásica (Por Asig.)</Link>
+                        >
+                          Sábana Clásica (Por Asig.)
+                        </Link>
                       </li>
                       <li>
-                        <Link 
-                          href="/carga/docentes" 
+                        <Link
+                          href="/carga/docentes"
                           className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                            isActive('/carga/docentes') 
-                            ? 'bg-[#016098] text-white' 
-                            : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
+                            isActive('/carga/docentes')
+                              ? 'bg-[#016098] text-white'
+                              : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
                           }`}
-                        >Registro de Docentes</Link>
+                        >
+                          Registro de Docentes
+                        </Link>
                       </li>
                     </ul>
                   )}
                 </li>
 
                 <li className="pt-2">
-                  <button 
+                  <button
                     onClick={() => setMenuEstablecimientoOpen(!menuEstablecimientoOpen)}
                     className={`flex justify-between items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
                       menuEstablecimientoOpen ? 'text-[#016098]' : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
@@ -208,34 +239,38 @@ export default function SidebarLayout({
                   {menuEstablecimientoOpen && (
                     <ul className="mt-1 space-y-1 pl-4">
                       <li>
-                        <Link 
-                          href="/establecimiento/config" 
+                        <Link
+                          href="/establecimiento/config"
                           className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                            isActive('/establecimiento/config') 
-                            ? 'bg-[#016098] text-white' 
-                            : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
+                            isActive('/establecimiento/config')
+                              ? 'bg-[#016098] text-white'
+                              : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
                           }`}
-                        >Configuración JEC y Cursos</Link>
+                        >
+                          Configuración JEC y Cursos
+                        </Link>
                       </li>
                       <li>
-                        <Link 
-                          href="/establecimiento/planes" 
+                        <Link
+                          href="/establecimiento/planes"
                           className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                            isActive('/establecimiento/planes') 
-                            ? 'bg-[#016098] text-white' 
-                            : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
+                            isActive('/establecimiento/planes')
+                              ? 'bg-[#016098] text-white'
+                              : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
                           }`}
-                        >Planes de Estudio</Link>
+                        >
+                          Planes de Estudio
+                        </Link>
                       </li>
                     </ul>
                   )}
                 </li>
               </>
             )}
-            
+
             {isAdmin && (
               <li className="pt-2">
-                <button 
+                <button
                   onClick={() => setMenuConfigOpen(!menuConfigOpen)}
                   className={`flex justify-between items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
                     menuConfigOpen ? 'text-[#016098]' : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
@@ -247,97 +282,110 @@ export default function SidebarLayout({
                 {menuConfigOpen && (
                   <ul className="mt-1 space-y-1 pl-4">
                     <li>
-                      <Link 
-                        href="/admin/reporte-planificacion" 
+                      <Link
+                        href="/admin/reporte-planificacion"
                         className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                          isActive('/admin/reporte-planificacion') 
-                          ? 'bg-[#016098] text-white' 
-                          : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
-                        }`}
-                      >Reporte Planificación</Link>
-                    </li>
-                    <li>
-                      <Link 
-                        href="/admin/usuarios" 
-                        className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                          isActive('/admin/usuarios') 
-                          ? 'bg-[#016098] text-white' 
-                          : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
-                        }`}
-                      >Mantenedor Usuarios</Link>
-                    </li>
-                    <li>
-                        <Link 
-                          href="/config/global" 
-                          className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                            isActive('/config/global') 
-                            ? 'bg-[#016098] text-white' 
+                          isActive('/admin/reporte-planificacion')
+                            ? 'bg-[#016098] text-white'
                             : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
-                          }`}
-                        >
-                          Configuración Global
-                        </Link>
-                      </li>
-                      <li>
-                        <Link 
-                          href="/config/establecimientos" 
-                        className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                          isActive('/config/establecimientos') 
-                          ? 'bg-[#016098] text-white' 
-                          : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
                         }`}
-                      >Mantenedor Establecimientos</Link>
+                      >
+                        Reporte Planificación
+                      </Link>
                     </li>
                     <li>
-                      <Link 
-                        href="/config/asignaturas" 
+                      <Link
+                        href="/admin/usuarios"
                         className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                          isActive('/config/asignaturas') 
-                          ? 'bg-[#016098] text-white' 
-                          : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
+                          isActive('/admin/usuarios')
+                            ? 'bg-[#016098] text-white'
+                            : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
                         }`}
-                      >Mantenedor Asignaturas</Link>
+                      >
+                        Mantenedor Usuarios
+                      </Link>
                     </li>
                     <li>
-                      <Link 
-                        href="/config/actividades-no-lectivas" 
+                      <Link
+                        href="/config/global"
                         className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                          isActive('/config/actividades-no-lectivas') 
-                          ? 'bg-[#016098] text-white' 
-                          : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
+                          isActive('/config/global')
+                            ? 'bg-[#016098] text-white'
+                            : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
                         }`}
-                      >Actividades No Lectivas</Link>
+                      >
+                        Configuración Global
+                      </Link>
                     </li>
                     <li>
-                      <Link 
+                      <Link
+                        href="/config/establecimientos"
+                        className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                          isActive('/config/establecimientos')
+                            ? 'bg-[#016098] text-white'
+                            : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
+                        }`}
+                      >
+                        Mantenedor Establecimientos
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/config/asignaturas"
+                        className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                          isActive('/config/asignaturas')
+                            ? 'bg-[#016098] text-white'
+                            : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
+                        }`}
+                      >
+                        Mantenedor Asignaturas
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/config/actividades-no-lectivas"
+                        className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                          isActive('/config/actividades-no-lectivas')
+                            ? 'bg-[#016098] text-white'
+                            : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
+                        }`}
+                      >
+                        Actividades No Lectivas
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
                         href="/config/extracurriculares"
                         className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                          pathname === '/config/extracurriculares' 
-                          ? 'bg-[#016098] text-white' 
-                          : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
+                          pathname === '/config/extracurriculares'
+                            ? 'bg-[#016098] text-white'
+                            : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
                         }`}
-                      >Act. Extracurriculares</Link>
+                      >
+                        Act. Extracurriculares
+                      </Link>
                     </li>
                     <li>
-                      <Link 
-                        href="/config/planes" 
+                      <Link
+                        href="/config/planes"
                         className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                          isActive('/config/planes') 
-                          ? 'bg-[#016098] text-white' 
-                          : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
+                          isActive('/config/planes')
+                            ? 'bg-[#016098] text-white'
+                            : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#016098]'
                         }`}
-                      >Decretos / Planes Base</Link>
+                      >
+                        Decretos / Planes Base
+                      </Link>
                     </li>
                   </ul>
                 )}
               </li>
             )}
-
           </ul>
         </div>
-        
+
         <div className="p-4 border-t border-[#e2e8f0]">
-          <button 
+          <button
             className="w-full px-4 py-2 text-sm text-red-600 bg-red-50 hover:bg-red-100 font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
             onClick={() => {
               localStorage.removeItem('user');
@@ -346,8 +394,6 @@ export default function SidebarLayout({
               logoutUsuario().then(() => {
                 window.location.href = '/login';
               });
-              return;
-              window.location.href = '/login';
             }}
           >
             Cerrar Sesión
@@ -357,6 +403,19 @@ export default function SidebarLayout({
 
       {/* Contenido Principal */}
       <main className="flex-1 overflow-auto h-screen bg-[#f8fafc] p-6 md:p-8 print:p-0 print:h-auto print:overflow-visible">
+        {!isAdmin && estBloqueado && (
+          <div className="mb-6 bg-amber-50 border border-amber-300 text-amber-900 px-4 py-3 rounded-xl shadow-sm flex items-center gap-3 print:hidden">
+            <span className="text-xl">🔒</span>
+            <div>
+              <p className="text-sm font-bold">
+                Proceso de Carga Horaria Cerrado — Modo Solo Lectura
+              </p>
+              <p className="text-xs text-amber-800">
+                La Administración Central ha dado por finalizado el proceso de carga de tu establecimiento. Puedes consultar el Dashboard, revisar la Sábana Clásica y descargar certificados PDF o reportes Excel, pero no realizar modificaciones.
+              </p>
+            </div>
+          </div>
+        )}
         {children}
       </main>
     </div>

@@ -71,9 +71,18 @@ export default function AsignacionCargaPage() {
   const [activeTab, setActiveTab] = useState<'LECTIVA' | 'NO_LECTIVA' | 'EXTRACURRICULAR'>('LECTIVA');
   const [cargas, setCargas] = useState<CargaEnUI[]>([]);
   const [saving, setSaving] = useState(false);
+  const [userRol, setUserRol] = useState<string>('');
+  const esModoSoloLectura = userRol !== 'ADMIN' && !!estConfig?.bloqueado;
 
   useEffect(() => {
     const estId = Number(localStorage.getItem('selectedEstablecimientoId')) || 2;
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        setUserRol(u.rol || '');
+      } catch (e) {}
+    }
     setEstablecimientoId(estId);
     getDatosInicialesAsignacion(estId).then((data) => {
       setDocentes(data.docentes);
@@ -271,6 +280,7 @@ export default function AsignacionCargaPage() {
   };
 
   const handleAsignarLectiva = (det: any, letra?: string) => {
+    if (esModoSoloLectura) return;
     setCargas([...cargas, {
       id: Math.random().toString(),
       planEstablecimientoId: det.planEstablecimientoId,
@@ -291,6 +301,7 @@ export default function AsignacionCargaPage() {
   };
 
   const handleAsignarNoLectiva = () => {
+      if (esModoSoloLectura) return;
       if (!anlSeleccionada) return;
       const anlInfo = actividadesNL.find(a => a.id.toString() === anlSeleccionada);
       
@@ -321,6 +332,7 @@ export default function AsignacionCargaPage() {
   };
 
   const handleAsignarExtracurricular = () => {
+    if (esModoSoloLectura) return;
     if (!extSeleccionada) return;
     const extId = Number(extSeleccionada);
     const extInfo = actividadesExt.find(a => a.id === extId);
@@ -358,6 +370,7 @@ export default function AsignacionCargaPage() {
   };
 
   const handleRemover = (index: number) => {
+    if (esModoSoloLectura) return;
     const newCargas = [...cargas];
     if (newCargas[index].dbId) {
       newCargas[index].eliminada = true;
@@ -368,6 +381,7 @@ export default function AsignacionCargaPage() {
   };
 
   const handleCambiarHoras = (index: number, delta: number) => {
+    if (esModoSoloLectura) return;
     const newCargas = [...cargas];
     const nuevaHora = Number((newCargas[index].horas + delta).toFixed(2));
     if (nuevaHora > 0) {
@@ -396,7 +410,7 @@ Por favor, completa las horas de planificación antes de guardar.`);
       alert('Carga guardada correctamente');
       loadTodasCargas();
     } catch (e) {
-      alert('Error guardando carga');
+      alert((e as any)?.message || 'Error guardando carga');
     }
     setSaving(false);
   };
@@ -617,10 +631,10 @@ Por favor, completa las horas de planificación antes de guardar.`);
             </button>
             <button 
           onClick={handleGuardar}
-          disabled={saving || !docenteSeleccionado}
+          disabled={saving || !docenteSeleccionado || esModoSoloLectura}
           className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
         >
-          {saving ? 'Guardando...' : 'Guardar Carga'}
+          {esModoSoloLectura ? '🔒 Carga Cerrada (Solo Lectura)' : saving ? 'Guardando...' : 'Guardar Carga'}
           </button>
           </div>
         </div>

@@ -39,6 +39,8 @@ export default function DocentesPage() {
   const [loading, setLoading] = useState(false);
   const [userRol, setUserRol] = useState<string>('');
   const [establecimientoId, setEstablecimientoId] = useState<number>(2);
+  const [estBloqueado, setEstBloqueado] = useState<boolean>(false);
+  const esModoSoloLectura = userRol !== 'ADMIN' && estBloqueado;
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [addForm, setAddForm] = useState({
@@ -96,6 +98,7 @@ export default function DocentesPage() {
       setDocentes(data.docentes);
       setTodasCargas(data.todasCargas);
       setTablaConversion(data.tablaConversion);
+      setEstBloqueado(!!data.estConfig?.bloqueado);
     });
   }, []);
 
@@ -118,7 +121,7 @@ export default function DocentesPage() {
       setEditingId(null);
       loadDocentes();
     } catch (e) {
-      alert('Error al guardar las horas del docente');
+      alert((e as any)?.message || 'Error al guardar las horas del docente');
     }
     setLoading(false);
   };
@@ -473,12 +476,14 @@ export default function DocentesPage() {
                             </button>
                           </>
                         ) : (
-                          <button
-                            onClick={() => handleEdit(docente)}
-                            className="text-blue-600 hover:text-blue-800 text-xs font-medium bg-blue-50 px-2 py-1 rounded"
-                          >
-                            Editar Horas
-                          </button>
+                          !esModoSoloLectura && (
+                            <button
+                              onClick={() => handleEdit(docente)}
+                              className="text-blue-600 hover:text-blue-800 text-xs font-medium bg-blue-50 px-2 py-1 rounded"
+                            >
+                              Editar Horas
+                            </button>
+                          )
                         )}
 
                         <button

@@ -15,9 +15,19 @@ export default function ConfigEstablecimientoPage() {
   const [guardando, setGuardando] = useState(false);
   const [cursosLetra, setCursosLetra] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userRol, setUserRol] = useState<string>('');
+  const [estBloqueado, setEstBloqueado] = useState<boolean>(false);
+  const esModoSoloLectura = userRol !== 'ADMIN' && estBloqueado;
 
   useEffect(() => {
     const estId = Number(localStorage.getItem('selectedEstablecimientoId')) || 2;
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        setUserRol(u.rol || '');
+      } catch (e) {}
+    }
     setEstablecimientoId(estId);
   }, []);
 
@@ -53,6 +63,7 @@ export default function ConfigEstablecimientoPage() {
       setCursosLetra(loadedLetras);
 
       setEsJec(config.esJec);
+      setEstBloqueado(!!(config as any).bloqueado);
       setEspecialidades(config.especialidades || []);
       
       const tipos = config.tiposEnsenanza.map((te: any) => te.tipoEnsenanza);
@@ -147,7 +158,7 @@ export default function ConfigEstablecimientoPage() {
       await updateEstablecimientoConfig(establecimientoId!, esJec, payload, [], cursosLetra, especialidades);
       alert('Configuración guardada exitosamente');
     } catch (e) {
-      alert('Error guardando configuración');
+      alert((e as any)?.message || 'Error guardando configuración');
     }
     setGuardando(false);
   };
@@ -163,10 +174,10 @@ export default function ConfigEstablecimientoPage() {
         </div>
         <button 
           onClick={handleGuardar}
-          disabled={guardando}
-          className="bg-[#39BABD] hover:bg-[#2b9799] text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors"
+          disabled={guardando || esModoSoloLectura}
+          className="bg-[#39BABD] hover:bg-[#2b9799] text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
         >
-          {guardando ? 'Guardando...' : 'Guardar Configuración'}
+          {esModoSoloLectura ? '🔒 Cerrado (Solo Lectura)' : guardando ? 'Guardando...' : 'Guardar Configuración'}
         </button>
       </div>
 

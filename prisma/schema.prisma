@@ -28,8 +28,9 @@ model Establecimiento {
   esedDescripcion String?
   esedDescCorta   String?
   nombreDirector  String?
-  esJec           Boolean @default(false)
-  maxHorasPie     Float   @default(3)
+  esJec           Boolean  @default(false)
+  bloqueado       Boolean  @default(false)
+  maxHorasPie     Float    @default(3)
   especialidades  String[] @default([])
 
   docentes       DocenteEstablecimiento[]

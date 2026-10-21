@@ -33,6 +33,43 @@ function invalidateCache(...keys: string[]) {
   }
 }
 
+async function verificarEstablecimientoNoBloqueado(establecimientoId?: number | null) {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token')?.value;
+    if (token) {
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'cmds2026_super_secret_key');
+      const { payload } = await jose.jwtVerify(token, secret);
+      if (payload.rol === 'ADMIN') return; // Los administradores siempre pueden modificar
+      const targetEstId = establecimientoId || (payload.establecimientoId as number | undefined);
+      if (targetEstId) {
+        const est = await prisma.establecimiento.findUnique({
+          where: { esedSec: Number(targetEstId) },
+          select: { bloqueado: true }
+        });
+        if (est?.bloqueado) {
+          throw new Error(
+            'El proceso de carga horaria de este establecimiento ha sido cerrado y bloqueado por Administración. No se permiten modificaciones.'
+          );
+        }
+      }
+    }
+  } catch (err: any) {
+    if (err?.message?.includes('cerrado y bloqueado')) {
+      throw err;
+    }
+  }
+}
+
+export async function toggleBloqueoEstablecimiento(establecimientoId: number, bloqueado: boolean) {
+  const res = await prisma.establecimiento.update({
+    where: { esedSec: establecimientoId },
+    data: { bloqueado }
+  });
+  invalidateCache('establecimientos');
+  return res;
+}
+
 export async function getDocentes() {
   return await prisma.docente.findMany({ orderBy: { apellidos: 'asc' } });
 }
@@ -115,6 +152,7 @@ export async function updatePlanEstudioEstado(codPlan: number, nuevoEstado: stri
 }
 
 export async function clonarPlanEstudioBase(establecimientoId: number, codPlanBase: number, nombre: string) {
+  await verificarEstablecimientoNoBloqueado(establecimientoId);
   // Obtener el plan base con sus detalles
   const planBase = await prisma.planEstudioEnc.findUnique({
     where: { codPlan: codPlanBase },
@@ -211,6 +249,7 @@ export async function getEstablecimientoConfig(establecimientoId: number) {
 }
 
 export async function updateEstablecimientoConfig(establecimientoId: number, esJec: boolean, gradosData: {tienCod: number, grteCod: number, cantidadCursos: number, esJec: boolean}[], tiposData: number[], letrasData: any[] = [], especialidades: string[] = []) {
+  await verificarEstablecimientoNoBloqueado(establecimientoId);
   // Solo actualiza JEC y grados.
 
   const estabOld = await prisma.establecimiento.findUnique({ where: { esedSec: establecimientoId } });
@@ -312,6 +351,7 @@ export async function getPlanPropio(id: number) {
 }
 
 export async function actualizarHorasDetallePropio(detalleId: number, horas: number, grupos?: number | null) {
+  await verificarEstablecimientoNoBloqueado();
   return await prisma.planEstablecimientoDet.update({
     where: { id: detalleId },
     data: { horas, grupos: grupos !== undefined ? grupos : undefined }
@@ -319,12 +359,14 @@ export async function actualizarHorasDetallePropio(detalleId: number, horas: num
 }
 
 export async function eliminarDetallePropio(detalleId: number) {
+  await verificarEstablecimientoNoBloqueado();
   return await prisma.planEstablecimientoDet.delete({
     where: { id: detalleId }
   });
 }
 
 export async function importarPlanBaseAPropio(planPropioId: number, codPlanBase: number) {
+  await verificarEstablecimientoNoBloqueado();
   // Obtener el plan base con sus detalles
   const planBase = await prisma.planEstudioEnc.findUnique({
     where: { codPlan: codPlanBase },
@@ -407,6 +449,7 @@ export async function importarPlanBaseAPropio(planPropioId: number, codPlanBase:
 }
 
 export async function eliminarPlanPropio(planId: number) {
+  await verificarEstablecimientoNoBloqueado();
   // Primero eliminar los detalles (si no hay cascade deletion configurado)
   await prisma.planEstablecimientoDet.deleteMany({
     where: { planEstablecimientoId: planId }
@@ -528,6 +571,7 @@ export async function getCargasEstablecimiento(establecimientoId: number) {
 }
 
 export async function saveCargasHorarias(docenteId: number, cargas: any[], establecimientoId?: number, observacionCarga?: string) {
+  await verificarEstablecimientoNoBloqueado(establecimientoId);
   let fallbackPlanId: number | null = null;
   if (establecimientoId) {
     const firstPlan = await prisma.planEstablecimiento.findFirst({ where: { establecimientoId } });
@@ -596,7 +640,8 @@ export async function loginUsuario(email: string, pass: string) {
 
     return {
       ...safeUser,
-      establecimientoNombre: establecimiento?.esedDescripcion || null
+      establecimientoNombre: establecimiento?.esedDescripcion || null,
+      establecimientoBloqueado: establecimiento?.bloqueado || false
     };
   }
   return null;
@@ -604,6 +649,7 @@ export async function loginUsuario(email: string, pass: string) {
 
 
 export async function updateDocenteHoras(docenteId: number, horas: number) {
+  await verificarEstablecimientoNoBloqueado();
   return await prisma.docente.update({
     where: { id: docenteId },
     data: { horasTitular: horas }
@@ -1660,13 +1706,14 @@ export async function getDatosSabanaClasica(establecimientoId: number) {
 }
 
 export async function getDatosDocentesPage(establecimientoId: number) {
-  const [docentes, todasCargas, tablaConversion] = await Promise.all([
+  const [docentes, todasCargas, tablaConversion, estConfig] = await Promise.all([
     getDocentesEstablecimiento(establecimientoId),
     getCargasEstablecimiento(establecimientoId),
-    getTablaConversion()
+    getTablaConversion(),
+    getEstablecimientoConfig(establecimientoId)
   ]);
 
-  return { docentes, todasCargas, tablaConversion };
+  return { docentes, todasCargas, tablaConversion, estConfig };
 }
 
 

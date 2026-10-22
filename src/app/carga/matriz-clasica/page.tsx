@@ -72,7 +72,7 @@ export default function SabanaClasicaPage() {
 
       if (c.esCombinado && c.grupoCombinado) {
         const g = c.grupoCombinado.toUpperCase().trim();
-        const combKey = `${asigKey}|${g}`;
+        const combKey = `${asigKey}|${c.tienCod || 0}-${c.grteCod || 0}-${g}`;
         
         if (isJec) {
           if (!d._combinadosJec[combKey]) d._combinadosJec[combKey] = [];

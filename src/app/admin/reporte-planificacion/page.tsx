@@ -94,7 +94,7 @@ export default function ReportePlanificacionPage() {
       if (c.esCombinado && c.grupoCombinado) {
         const g = c.grupoCombinado.toUpperCase().trim();
         const asig = c.asignaturaCod || 'GEN';
-        const key = `${asig}_${g}`;
+        const key = `${c.tienCod || 0}_${c.grteCod || 0}_${asig}_${g}`;
         if (!combinados[key]) combinados[key] = [];
         combinados[key].push(c.horasAllocadas);
       } else {

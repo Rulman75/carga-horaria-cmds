@@ -187,7 +187,7 @@ export default function AsignacionCargaPage() {
         if (c.esCombinado && c.grupoCombinado) {
           const g = c.grupoCombinado.toUpperCase().trim();
           const asig = c.codAsignatura || 'GEN';
-          const key = `${asig}_${g}`;
+          const key = `${c.tienCod || 0}_${c.grteCod || 0}_${asig}_${g}`;
           if (!combinados[key]) combinados[key] = [];
           combinados[key].push(c.horas);
         } else {
@@ -503,7 +503,7 @@ Por favor, completa las horas de planificación antes de guardar.`);
               lectivas.forEach(c => {
                 if (c.esCombinado && c.grupoCombinado) {
                   const asig = c.codAsignatura || 'GEN';
-                  const key = `${asig}_${c.grupoCombinado.toUpperCase().trim()}`;
+                  const key = `${c.tienCod || 0}_${c.grteCod || 0}_${asig}_${c.grupoCombinado.toUpperCase().trim()}`;
                   if (!combinados[key]) combinados[key] = [];
                   combinados[key].push(c);
                 } else {
@@ -924,12 +924,16 @@ Por favor, completa las horas de planificación antes de guardar.`);
       const docentesAsignadosUnicos = Array.from(new Set(nombresDocentes));
     
     const letterIsFull = (myH + otherH) >= det.horas;
+    const combKeyUI = (grupoCombinadoUI || 'Comb1').toUpperCase().trim();
+    const yaExisteGrupoCombinado = esCombinadoUI && [...cargasOtros, ...cargasMias].some(
+      c => c.esCombinado && ((c.grupoCombinado || 'Comb1').toUpperCase().trim() === combKeyUI)
+    );
 
     return (
       <button 
         key={l}
         onClick={() => handleAsignarLectiva(det, l)}
-        disabled={!docenteSeleccionado || (!esDesdobleUI && restantes < det.horas) || assignedToMe || letterIsFull}
+        disabled={!docenteSeleccionado || (!esDesdobleUI && !yaExisteGrupoCombinado && restantes < det.horas) || assignedToMe || letterIsFull}
         className={`px-2 py-1 rounded text-xs font-bold transition-colors ${assignedToMe ? 'bg-green-100 text-green-700' : letterIsFull ? 'bg-red-50 text-red-500 cursor-not-allowed opacity-60' : 'bg-gray-100 text-gray-700 hover:bg-[#016098] hover:text-white disabled:opacity-50 disabled:hover:bg-gray-100 disabled:hover:text-gray-700'}`}
         title={assignedToMe ? "Ya asignado a este docente" : letterIsFull ? `Letra sin horas disponibles (Asignado a: ${docentesAsignadosUnicos.join(', ')})` : (docentesAsignadosUnicos.length > 0 ? `Asignar (Horas parciales en: ${docentesAsignadosUnicos.join(', ')})` : "Asignar")}
       >
@@ -1009,12 +1013,16 @@ Por favor, completa las horas de planificación antes de guardar.`);
       const docentesAsignadosUnicos = Array.from(new Set(nombresDocentes));
     
     const letterIsFull = (myH + otherH) >= det.horas;
+    const combKeyUI = (grupoCombinadoUI || 'Comb1').toUpperCase().trim();
+    const yaExisteGrupoCombinado = esCombinadoUI && [...cargasOtros, ...cargasMias].some(
+      c => c.esCombinado && ((c.grupoCombinado || 'Comb1').toUpperCase().trim() === combKeyUI)
+    );
 
     return (
       <button 
         key={l}
         onClick={() => handleAsignarLectiva(det, l)}
-        disabled={!docenteSeleccionado || (!esDesdobleUI && restantes < det.horas) || assignedToMe || letterIsFull}
+        disabled={!docenteSeleccionado || (!esDesdobleUI && !yaExisteGrupoCombinado && restantes < det.horas) || assignedToMe || letterIsFull}
         className={`px-2 py-1 rounded text-xs font-bold transition-colors ${assignedToMe ? 'bg-green-100 text-green-700' : letterIsFull ? 'bg-red-50 text-red-500 cursor-not-allowed opacity-60' : 'bg-gray-100 text-gray-700 hover:bg-[#016098] hover:text-white disabled:opacity-50 disabled:hover:bg-gray-100 disabled:hover:text-gray-700'}`}
         title={assignedToMe ? "Ya asignado a este docente" : letterIsFull ? `Letra sin horas disponibles (Asignado a: ${docentesAsignadosUnicos.join(', ')})` : (docentesAsignadosUnicos.length > 0 ? `Asignar (Horas parciales en: ${docentesAsignadosUnicos.join(', ')})` : "Asignar")}
       >

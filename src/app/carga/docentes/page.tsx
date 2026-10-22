@@ -300,7 +300,7 @@ export default function DocentesPage() {
       if (c.esCombinado && c.grupoCombinado) {
         const g = c.grupoCombinado.toUpperCase().trim();
         const asig = c.asignaturaCod || c.codAsignatura || 'GEN';
-        const key = `${asig}_${g}`;
+        const key = `${c.tienCod || 0}_${c.grteCod || 0}_${asig}_${g}`;
         if (!combinadosDoc[key]) combinadosDoc[key] = [];
         combinadosDoc[key].push(c.horasAllocadas || c.horas || 0);
       } else {

@@ -127,6 +127,99 @@ export default function SabanaClasicaPage() {
 
   const docentesArray = Object.values(docentesMap).sort((a,b) => String(a.apellidos || "").localeCompare(String(b.apellidos || "")));
 
+  // Acumuladores de totales por columna
+  let totalContratoCol = 0;
+  let totalColacionCol = 0;
+  const totalesBaseCol: Record<string, number> = {};
+  let totalSumBaseCol = 0;
+  const totalesJecCol: Record<string, number> = {};
+  let totalSumJecCol = 0;
+  let totalAulaPedCol = 0;
+  let totalRecreoCronoCol = 0;
+  let totalAnlMarcoCronoCol = 0;
+  const totalesAnlCol: Record<string, number> = {};
+  let totalAnlCronoCol = 0;
+  let totalJornadaSemanalCol = 0;
+  const totalesExtCol: Record<string, number> = {};
+  let totalExtCronoCol = 0;
+  let totalAsignadoCronoCol = 0;
+
+  const filasCalculadas = docentesArray.map(doc => {
+    let sumBase = 0;
+    colsBase.forEach(c => {
+      const val = doc.asignaturasBase[c.key] ? Math.round(doc.asignaturasBase[c.key]) : 0;
+      sumBase += doc.asignaturasBase[c.key] || 0;
+      totalesBaseCol[c.key] = (totalesBaseCol[c.key] || 0) + val;
+    });
+
+    let sumJec = 0;
+    colsJec.forEach(c => {
+      const val = doc.asignaturasJec[c.key] ? Math.round(doc.asignaturasJec[c.key]) : 0;
+      sumJec += doc.asignaturasJec[c.key] || 0;
+      totalesJecCol[c.key] = (totalesJecCol[c.key] || 0) + val;
+    });
+
+    const totalAulaPed = sumBase + sumJec;
+    const totalAnlCrono = doc.totalAnlCrono;
+    const totalExtCrono = doc.totalExtraCrono;
+
+    colsAnl.forEach(c => {
+      const val = doc.anls[c.key] ? Math.round(doc.anls[c.key]) : 0;
+      totalesAnlCol[c.key] = (totalesAnlCol[c.key] || 0) + val;
+    });
+
+    colsExt.forEach(c => {
+      const val = doc.extras[c.key] ? Math.round(doc.extras[c.key]) : 0;
+      totalesExtCol[c.key] = (totalesExtCol[c.key] || 0) + val;
+    });
+
+    let anlMarcoCrono: number | string = '-';
+    let recreoCrono: number | string = '-';
+    let recreoDecimal = 0;
+    if (totalAulaPed > 0) {
+      const row = tablaConversion.find(r => r.lectivasPedagogicas === Math.round(totalAulaPed));
+      if (row) {
+        anlMarcoCrono = Math.round(parseCronoToDecimal(row.noLectivasCronologicas));
+        recreoCrono = Math.round(parseCronoToDecimal(row.recreoCronologicas));
+        recreoDecimal = parseCronoToDecimal(row.recreoCronologicas);
+      }
+    }
+
+    const totalJornadaSemanalCrono = Math.ceil((totalAulaPed * 45 / 60) + recreoDecimal + totalAnlCrono);
+    const asignadoCronoTotal = Math.ceil((totalAulaPed * 45 / 60) + recreoDecimal + totalAnlCrono + totalExtCrono + doc.colacion);
+    const balance = doc.contratoHoras - asignadoCronoTotal;
+    const hasData = asignadoCronoTotal > doc.colacion;
+
+    totalContratoCol += doc.contratoHoras || 0;
+    totalColacionCol += doc.colacion || 0;
+    totalSumBaseCol += sumBase ? Math.round(sumBase) : 0;
+    totalSumJecCol += sumJec ? Math.round(sumJec) : 0;
+    totalAulaPedCol += totalAulaPed ? Math.round(totalAulaPed) : 0;
+    if (typeof recreoCrono === 'number') totalRecreoCronoCol += recreoCrono;
+    if (typeof anlMarcoCrono === 'number') totalAnlMarcoCronoCol += anlMarcoCrono;
+    totalAnlCronoCol += totalAnlCrono ? Math.round(totalAnlCrono) : 0;
+    totalJornadaSemanalCol += totalJornadaSemanalCrono ? Math.ceil(totalJornadaSemanalCrono) : 0;
+    totalExtCronoCol += totalExtCrono ? Math.round(totalExtCrono) : 0;
+    totalAsignadoCronoCol += Math.ceil(asignadoCronoTotal);
+
+    return {
+      doc,
+      sumBase,
+      sumJec,
+      totalAulaPed,
+      totalAnlCrono,
+      totalExtCrono,
+      anlMarcoCrono,
+      recreoCrono,
+      totalJornadaSemanalCrono,
+      asignadoCronoTotal,
+      balance,
+      hasData
+    };
+  });
+
+  const balanceTotalCol = totalContratoCol - totalAsignadoCronoCol;
+
   const exportarExcel = () => {
     const table = document.getElementById('sabana-table');
     if (!table) return;
@@ -155,12 +248,12 @@ export default function SabanaClasicaPage() {
           table { width: 100% !important; page-break-inside: auto; zoom: 0.55; transform-origin: top left; }
           tr { page-break-inside: avoid; page-break-after: auto; }
           thead { display: table-header-group; }
-          tfoot { display: table-footer-group; }
+          tfoot { display: table-row-group; }
           /* Avoid text colors disappearing in print mode */
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           /* Un-stick elements so they flow properly across pages */
           th.sticky, td.sticky { position: static !important; }
-          thead.sticky { position: static !important; }
+          thead.sticky, tfoot.sticky { position: static !important; }
         }
       `}</style>
 
@@ -169,18 +262,20 @@ export default function SabanaClasicaPage() {
           <h1 className="text-xl font-bold text-[#016098]">Sábana Clásica de Carga (Global)</h1>
           <p className="text-sm text-gray-500">Matriz en horas cronológicas y pedagógicas según corresponda.</p>
         </div>
-        <button 
-          onClick={exportarExcel}
-          className="bg-[#107c41] hover:bg-[#0c5c30] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors mr-2"
-        >
-          Exportar Excel
-        </button>
-        <button 
-          onClick={() => window.print()}
-          className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg text-sm font-medium shadow-sm"
-        >
-          Imprimir / PDF
-        </button>
+        <div className="flex items-center">
+          <button 
+            onClick={exportarExcel}
+            className="bg-[#107c41] hover:bg-[#0c5c30] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors mr-2"
+          >
+            Exportar Excel
+          </button>
+          <button 
+            onClick={() => window.print()}
+            className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg text-sm font-medium shadow-sm"
+          >
+            Imprimir / PDF
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-auto custom-scrollbar bg-[#f8fafc]">
@@ -212,7 +307,7 @@ export default function SabanaClasicaPage() {
             <tr>
               <th className="px-4 py-2 border border-[#cbd5e1] bg-[#e2e8f0] sticky left-0 z-30" rowSpan={2}>Docente</th>
               <th className="px-2 py-2 border border-[#cbd5e1] text-center bg-[#e2e8f0] sticky left-[250px] z-30" rowSpan={2}>Hrs.<br/>Contrato</th>
-              <th className="px-2 py-2 border border-[#cbd5e1] text-center bg-[#e2e8f0] sticky left-[320px] z-30" rowSpan={2}>Derecho<br/>Colacin</th>
+              <th className="px-2 py-2 border border-[#cbd5e1] text-center bg-[#e2e8f0] sticky left-[320px] z-30" rowSpan={2}>Derecho<br/>Colación</th>
               
               {colsBase.length > 0 && <th colSpan={colsBase.length} className="px-4 py-1 border border-[#cbd5e1] text-center bg-white text-blue-700">PLAN DE ESTUDIO</th>}
               {colsBase.length > 0 && <th className="px-2 py-1 border border-[#cbd5e1] text-center bg-blue-100 text-blue-800" rowSpan={2}>TOTAL<br/>AULA</th>}
@@ -257,68 +352,137 @@ export default function SabanaClasicaPage() {
             </tr>
           </thead>
           <tbody>
-            {docentesArray.map(doc => {
-              let sumBase = 0; colsBase.forEach(c => sumBase += doc.asignaturasBase[c.key] || 0);
-              let sumJec = 0; colsJec.forEach(c => sumJec += doc.asignaturasJec[c.key] || 0);
-              
-              const totalAulaPed = sumBase + sumJec;
-              const totalAnlCrono = doc.totalAnlCrono;
-              const totalExtCrono = doc.totalExtraCrono;
+            {filasCalculadas.map(({
+              doc,
+              sumBase,
+              sumJec,
+              totalAulaPed,
+              totalAnlCrono,
+              totalExtCrono,
+              anlMarcoCrono,
+              recreoCrono,
+              totalJornadaSemanalCrono,
+              asignadoCronoTotal,
+              balance,
+              hasData
+            }) => (
+              <tr key={doc.id} className={`bg-white hover:bg-gray-50 border-b border-[#e2e8f0] ${!hasData ? 'opacity-40' : ''}`}>
+                <td className="px-4 py-2 sticky left-0 bg-white z-10 border-r border-[#e2e8f0] min-w-[250px]">
+                  <div className="font-bold text-gray-800">{doc.apellidos}, {doc.nombres}</div>
+                  <div className="text-[10px] text-gray-500">{doc.rut} - {doc.contrato || doc.tipoContrato || "No especificado"}</div>
+                </td>
+                <td className="px-2 py-2 text-center font-bold sticky left-[250px] bg-white z-10 border-r">{doc.contratoHoras}</td>
+                <td className="px-2 py-2 text-center text-gray-500 sticky left-[320px] bg-white z-10 border-r bg-gray-50">{doc.colacion}</td>
+                
+                {colsBase.map(c => <td key={c.key} className="px-1 py-2 text-center border-r text-[#016098] font-medium">{doc.asignaturasBase[c.key] ? Math.round(doc.asignaturasBase[c.key]) : '-'}</td>)}
+                {colsBase.length > 0 && <td className="px-2 py-2 text-center font-bold bg-white text-blue-700 border-r">{sumBase ? Math.round(sumBase) : '-'}</td>}
 
-              let anlMarcoCrono: number | string = '-';
-              let recreoCrono: number | string = '-';
-              let recreoDecimal = 0;
-              if (totalAulaPed > 0) {
-                const row = tablaConversion.find(r => r.lectivasPedagogicas === Math.round(totalAulaPed));
-                if (row) {
-                  anlMarcoCrono = Math.round(parseCronoToDecimal(row.noLectivasCronologicas));
-                  recreoCrono = Math.round(parseCronoToDecimal(row.recreoCronologicas));
-                  recreoDecimal = parseCronoToDecimal(row.recreoCronologicas);
-                }
-              }
+                {colsJec.map(c => <td key={c.key} className="px-1 py-2 text-center border-r text-[#166534] font-medium">{doc.asignaturasJec[c.key] ? Math.round(doc.asignaturasJec[c.key]) : '-'}</td>)}
+                {colsJec.length > 0 && <td className="px-2 py-2 text-center font-bold bg-emerald-100 text-emerald-800 border-r">{sumJec ? Math.round(sumJec) : '-'}</td>}
+                {(colsBase.length > 0 || colsJec.length > 0) && <td className="px-2 py-2 text-center font-bold bg-teal-50 text-teal-800 border-r">{totalAulaPed ? Math.round(totalAulaPed) : '-'}</td>}
+                {(colsBase.length > 0 || colsJec.length > 0) && <td className="px-2 py-2 text-center font-bold bg-teal-50 text-teal-900 border-r-2 border-r-slate-300 border-r">{recreoCrono}</td>}
 
-              const totalJornadaSemanalCrono = Math.ceil((totalAulaPed * 45 / 60) + recreoDecimal + totalAnlCrono);
-              const asignadoCronoTotal = Math.ceil((totalAulaPed * 45 / 60) + recreoDecimal + totalAnlCrono + totalExtCrono + doc.colacion);
-              const balance = doc.contratoHoras - asignadoCronoTotal;
-              const hasData = asignadoCronoTotal > doc.colacion;
+                <td className="px-2 py-2 text-center font-bold text-orange-700 border-r bg-orange-50">{anlMarcoCrono}</td>
+                {colsAnl.map(c => <td key={c.key} className="px-1 py-2 text-center border-r text-[#d97706] font-medium">{doc.anls[c.key] ? Math.round(doc.anls[c.key]) : '-'}</td>)}
+                <td className="px-2 py-2 text-center font-bold bg-white text-amber-700 border-r">{totalAnlCrono ? Math.round(totalAnlCrono) : '-'}</td>
 
-              return (
-                <tr key={doc.id} className={`bg-white hover:bg-gray-50 border-b border-[#e2e8f0] ${!hasData ? 'opacity-40' : ''}`}>
-                  <td className="px-4 py-2 sticky left-0 bg-white z-10 border-r border-[#e2e8f0] min-w-[250px]">
-                    <div className="font-bold text-gray-800">{doc.apellidos}, {doc.nombres}</div>
-                    <div className="text-[10px] text-gray-500">{doc.rut} - {doc.contrato || doc.tipoContrato || "No especificado"}</div>
-                  </td>
-                  <td className="px-2 py-2 text-center font-bold sticky left-[250px] bg-white z-10 border-r">{doc.contratoHoras}</td>
-                  <td className="px-2 py-2 text-center text-gray-500 sticky left-[320px] bg-white z-10 border-r bg-gray-50">{doc.colacion}</td>
-                  
-                  {colsBase.map(c => <td key={c.key} className="px-1 py-2 text-center border-r text-[#016098] font-medium">{doc.asignaturasBase[c.key] ? Math.round(doc.asignaturasBase[c.key]) : '-'}</td>)}
-                  {colsBase.length > 0 && <td className="px-2 py-2 text-center font-bold bg-white text-blue-700 border-r">{sumBase ? Math.round(sumBase) : '-'}</td>}
+                <td className="px-2 py-2 text-center font-bold bg-slate-100 text-slate-800 border-r border-r-slate-400">{totalJornadaSemanalCrono ? Math.ceil(totalJornadaSemanalCrono) : '-'}</td>
 
-                  {colsJec.map(c => <td key={c.key} className="px-1 py-2 text-center border-r text-[#166534] font-medium">{doc.asignaturasJec[c.key] ? Math.round(doc.asignaturasJec[c.key]) : '-'}</td>)}
-                  {colsJec.length > 0 && <td className="px-2 py-2 text-center font-bold bg-emerald-100 text-emerald-800 border-r">{sumJec ? Math.round(sumJec) : '-'}</td>}
-                  {(colsBase.length > 0 || colsJec.length > 0) && <td className="px-2 py-2 text-center font-bold bg-teal-50 text-teal-800 border-r">{totalAulaPed ? Math.round(totalAulaPed) : '-'}</td>}
-                  {(colsBase.length > 0 || colsJec.length > 0) && <td className="px-2 py-2 text-center font-bold bg-teal-50 text-teal-900 border-r-2 border-r-slate-300 border-r">{recreoCrono}</td>}
+                {colsExt.map(c => <td key={c.key} className="px-1 py-2 text-center border-r text-[#7e22ce] font-medium">{doc.extras[c.key] ? Math.round(doc.extras[c.key]) : '-'}</td>)}
+                {colsExt.length > 0 && <td className="px-2 py-2 text-center font-bold bg-white text-purple-700 border-r">{totalExtCrono ? Math.round(totalExtCrono) : '-'}</td>}
 
-                  <td className="px-2 py-2 text-center font-bold text-orange-700 border-r bg-orange-50">{anlMarcoCrono}</td>
-                  {colsAnl.map(c => <td key={c.key} className="px-1 py-2 text-center border-r text-[#d97706] font-medium">{doc.anls[c.key] ? Math.round(doc.anls[c.key]) : '-'}</td>)}
-                  <td className="px-2 py-2 text-center font-bold bg-white text-amber-700 border-r">{totalAnlCrono ? Math.round(totalAnlCrono) : '-'}</td>
-
-                  <td className="px-2 py-2 text-center font-bold bg-slate-100 text-slate-800 border-r border-r-slate-400">{totalJornadaSemanalCrono ? Math.ceil(totalJornadaSemanalCrono) : '-'}</td>
-
-                  {colsExt.map(c => <td key={c.key} className="px-1 py-2 text-center border-r text-[#7e22ce] font-medium">{doc.extras[c.key] ? Math.round(doc.extras[c.key]) : '-'}</td>)}
-                  {colsExt.length > 0 && <td className="px-2 py-2 text-center font-bold bg-white text-purple-700 border-r">{totalExtCrono ? Math.round(totalExtCrono) : '-'}</td>}
-
-                  <td className="px-2 py-2 text-center font-bold text-gray-800 bg-gray-100 border-r">{Math.ceil(asignadoCronoTotal)}</td>
-                  <td className={`px-2 py-2 text-center font-bold border-r-2 border-[#cbd5e1] ${balance === 0 ? 'text-green-600' : balance > 0 ? 'text-orange-500' : 'text-red-600'}`}>
-                    {balance === 0 ? 'OK' : balance > 0 ? `Faltan ${Math.round(balance)}` : `Sobran ${Math.abs(balance)}`}
-                  </td>
-                  <td className="px-4 py-2 text-left text-[11px] text-gray-700 max-w-[200px] break-words whitespace-normal border-r border-[#cbd5e1]">
-                    {doc.establecimientos?.[0]?.observacionCarga || ''}
-                  </td>
-                </tr>
-              );
-            })}
+                <td className="px-2 py-2 text-center font-bold text-gray-800 bg-gray-100 border-r">{Math.ceil(asignadoCronoTotal)}</td>
+                <td className={`px-2 py-2 text-center font-bold border-r-2 border-[#cbd5e1] ${balance === 0 ? 'text-green-600' : balance > 0 ? 'text-orange-500' : 'text-red-600'}`}>
+                  {balance === 0 ? 'OK' : balance > 0 ? `Faltan ${Math.round(balance)}` : `Sobran ${Math.abs(balance)}`}
+                </td>
+                <td className="px-4 py-2 text-left text-[11px] text-gray-700 max-w-[200px] break-words whitespace-normal border-r border-[#cbd5e1]">
+                  {doc.establecimientos?.[0]?.observacionCarga || ''}
+                </td>
+              </tr>
+            ))}
           </tbody>
+          {filasCalculadas.length > 0 && (
+            <tfoot className="sticky bottom-0 z-20 bg-[#e2e8f0] text-[#0f172a] font-bold border-t-2 border-slate-400 shadow-inner">
+              <tr>
+                <td className="px-4 py-3 sticky left-0 bg-[#e2e8f0] z-30 border-r border-[#cbd5e1] uppercase text-xs tracking-wide">
+                  TOTALES ({filasCalculadas.length} Docentes)
+                </td>
+                <td className="px-2 py-3 text-center sticky left-[250px] bg-[#e2e8f0] z-30 border-r border-[#cbd5e1]">
+                  {totalContratoCol}
+                </td>
+                <td className="px-2 py-3 text-center sticky left-[320px] bg-[#e2e8f0] z-30 border-r border-[#cbd5e1]">
+                  {totalColacionCol}
+                </td>
+
+                {colsBase.map(c => (
+                  <td key={c.key} className="px-1 py-3 text-center border-r border-[#cbd5e1] bg-blue-50 text-[#016098]">
+                    {totalesBaseCol[c.key] || 0}
+                  </td>
+                ))}
+                {colsBase.length > 0 && (
+                  <td className="px-2 py-3 text-center border-r border-[#cbd5e1] bg-blue-100 text-blue-900">
+                    {totalSumBaseCol}
+                  </td>
+                )}
+
+                {colsJec.map(c => (
+                  <td key={c.key} className="px-1 py-3 text-center border-r border-[#cbd5e1] bg-emerald-50 text-[#166534]">
+                    {totalesJecCol[c.key] || 0}
+                  </td>
+                ))}
+                {colsJec.length > 0 && (
+                  <td className="px-2 py-3 text-center border-r border-[#cbd5e1] bg-emerald-200 text-emerald-900">
+                    {totalSumJecCol}
+                  </td>
+                )}
+                {(colsBase.length > 0 || colsJec.length > 0) && (
+                  <td className="px-2 py-3 text-center border-r border-[#cbd5e1] bg-teal-100 text-teal-900">
+                    {totalAulaPedCol}
+                  </td>
+                )}
+                {(colsBase.length > 0 || colsJec.length > 0) && (
+                  <td className="px-2 py-3 text-center border-r-2 border-r-slate-400 bg-teal-100 text-teal-900">
+                    {totalRecreoCronoCol}
+                  </td>
+                )}
+
+                <td className="px-2 py-3 text-center border-r border-[#cbd5e1] bg-orange-100 text-orange-900">
+                  {totalAnlMarcoCronoCol}
+                </td>
+                {colsAnl.map(c => (
+                  <td key={c.key} className="px-1 py-3 text-center border-r border-[#cbd5e1] bg-amber-50 text-[#b45309]">
+                    {totalesAnlCol[c.key] || 0}
+                  </td>
+                ))}
+                <td className="px-2 py-3 text-center border-r-2 border-r-slate-400 bg-amber-100 text-amber-900">
+                  {totalAnlCronoCol}
+                </td>
+
+                <td className="px-2 py-3 text-center border-r-2 border-r-slate-400 bg-slate-200 text-slate-900">
+                  {totalJornadaSemanalCol}
+                </td>
+
+                {colsExt.map(c => (
+                  <td key={c.key} className="px-1 py-3 text-center border-r border-[#cbd5e1] bg-purple-50 text-[#6b21a8]">
+                    {totalesExtCol[c.key] || 0}
+                  </td>
+                ))}
+                {colsExt.length > 0 && (
+                  <td className="px-2 py-3 text-center border-r-2 border-r-slate-400 bg-purple-100 text-purple-900">
+                    {totalExtCronoCol}
+                  </td>
+                )}
+
+                <td className="px-2 py-3 text-center border-r border-[#cbd5e1] bg-gray-300 text-gray-900">
+                  {totalAsignadoCronoCol}
+                </td>
+                <td className={`px-2 py-3 text-center border-r-2 border-[#cbd5e1] bg-gray-200 ${balanceTotalCol === 0 ? 'text-green-700' : balanceTotalCol > 0 ? 'text-orange-600' : 'text-red-700'}`}>
+                  {balanceTotalCol === 0 ? 'OK' : balanceTotalCol > 0 ? `Faltan ${Math.round(balanceTotalCol)}` : `Sobran ${Math.abs(Math.round(balanceTotalCol))}`}
+                </td>
+                <td className="px-4 py-3 bg-[#e2e8f0] border-r border-[#cbd5e1]"></td>
+              </tr>
+            </tfoot>
+          )}
         </table>
       </div>
     </div>

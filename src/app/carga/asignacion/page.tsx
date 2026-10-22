@@ -246,28 +246,34 @@ export default function AsignacionCargaPage() {
 
   
     const calcularHorasConsumidas = (cargasFiltradas: any[]) => {
-      const porLetra: Record<string, any[]> = {};
+      const porUnidad: Record<string, any[]> = {};
       cargasFiltradas.forEach(c => {
-        const l = c.letraCurso || 'GENERIC';
-        if (!porLetra[l]) porLetra[l] = [];
-        porLetra[l].push(c);
+        const key = (c.esCombinado && c.grupoCombinado)
+          ? `COMB_${c.grupoCombinado.toUpperCase().trim()}`
+          : `LETRA_${c.letraCurso || 'GENERIC'}`;
+        if (!porUnidad[key]) porUnidad[key] = [];
+        porUnidad[key].push(c);
       });
 
       let totalConsumido = 0;
-      for (const letra in porLetra) {
-        const cargasLetra = porLetra[letra];
+      for (const unidad in porUnidad) {
+        const cargasUnidad = porUnidad[unidad];
         const porDesdoble: Record<string, number> = {};
-        cargasLetra.forEach(c => {
+        cargasUnidad.forEach(c => {
           const g = (c.esDesdoble && c.grupoDesdoble) ? c.grupoDesdoble.toUpperCase().trim() : 'DEFAULT';
-          if (!porDesdoble[g]) porDesdoble[g] = 0;
-          porDesdoble[g] += c.horasAllocadas;
+          const h = c.horasAllocadas ?? c.horas ?? 0;
+          if (unidad.startsWith('COMB_')) {
+            porDesdoble[g] = Math.max(porDesdoble[g] || 0, h);
+          } else {
+            porDesdoble[g] = (porDesdoble[g] || 0) + h;
+          }
         });
 
-        let maxEnLetra = 0;
+        let maxEnUnidad = 0;
         for (const g in porDesdoble) {
-          if (porDesdoble[g] > maxEnLetra) maxEnLetra = porDesdoble[g];
+          if (porDesdoble[g] > maxEnUnidad) maxEnUnidad = porDesdoble[g];
         }
-        totalConsumido += maxEnLetra;
+        totalConsumido += maxEnUnidad;
       }
       return totalConsumido;
     };
@@ -864,32 +870,24 @@ Por favor, completa las horas de planificación antes de guardar.`);
                             const totalDisp = det.horas * (det.grupos ?? cursos);
                             const letras = getLetras(gInfo);
                             
-                            const tomadasGlobal = calcularHorasConsumidas(todasCargas.filter(c => 
+                            const cargasOtros = todasCargas.filter(c => 
+                              c.docenteId.toString() !== docenteSeleccionado &&
                               c.planEstablecimientoId === det.planEstablecimientoId &&
                               c.tienCod === det.tienCod &&
                               c.grteCod === det.grteCod &&
                               c.asignaturaCod === det.codAsignatura &&
-                                (c.especialidad || null) === (det.especialidad || null)
-                              ));
+                              (c.especialidad || null) === (det.especialidad || null)
+                            );
 
-                            const asignadasEsteDocente = cargasVivas.filter(c => 
+                            const cargasMias = cargasVivas.filter(c => 
                               c.planEstablecimientoId === det.planEstablecimientoId &&
                               c.tienCod === det.tienCod &&
                               c.grteCod === det.grteCod &&
                               c.codAsignatura === det.codAsignatura &&
-                                (c.especialidad || null) === (det.especialidad || null)
-                              ).reduce((sum, c) => sum + c.horas, 0);
+                              (c.especialidad || null) === (det.especialidad || null)
+                            );
 
-                            const tomadasOtros = tomadasGlobal - calcularHorasConsumidas(todasCargas.filter(c => 
-                              c.docenteId.toString() === docenteSeleccionado &&
-                              c.planEstablecimientoId === det.planEstablecimientoId &&
-                              c.tienCod === det.tienCod &&
-                              c.grteCod === det.grteCod &&
-                              c.asignaturaCod === det.codAsignatura &&
-                                (c.especialidad || null) === (det.especialidad || null)
-                              ));
-
-                            const tomadasReal = tomadasOtros + asignadasEsteDocente;
+                            const tomadasReal = calcularHorasConsumidas([...cargasOtros, ...cargasMias]);
                             const restantes = totalDisp - tomadasReal;
 
                             return (
@@ -913,10 +911,10 @@ Por favor, completa las horas de planificación antes de guardar.`);
     
     const groupKey = esDesdobleUI ? (grupoDesdobleUI || 'Grupo').toUpperCase().trim() : 'DEFAULT';
     const myH = cargasVivas
-        .filter(c => c.tienCod === det.tienCod && c.grteCod === det.grteCod && c.codAsignatura === det.codAsignatura && c.letraCurso === l && ((c.esDesdoble ? (c.grupoDesdoble||'GRUPO').toUpperCase().trim() : 'DEFAULT') === groupKey))
+        .filter(c => c.tienCod === det.tienCod && c.grteCod === det.grteCod && c.codAsignatura === det.codAsignatura && c.letraCurso === l && (!esDesdobleUI || ((c.esDesdoble ? (c.grupoDesdoble||'GRUPO').toUpperCase().trim() : 'DEFAULT') === groupKey)))
         .reduce((sum, c) => sum + c.horas, 0);
     const otherCargas = todasCargas
-          .filter(c => c.docenteId.toString() !== docenteSeleccionado && c.tienCod === det.tienCod && c.grteCod === det.grteCod && c.asignaturaCod === det.codAsignatura && c.letraCurso === l && ((c.esDesdoble ? (c.grupoDesdoble||'GRUPO').toUpperCase().trim() : 'DEFAULT') === groupKey));
+          .filter(c => c.docenteId.toString() !== docenteSeleccionado && c.tienCod === det.tienCod && c.grteCod === det.grteCod && c.asignaturaCod === det.codAsignatura && c.letraCurso === l && (!esDesdobleUI || ((c.esDesdoble ? (c.grupoDesdoble||'GRUPO').toUpperCase().trim() : 'DEFAULT') === groupKey)));
       const otherH = otherCargas.reduce((sum, c) => sum + c.horasAllocadas, 0);
       
       const nombresDocentes = otherCargas.map(c => {
@@ -957,32 +955,24 @@ Por favor, completa las horas de planificación antes de guardar.`);
                             const totalDisp = det.horas * (det.grupos ?? cursos);
                             const letras = getLetras(gInfo);
                             
-                            const tomadasGlobal = calcularHorasConsumidas(todasCargas.filter(c => 
+                            const cargasOtros = todasCargas.filter(c => 
+                              c.docenteId.toString() !== docenteSeleccionado &&
                               c.planEstablecimientoId === det.planEstablecimientoId &&
                               c.tienCod === det.tienCod &&
                               c.grteCod === det.grteCod &&
                               c.asignaturaCod === det.codAsignatura &&
-                                (c.especialidad || null) === (det.especialidad || null)
-                              ));
+                              (c.especialidad || null) === (det.especialidad || null)
+                            );
 
-                            const asignadasEsteDocente = cargasVivas.filter(c => 
+                            const cargasMias = cargasVivas.filter(c => 
                               c.planEstablecimientoId === det.planEstablecimientoId &&
                               c.tienCod === det.tienCod &&
                               c.grteCod === det.grteCod &&
                               c.codAsignatura === det.codAsignatura &&
-                                (c.especialidad || null) === (det.especialidad || null)
-                              ).reduce((sum, c) => sum + c.horas, 0);
+                              (c.especialidad || null) === (det.especialidad || null)
+                            );
 
-                            const tomadasOtros = tomadasGlobal - calcularHorasConsumidas(todasCargas.filter(c => 
-                              c.docenteId.toString() === docenteSeleccionado &&
-                              c.planEstablecimientoId === det.planEstablecimientoId &&
-                              c.tienCod === det.tienCod &&
-                              c.grteCod === det.grteCod &&
-                              c.asignaturaCod === det.codAsignatura &&
-                                (c.especialidad || null) === (det.especialidad || null)
-                              ));
-
-                            const tomadasReal = tomadasOtros + asignadasEsteDocente;
+                            const tomadasReal = calcularHorasConsumidas([...cargasOtros, ...cargasMias]);
                             const restantes = totalDisp - tomadasReal;
 
                             return (
@@ -1006,10 +996,10 @@ Por favor, completa las horas de planificación antes de guardar.`);
     
     const groupKey = esDesdobleUI ? (grupoDesdobleUI || 'Grupo').toUpperCase().trim() : 'DEFAULT';
     const myH = cargasVivas
-        .filter(c => c.tienCod === det.tienCod && c.grteCod === det.grteCod && c.codAsignatura === det.codAsignatura && c.letraCurso === l && ((c.esDesdoble ? (c.grupoDesdoble||'GRUPO').toUpperCase().trim() : 'DEFAULT') === groupKey))
+        .filter(c => c.tienCod === det.tienCod && c.grteCod === det.grteCod && c.codAsignatura === det.codAsignatura && c.letraCurso === l && (!esDesdobleUI || ((c.esDesdoble ? (c.grupoDesdoble||'GRUPO').toUpperCase().trim() : 'DEFAULT') === groupKey)))
         .reduce((sum, c) => sum + c.horas, 0);
     const otherCargas = todasCargas
-          .filter(c => c.docenteId.toString() !== docenteSeleccionado && c.tienCod === det.tienCod && c.grteCod === det.grteCod && c.asignaturaCod === det.codAsignatura && c.letraCurso === l && ((c.esDesdoble ? (c.grupoDesdoble||'GRUPO').toUpperCase().trim() : 'DEFAULT') === groupKey));
+          .filter(c => c.docenteId.toString() !== docenteSeleccionado && c.tienCod === det.tienCod && c.grteCod === det.grteCod && c.asignaturaCod === det.codAsignatura && c.letraCurso === l && (!esDesdobleUI || ((c.esDesdoble ? (c.grupoDesdoble||'GRUPO').toUpperCase().trim() : 'DEFAULT') === groupKey)));
       const otherH = otherCargas.reduce((sum, c) => sum + c.horasAllocadas, 0);
       
       const nombresDocentes = otherCargas.map(c => {

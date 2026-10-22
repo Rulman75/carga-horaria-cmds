@@ -476,9 +476,7 @@ export default function SabanaClasicaPage() {
                 <td className="px-2 py-3 text-center border-r border-[#cbd5e1] bg-gray-300 text-gray-900">
                   {totalAsignadoCronoCol}
                 </td>
-                <td className={`px-2 py-3 text-center border-r-2 border-[#cbd5e1] bg-gray-200 ${balanceTotalCol === 0 ? 'text-green-700' : balanceTotalCol > 0 ? 'text-orange-600' : 'text-red-700'}`}>
-                  {balanceTotalCol === 0 ? 'OK' : balanceTotalCol > 0 ? `Faltan ${Math.round(balanceTotalCol)}` : `Sobran ${Math.abs(Math.round(balanceTotalCol))}`}
-                </td>
+                <td className="px-2 py-3 text-center border-r-2 border-[#cbd5e1] bg-[#e2e8f0]"></td>
                 <td className="px-4 py-3 bg-[#e2e8f0] border-r border-[#cbd5e1]"></td>
               </tr>
             </tfoot>

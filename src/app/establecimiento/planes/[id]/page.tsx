@@ -89,42 +89,53 @@ export default function PlanEstablecimientoDetallePage() {
     const num = parseFloat(editValue);
     if (isNaN(num)) return;
     const grp = editGrupos.trim() !== '' ? parseInt(editGrupos) : null;
+    const res: any = await actualizarHorasDetallePropio(detId, num, grp);
+    if (res && res.error) {
+      alert(res.error);
+      setEditingId(null);
+      return;
+    }
     setPlan({
       ...plan,
       detalles: plan.detalles.map((d: any) => d.id === detId ? { ...d, horas: num, grupos: grp } : d)
     });
     setEditingId(null);
-    await actualizarHorasDetallePropio(detId, num, grp);
   };
 
   const handleEliminarColumna = async (tienCod: number, grteCod: number) => {
     if (!confirm("¿Eliminar este nivel/curso completo de la malla?")) return;
     
     const detallesABorrar = plan.detalles.filter((d: any) => d.grteCod === grteCod && d.tienCod === tienCod);
+    const ids = detallesABorrar.map((d: any) => d.id);
     
+    const res: any = await eliminarDetallePropio(ids);
+    if (res && res.error) {
+      alert(res.error);
+      return;
+    }
+
     setPlan({
       ...plan,
       detalles: plan.detalles.filter((d: any) => !(d.grteCod === grteCod && d.tienCod === tienCod))
     });
-
-    for (const d of detallesABorrar) {
-      await eliminarDetallePropio(d.id);
-    }
   };
 
   const handleEliminarFila = async (asigCodStr: string, tienCod: number, especialidad: string | null = null) => {
     if (!confirm("¿Eliminar esta asignatura completa de este nivel?")) return;
     
     const detallesABorrar = plan.detalles.filter((d: any) => d.codAsignatura === asigCodStr && d.tienCod === tienCod && (d.especialidad || null) === (especialidad || null));
+    const ids = detallesABorrar.map((d: any) => d.id);
+
+    const res: any = await eliminarDetallePropio(ids);
+    if (res && res.error) {
+      alert(res.error);
+      return;
+    }
     
     setPlan({
       ...plan,
       detalles: plan.detalles.filter((d: any) => !(d.codAsignatura === asigCodStr && d.tienCod === tienCod && (d.especialidad || null) === (especialidad || null)))
     });
-
-    for (const d of detallesABorrar) {
-      await eliminarDetallePropio(d.id);
-    }
   };
 
   const handleEspecialidadChange = async (asigCodStr: string, oldEspecialidad: string | null, newEspecialidad: string) => {

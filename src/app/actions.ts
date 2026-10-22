@@ -352,17 +352,70 @@ export async function getPlanPropio(id: number) {
 
 export async function actualizarHorasDetallePropio(detalleId: number, horas: number, grupos?: number | null) {
   await verificarEstablecimientoNoBloqueado();
+  if (horas <= 0) {
+    const det = await prisma.planEstablecimientoDet.findUnique({
+      where: { id: detalleId },
+      include: { asignatura: true, grado: true }
+    });
+    if (det) {
+      const cargaExistente = await prisma.cargaHoraria.findFirst({
+        where: {
+          planEstablecimientoId: det.planEstablecimientoId,
+          tienCod: det.tienCod,
+          grteCod: det.grteCod,
+          asignaturaCod: det.codAsignatura,
+          especialidad: det.especialidad || null,
+          horasAllocadas: { gt: 0 }
+        },
+        include: { docente: true }
+      });
+      if (cargaExistente) {
+        return {
+          error: `No se puede dejar en 0 horas "${det.asignatura?.asigDescripcion || det.codAsignatura}" en ${det.grado?.grteDescrip || 'este curso'} porque ya tiene horas asignadas al docente ${cargaExistente.docente.nombres} ${cargaExistente.docente.apellidos}. Debe quitarle esa carga al docente primero.`
+        };
+      }
+    }
+  }
   return await prisma.planEstablecimientoDet.update({
     where: { id: detalleId },
     data: { horas, grupos: grupos !== undefined ? grupos : undefined }
   });
 }
 
-export async function eliminarDetallePropio(detalleId: number) {
+export async function eliminarDetallePropio(detalleId: number | number[]) {
   await verificarEstablecimientoNoBloqueado();
-  return await prisma.planEstablecimientoDet.delete({
-    where: { id: detalleId }
+  const ids = Array.isArray(detalleId) ? detalleId : [detalleId];
+  if (ids.length === 0) return { success: true };
+
+  const detalles = await prisma.planEstablecimientoDet.findMany({
+    where: { id: { in: ids } },
+    include: { asignatura: true, grado: true }
   });
+
+  for (const det of detalles) {
+    const cargaExistente = await prisma.cargaHoraria.findFirst({
+      where: {
+        planEstablecimientoId: det.planEstablecimientoId,
+        tienCod: det.tienCod,
+        grteCod: det.grteCod,
+        asignaturaCod: det.codAsignatura,
+        especialidad: det.especialidad || null
+      },
+      include: { docente: true }
+    });
+
+    if (cargaExistente) {
+      return {
+        error: `No se puede eliminar "${det.asignatura?.asigDescripcion || det.codAsignatura}" en ${det.grado?.grteDescrip || 'este curso'} porque ya tiene horas asignadas al docente ${cargaExistente.docente.nombres} ${cargaExistente.docente.apellidos}. Debe quitarle esa carga al docente antes de eliminarla del plan.`
+      };
+    }
+  }
+
+  await prisma.planEstablecimientoDet.deleteMany({
+    where: { id: { in: ids } }
+  });
+
+  return { success: true };
 }
 
 export async function importarPlanBaseAPropio(planPropioId: number, codPlanBase: number) {
@@ -450,6 +503,18 @@ export async function importarPlanBaseAPropio(planPropioId: number, codPlanBase:
 
 export async function eliminarPlanPropio(planId: number) {
   await verificarEstablecimientoNoBloqueado();
+
+  const cargaExistente = await prisma.cargaHoraria.findFirst({
+    where: { planEstablecimientoId: planId },
+    include: { docente: true, asignatura: true }
+  });
+
+  if (cargaExistente) {
+    return {
+      error: `No se puede eliminar este plan porque ya tiene horas asignadas al docente ${cargaExistente.docente.nombres} ${cargaExistente.docente.apellidos}${cargaExistente.asignatura ? ` (${cargaExistente.asignatura.asigDescripcion})` : ''}. Debe quitar la carga horaria asociada antes de eliminar el plan.`
+    };
+  }
+
   // Primero eliminar los detalles (si no hay cascade deletion configurado)
   await prisma.planEstablecimientoDet.deleteMany({
     where: { planEstablecimientoId: planId }
@@ -459,6 +524,8 @@ export async function eliminarPlanPropio(planId: number) {
   await prisma.planEstablecimiento.delete({
     where: { id: planId }
   });
+
+  return { success: true };
 }
 
 export async function getAllAsignaturas() {

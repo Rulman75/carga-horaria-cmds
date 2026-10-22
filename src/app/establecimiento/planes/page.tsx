@@ -34,10 +34,14 @@ export default function MisPlanesPage() {
     if (!confirm('¿Estás seguro que deseas ELIMINAR completamente este plan propio y todas sus horas configuradas?')) return;
     
     try {
-      await eliminarPlanPropio(id);
+      const res: any = await eliminarPlanPropio(id);
+      if (res && res.error) {
+        alert(res.error);
+        return;
+      }
       await loadData();
-    } catch(err) {
-      alert('Error al eliminar el plan');
+    } catch(err: any) {
+      alert(err?.message || 'Error al eliminar el plan');
     }
   };
 

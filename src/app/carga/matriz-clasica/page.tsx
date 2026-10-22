@@ -17,7 +17,6 @@ export default function SabanaClasicaPage() {
   const [catAnl, setCatAnl] = useState<any[]>([]);
   const [catExt, setCatExt] = useState<any[]>([]);
   const [config, setConfig] = useState<any>(null);
-  const [detallesPlan, setDetallesPlan] = useState<any[]>([]);
 
   useEffect(() => {
     const estId = Number(localStorage.getItem('selectedEstablecimientoId')) || 2;
@@ -30,7 +29,6 @@ export default function SabanaClasicaPage() {
       setCatAnl(data.catAnl);
       setCatExt(data.catExt);
       setConfig(data.config);
-      setDetallesPlan(data.detallesPlan || []);
     });
   }, []);
 
@@ -59,32 +57,6 @@ export default function SabanaClasicaPage() {
   const asignaturasJecSet = new Set<string>();
   const anlSet = new Set<string>();
   const extSet = new Set<string>();
-
-  // Calcular horas requeridas por Plan de Estudio (grado a grado * cantidad de cursos)
-  const horasPlanPorAsig: Record<string, number> = {};
-  const detallesUnicos = Array.from(
-    new Map(
-      detallesPlan.map(d => [
-        `${d.tienCod}-${d.grteCod}-${d.codAsignatura}-${d.especialidad || 'NONE'}`,
-        d
-      ])
-    ).values()
-  );
-
-  detallesUnicos.forEach((det: any) => {
-    const gInfo = grados.find(g => g.tienCod === det.tienCod && g.grteCod === det.grteCod);
-    if (!gInfo || !det.horas || det.horas <= 0) return;
-
-    const cursos = det.grupos ?? gInfo.cantidadCursos ?? 0;
-    if (cursos <= 0) return;
-
-    const asigDesc =
-      (det.asignatura?.asigDescripcion || 'Desconocida') +
-      (det.especialidad ? ` (${det.especialidad})` : '');
-    const asigKey = `${det.codAsignatura}|${asigDesc}`;
-
-    horasPlanPorAsig[asigKey] = (horasPlanPorAsig[asigKey] || 0) + Math.round(det.horas * cursos);
-  });
 
   cargas.forEach(c => {
     const d = docentesMap[c.docenteId];
@@ -246,23 +218,7 @@ export default function SabanaClasicaPage() {
     };
   });
 
-  // Totales de Horas Según Plan (solo asignaturas lectivas)
-  const totalPlanBaseCol = colsBase.reduce((acc, c) => acc + (horasPlanPorAsig[c.key] || 0), 0);
-  const totalPlanJecCol = colsJec.reduce((acc, c) => acc + (horasPlanPorAsig[c.key] || 0), 0);
-  const totalPlanAulaPedCol = totalPlanBaseCol + totalPlanJecCol;
-
-  const formatDiff = (asignado: number, plan: number) => {
-    const diff = asignado - plan;
-    if (diff === 0) return '0';
-    return diff > 0 ? `+${diff}` : `${diff}`;
-  };
-
-  const getDiffColorClass = (asignado: number, plan: number) => {
-    const diff = asignado - plan;
-    if (diff === 0) return 'text-emerald-700 bg-emerald-50';
-    if (diff < 0) return 'text-red-700 bg-red-50';
-    return 'text-purple-700 bg-purple-50';
-  };
+  const balanceTotalCol = totalContratoCol - totalAsignadoCronoCol;
 
   const exportarExcel = () => {
     const table = document.getElementById('sabana-table');
@@ -447,212 +403,81 @@ export default function SabanaClasicaPage() {
           </tbody>
           {filasCalculadas.length > 0 && (
             <tfoot className="sticky bottom-0 z-20 bg-[#e2e8f0] text-[#0f172a] font-bold border-t-2 border-slate-400 shadow-inner">
-              {/* FILA 1: TOTAL ASIGNADO */}
-              <tr className="border-b border-slate-300">
-                <td className="px-4 py-2.5 sticky left-0 bg-[#e2e8f0] z-30 border-r border-[#cbd5e1] uppercase text-xs tracking-wide">
-                  TOTAL ASIGNADO ({filasCalculadas.length} Docentes)
+              <tr>
+                <td className="px-4 py-3 sticky left-0 bg-[#e2e8f0] z-30 border-r border-[#cbd5e1] uppercase text-xs tracking-wide">
+                  TOTALES ({filasCalculadas.length} Docentes)
                 </td>
-                <td className="px-2 py-2.5 text-center sticky left-[250px] bg-[#e2e8f0] z-30 border-r border-[#cbd5e1]">
+                <td className="px-2 py-3 text-center sticky left-[250px] bg-[#e2e8f0] z-30 border-r border-[#cbd5e1]">
                   {totalContratoCol}
                 </td>
-                <td className="px-2 py-2.5 text-center sticky left-[320px] bg-[#e2e8f0] z-30 border-r border-[#cbd5e1]">
+                <td className="px-2 py-3 text-center sticky left-[320px] bg-[#e2e8f0] z-30 border-r border-[#cbd5e1]">
                   {totalColacionCol}
                 </td>
 
                 {colsBase.map(c => (
-                  <td key={c.key} className="px-1 py-2.5 text-center border-r border-[#cbd5e1] bg-blue-50 text-[#016098]">
+                  <td key={c.key} className="px-1 py-3 text-center border-r border-[#cbd5e1] bg-blue-50 text-[#016098]">
                     {totalesBaseCol[c.key] || 0}
                   </td>
                 ))}
                 {colsBase.length > 0 && (
-                  <td className="px-2 py-2.5 text-center border-r border-[#cbd5e1] bg-blue-100 text-blue-900">
+                  <td className="px-2 py-3 text-center border-r border-[#cbd5e1] bg-blue-100 text-blue-900">
                     {totalSumBaseCol}
                   </td>
                 )}
 
                 {colsJec.map(c => (
-                  <td key={c.key} className="px-1 py-2.5 text-center border-r border-[#cbd5e1] bg-emerald-50 text-[#166534]">
+                  <td key={c.key} className="px-1 py-3 text-center border-r border-[#cbd5e1] bg-emerald-50 text-[#166534]">
                     {totalesJecCol[c.key] || 0}
                   </td>
                 ))}
                 {colsJec.length > 0 && (
-                  <td className="px-2 py-2.5 text-center border-r border-[#cbd5e1] bg-emerald-200 text-emerald-900">
+                  <td className="px-2 py-3 text-center border-r border-[#cbd5e1] bg-emerald-200 text-emerald-900">
                     {totalSumJecCol}
                   </td>
                 )}
                 {(colsBase.length > 0 || colsJec.length > 0) && (
-                  <td className="px-2 py-2.5 text-center border-r border-[#cbd5e1] bg-teal-100 text-teal-900">
+                  <td className="px-2 py-3 text-center border-r border-[#cbd5e1] bg-teal-100 text-teal-900">
                     {totalAulaPedCol}
                   </td>
                 )}
                 {(colsBase.length > 0 || colsJec.length > 0) && (
-                  <td className="px-2 py-2.5 text-center border-r-2 border-r-slate-400 bg-teal-100 text-teal-900">
+                  <td className="px-2 py-3 text-center border-r-2 border-r-slate-400 bg-teal-100 text-teal-900">
                     {totalRecreoCronoCol}
                   </td>
                 )}
 
-                <td className="px-2 py-2.5 text-center border-r border-[#cbd5e1] bg-orange-100 text-orange-900">
+                <td className="px-2 py-3 text-center border-r border-[#cbd5e1] bg-orange-100 text-orange-900">
                   {totalAnlMarcoCronoCol}
                 </td>
                 {colsAnl.map(c => (
-                  <td key={c.key} className="px-1 py-2.5 text-center border-r border-[#cbd5e1] bg-amber-50 text-[#b45309]">
+                  <td key={c.key} className="px-1 py-3 text-center border-r border-[#cbd5e1] bg-amber-50 text-[#b45309]">
                     {totalesAnlCol[c.key] || 0}
                   </td>
                 ))}
-                <td className="px-2 py-2.5 text-center border-r-2 border-r-slate-400 bg-amber-100 text-amber-900">
+                <td className="px-2 py-3 text-center border-r-2 border-r-slate-400 bg-amber-100 text-amber-900">
                   {totalAnlCronoCol}
                 </td>
 
-                <td className="px-2 py-2.5 text-center border-r-2 border-r-slate-400 bg-slate-200 text-slate-900">
+                <td className="px-2 py-3 text-center border-r-2 border-r-slate-400 bg-slate-200 text-slate-900">
                   {totalJornadaSemanalCol}
                 </td>
 
                 {colsExt.map(c => (
-                  <td key={c.key} className="px-1 py-2.5 text-center border-r border-[#cbd5e1] bg-purple-50 text-[#6b21a8]">
+                  <td key={c.key} className="px-1 py-3 text-center border-r border-[#cbd5e1] bg-purple-50 text-[#6b21a8]">
                     {totalesExtCol[c.key] || 0}
                   </td>
                 ))}
                 {colsExt.length > 0 && (
-                  <td className="px-2 py-2.5 text-center border-r-2 border-r-slate-400 bg-purple-100 text-purple-900">
+                  <td className="px-2 py-3 text-center border-r-2 border-r-slate-400 bg-purple-100 text-purple-900">
                     {totalExtCronoCol}
                   </td>
                 )}
 
-                <td className="px-2 py-2.5 text-center border-r border-[#cbd5e1] bg-gray-300 text-gray-900">
+                <td className="px-2 py-3 text-center border-r border-[#cbd5e1] bg-gray-300 text-gray-900">
                   {totalAsignadoCronoCol}
                 </td>
-                <td className="px-2 py-2.5 text-center border-r-2 border-[#cbd5e1] bg-[#e2e8f0]"></td>
-                <td className="px-4 py-2.5 bg-[#e2e8f0] border-r border-[#cbd5e1]"></td>
-              </tr>
-
-              {/* FILA 2: HORAS SEGÚN PLAN (SOLO LECTIVAS) */}
-              <tr className="border-b border-slate-300 bg-slate-100">
-                <td className="px-4 py-2 sticky left-0 bg-slate-200 z-30 border-r border-[#cbd5e1] uppercase text-xs tracking-wide text-slate-800">
-                  TOTAL HORAS SEGÚN PLAN
-                </td>
-                <td className="px-2 py-2 text-center sticky left-[250px] bg-slate-200 z-30 border-r border-[#cbd5e1]"></td>
-                <td className="px-2 py-2 text-center sticky left-[320px] bg-slate-200 z-30 border-r border-[#cbd5e1]"></td>
-
-                {colsBase.map(c => (
-                  <td key={c.key} className="px-1 py-2 text-center border-r border-[#cbd5e1] bg-sky-50 text-sky-900">
-                    {horasPlanPorAsig[c.key] || 0}
-                  </td>
-                ))}
-                {colsBase.length > 0 && (
-                  <td className="px-2 py-2 text-center border-r border-[#cbd5e1] bg-sky-100 text-sky-950">
-                    {totalPlanBaseCol}
-                  </td>
-                )}
-
-                {colsJec.map(c => (
-                  <td key={c.key} className="px-1 py-2 text-center border-r border-[#cbd5e1] bg-emerald-50/70 text-emerald-900">
-                    {horasPlanPorAsig[c.key] || 0}
-                  </td>
-                ))}
-                {colsJec.length > 0 && (
-                  <td className="px-2 py-2 text-center border-r border-[#cbd5e1] bg-emerald-100 text-emerald-950">
-                    {totalPlanJecCol}
-                  </td>
-                )}
-                {(colsBase.length > 0 || colsJec.length > 0) && (
-                  <td className="px-2 py-2 text-center border-r border-[#cbd5e1] bg-teal-50 text-teal-950">
-                    {totalPlanAulaPedCol}
-                  </td>
-                )}
-                {(colsBase.length > 0 || colsJec.length > 0) && (
-                  <td className="px-2 py-2 border-r-2 border-r-slate-400 bg-slate-100"></td>
-                )}
-
-                <td className="px-2 py-2 border-r border-[#cbd5e1] bg-slate-100"></td>
-                {colsAnl.map(c => (
-                  <td key={c.key} className="px-1 py-2 border-r border-[#cbd5e1] bg-slate-100"></td>
-                ))}
-                <td className="px-2 py-2 border-r-2 border-r-slate-400 bg-slate-100"></td>
-
-                <td className="px-2 py-2 border-r-2 border-r-slate-400 bg-slate-100"></td>
-
-                {colsExt.map(c => (
-                  <td key={c.key} className="px-1 py-2 border-r border-[#cbd5e1] bg-slate-100"></td>
-                ))}
-                {colsExt.length > 0 && (
-                  <td className="px-2 py-2 border-r-2 border-r-slate-400 bg-slate-100"></td>
-                )}
-
-                <td className="px-2 py-2 border-r border-[#cbd5e1] bg-slate-100"></td>
-                <td className="px-2 py-2 border-r-2 border-[#cbd5e1] bg-slate-100"></td>
-                <td className="px-4 py-2 bg-slate-100 border-r border-[#cbd5e1]"></td>
-              </tr>
-
-              {/* FILA 3: DIFERENCIA (ASIGNADO - PLAN, SOLO LECTIVAS) */}
-              <tr className="bg-slate-100">
-                <td className="px-4 py-2 sticky left-0 bg-slate-200 z-30 border-r border-[#cbd5e1] uppercase text-xs tracking-wide text-slate-800">
-                  DIFERENCIA (ASIGNADO - PLAN)
-                </td>
-                <td className="px-2 py-2 text-center sticky left-[250px] bg-slate-200 z-30 border-r border-[#cbd5e1]"></td>
-                <td className="px-2 py-2 text-center sticky left-[320px] bg-slate-200 z-30 border-r border-[#cbd5e1]"></td>
-
-                {colsBase.map(c => {
-                  const asig = totalesBaseCol[c.key] || 0;
-                  const plan = horasPlanPorAsig[c.key] || 0;
-                  return (
-                    <td
-                      key={c.key}
-                      className={`px-1 py-2 text-center border-r border-[#cbd5e1] ${getDiffColorClass(asig, plan)}`}
-                    >
-                      {formatDiff(asig, plan)}
-                    </td>
-                  );
-                })}
-                {colsBase.length > 0 && (
-                  <td className={`px-2 py-2 text-center border-r border-[#cbd5e1] ${getDiffColorClass(totalSumBaseCol, totalPlanBaseCol)}`}>
-                    {formatDiff(totalSumBaseCol, totalPlanBaseCol)}
-                  </td>
-                )}
-
-                {colsJec.map(c => {
-                  const asig = totalesJecCol[c.key] || 0;
-                  const plan = horasPlanPorAsig[c.key] || 0;
-                  return (
-                    <td
-                      key={c.key}
-                      className={`px-1 py-2 text-center border-r border-[#cbd5e1] ${getDiffColorClass(asig, plan)}`}
-                    >
-                      {formatDiff(asig, plan)}
-                    </td>
-                  );
-                })}
-                {colsJec.length > 0 && (
-                  <td className={`px-2 py-2 text-center border-r border-[#cbd5e1] ${getDiffColorClass(totalSumJecCol, totalPlanJecCol)}`}>
-                    {formatDiff(totalSumJecCol, totalPlanJecCol)}
-                  </td>
-                )}
-                {(colsBase.length > 0 || colsJec.length > 0) && (
-                  <td className={`px-2 py-2 text-center border-r border-[#cbd5e1] ${getDiffColorClass(totalAulaPedCol, totalPlanAulaPedCol)}`}>
-                    {formatDiff(totalAulaPedCol, totalPlanAulaPedCol)}
-                  </td>
-                )}
-                {(colsBase.length > 0 || colsJec.length > 0) && (
-                  <td className="px-2 py-2 border-r-2 border-r-slate-400 bg-slate-100"></td>
-                )}
-
-                <td className="px-2 py-2 border-r border-[#cbd5e1] bg-slate-100"></td>
-                {colsAnl.map(c => (
-                  <td key={c.key} className="px-1 py-2 border-r border-[#cbd5e1] bg-slate-100"></td>
-                ))}
-                <td className="px-2 py-2 border-r-2 border-r-slate-400 bg-slate-100"></td>
-
-                <td className="px-2 py-2 border-r-2 border-r-slate-400 bg-slate-100"></td>
-
-                {colsExt.map(c => (
-                  <td key={c.key} className="px-1 py-2 border-r border-[#cbd5e1] bg-slate-100"></td>
-                ))}
-                {colsExt.length > 0 && (
-                  <td className="px-2 py-2 border-r-2 border-r-slate-400 bg-slate-100"></td>
-                )}
-
-                <td className="px-2 py-2 border-r border-[#cbd5e1] bg-slate-100"></td>
-                <td className="px-2 py-2 border-r-2 border-[#cbd5e1] bg-slate-100"></td>
-                <td className="px-4 py-2 bg-slate-100 border-r border-[#cbd5e1]"></td>
+                <td className="px-2 py-3 text-center border-r-2 border-[#cbd5e1] bg-[#e2e8f0]"></td>
+                <td className="px-4 py-3 bg-[#e2e8f0] border-r border-[#cbd5e1]"></td>
               </tr>
             </tfoot>
           )}

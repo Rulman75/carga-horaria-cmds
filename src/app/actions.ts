@@ -1683,7 +1683,8 @@ export async function getDatosSabanaClasica(establecimientoId: number) {
     tablaConversion,
     catAnl,
     catExt,
-    config
+    config,
+    detallesPlan
   ] = await Promise.all([
     getDocentesEstablecimiento(establecimientoId),
     getCargasEstablecimiento(establecimientoId),
@@ -1691,7 +1692,8 @@ export async function getDatosSabanaClasica(establecimientoId: number) {
     getTablaConversion(),
     getActividadesNoLectivas(),
     getActividadesExtracurriculares(),
-    getConfiguracionGlobal()
+    getConfiguracionGlobal(),
+    getTodosDetallesPlanEstablecimiento(establecimientoId)
   ]);
 
   return {
@@ -1701,7 +1703,8 @@ export async function getDatosSabanaClasica(establecimientoId: number) {
     tablaConversion,
     catAnl,
     catExt,
-    config
+    config,
+    detallesPlan
   };
 }
 

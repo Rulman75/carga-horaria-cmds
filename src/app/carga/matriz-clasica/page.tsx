@@ -78,14 +78,10 @@ export default function SabanaClasicaPage() {
     const cursos = det.grupos ?? gInfo.cantidadCursos ?? 0;
     if (cursos <= 0) return;
 
-    const isJec = det.asignatura?.esTallerJec || false;
     const asigDesc =
       (det.asignatura?.asigDescripcion || 'Desconocida') +
       (det.especialidad ? ` (${det.especialidad})` : '');
     const asigKey = `${det.codAsignatura}|${asigDesc}`;
-
-    if (isJec) asignaturasJecSet.add(asigKey);
-    else asignaturasBaseSet.add(asigKey);
 
     horasPlanPorAsig[asigKey] = (horasPlanPorAsig[asigKey] || 0) + Math.round(det.horas * cursos);
   });

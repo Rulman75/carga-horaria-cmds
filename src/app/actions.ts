@@ -1029,6 +1029,13 @@ export async function getSchoolAnalytics(establecimientoId: number) {
   let totalBaseAsignadas = 0;
   let docentesAsignados = 0;
   const extraDistribution: Record<string, number> = {};
+  const contratoStatsMap: Record<
+    string,
+    { tipoContrato: string; totalConCarga: number; aceptados: number; rechazados: number; pendientes: number }
+  > = {};
+  let totalAceptados = 0;
+  let totalRechazados = 0;
+  let totalPendientes = 0;
 
   for (const rel of rels) {
     const doc = rel.docente;
@@ -1088,7 +1095,31 @@ export async function getSchoolAnalytics(establecimientoId: number) {
 
     totalHorasAsignadas += asigTotal;
 
-    if (docCargas.length > 0) docentesAsignados++;
+    if (docCargas.length > 0) {
+      docentesAsignados++;
+      const tipoContrato = (doc.contrato || doc.tipoContrato || 'SIN ESPECIFICAR').trim().toUpperCase();
+      if (!contratoStatsMap[tipoContrato]) {
+        contratoStatsMap[tipoContrato] = {
+          tipoContrato,
+          totalConCarga: 0,
+          aceptados: 0,
+          rechazados: 0,
+          pendientes: 0
+        };
+      }
+      contratoStatsMap[tipoContrato].totalConCarga++;
+      const estado = (rel as any).estadoAceptacion || 'PENDIENTE';
+      if (estado === 'ACEPTADO') {
+        contratoStatsMap[tipoContrato].aceptados++;
+        totalAceptados++;
+      } else if (estado === 'RECHAZADO') {
+        contratoStatsMap[tipoContrato].rechazados++;
+        totalRechazados++;
+      } else {
+        contratoStatsMap[tipoContrato].pendientes++;
+        totalPendientes++;
+      }
+    }
   }
 
   const chartExtra = Object.entries(extraDistribution).map(([name, value]) => ({ name, value }));
@@ -1103,7 +1134,24 @@ export async function getSchoolAnalytics(establecimientoId: number) {
     totalBaseAsignadas,
     totalJecAsignadas,
     chartExtra,
-    subjectProgress
+    subjectProgress,
+    resolucionPorContrato: Object.values(contratoStatsMap)
+      .sort((a, b) => b.totalConCarga - a.totalConCarga)
+      .map(item => ({
+        ...item,
+        pctAceptados: item.totalConCarga > 0 ? Math.round((item.aceptados / item.totalConCarga) * 1000) / 10 : 0,
+        pctRechazados: item.totalConCarga > 0 ? Math.round((item.rechazados / item.totalConCarga) * 1000) / 10 : 0,
+        pctPendientes: item.totalConCarga > 0 ? Math.round((item.pendientes / item.totalConCarga) * 1000) / 10 : 0
+      })),
+    resumenResolucion: {
+      totalConCarga: docentesAsignados,
+      aceptados: totalAceptados,
+      pctAceptados: docentesAsignados > 0 ? Math.round((totalAceptados / docentesAsignados) * 1000) / 10 : 0,
+      rechazados: totalRechazados,
+      pctRechazados: docentesAsignados > 0 ? Math.round((totalRechazados / docentesAsignados) * 1000) / 10 : 0,
+      pendientes: totalPendientes,
+      pctPendientes: docentesAsignados > 0 ? Math.round((totalPendientes / docentesAsignados) * 1000) / 10 : 0
+    }
   };
 }
 
@@ -1143,6 +1191,14 @@ export async function getGlobalAnalytics() {
   const schoolStats = [];
   let totalDocentesComuna = 0;
   let totalHorasComuna = 0;
+  let totalDocentesConCargaComuna = 0;
+  let totalAceptadosComuna = 0;
+  let totalRechazadosComuna = 0;
+  let totalPendientesComuna = 0;
+  const contratoStatsGlobalMap: Record<
+    string,
+    { tipoContrato: string; totalConCarga: number; aceptados: number; rechazados: number; pendientes: number }
+  > = {};
 
   for (const est of ests) {
     const sRels = relsByEst.get(est.esedSec) || [];
@@ -1151,6 +1207,9 @@ export async function getGlobalAnalytics() {
     let estContrato = 0;
     let estAsignado = 0;
     let estDocentesConCarga = 0;
+    let estAceptados = 0;
+    let estRechazados = 0;
+    let estPendientes = 0;
 
     for (const r of sRels) {
       const contrato =
@@ -1193,6 +1252,36 @@ export async function getGlobalAnalytics() {
       if (lectPed > 0 || noLect > 0 || extra > 0) {
         estAsignado += Math.ceil((lectPed * 45) / 60 + recreoDecimal + noLect + extra + colacion);
         estDocentesConCarga++;
+        totalDocentesConCargaComuna++;
+
+        const tipoContrato = (r.docente.contrato || r.docente.tipoContrato || 'SIN ESPECIFICAR')
+          .trim()
+          .toUpperCase();
+        if (!contratoStatsGlobalMap[tipoContrato]) {
+          contratoStatsGlobalMap[tipoContrato] = {
+            tipoContrato,
+            totalConCarga: 0,
+            aceptados: 0,
+            rechazados: 0,
+            pendientes: 0
+          };
+        }
+        contratoStatsGlobalMap[tipoContrato].totalConCarga++;
+
+        const estado = (r as any).estadoAceptacion || 'PENDIENTE';
+        if (estado === 'ACEPTADO') {
+          contratoStatsGlobalMap[tipoContrato].aceptados++;
+          totalAceptadosComuna++;
+          estAceptados++;
+        } else if (estado === 'RECHAZADO') {
+          contratoStatsGlobalMap[tipoContrato].rechazados++;
+          totalRechazadosComuna++;
+          estRechazados++;
+        } else {
+          contratoStatsGlobalMap[tipoContrato].pendientes++;
+          totalPendientesComuna++;
+          estPendientes++;
+        }
       }
     }
 
@@ -1202,7 +1291,10 @@ export async function getGlobalAnalytics() {
       asignado: estAsignado,
       ociosas: estContrato - estAsignado,
       totalDocentes: sRels.length,
-      docentesConCarga: estDocentesConCarga
+      docentesConCarga: estDocentesConCarga,
+      aceptados: estAceptados,
+      rechazados: estRechazados,
+      pendientes: estPendientes
     });
   }
 
@@ -1216,7 +1308,33 @@ export async function getGlobalAnalytics() {
     totalHorasComuna,
     topDeficit,
     topEfficient,
-    schoolStats
+    schoolStats,
+    resolucionPorContrato: Object.values(contratoStatsGlobalMap)
+      .sort((a, b) => b.totalConCarga - a.totalConCarga)
+      .map(item => ({
+        ...item,
+        pctAceptados: item.totalConCarga > 0 ? Math.round((item.aceptados / item.totalConCarga) * 1000) / 10 : 0,
+        pctRechazados: item.totalConCarga > 0 ? Math.round((item.rechazados / item.totalConCarga) * 1000) / 10 : 0,
+        pctPendientes: item.totalConCarga > 0 ? Math.round((item.pendientes / item.totalConCarga) * 1000) / 10 : 0
+      })),
+    resumenResolucion: {
+      totalConCarga: totalDocentesConCargaComuna,
+      aceptados: totalAceptadosComuna,
+      pctAceptados:
+        totalDocentesConCargaComuna > 0
+          ? Math.round((totalAceptadosComuna / totalDocentesConCargaComuna) * 1000) / 10
+          : 0,
+      rechazados: totalRechazadosComuna,
+      pctRechazados:
+        totalDocentesConCargaComuna > 0
+          ? Math.round((totalRechazadosComuna / totalDocentesConCargaComuna) * 1000) / 10
+          : 0,
+      pendientes: totalPendientesComuna,
+      pctPendientes:
+        totalDocentesConCargaComuna > 0
+          ? Math.round((totalPendientesComuna / totalDocentesConCargaComuna) * 1000) / 10
+          : 0
+    }
   };
 }
 

@@ -187,7 +187,7 @@ export default function AsignacionCargaPage() {
         if (c.esCombinado && c.grupoCombinado) {
           const g = c.grupoCombinado.toUpperCase().trim();
           const asig = c.codAsignatura || 'GEN';
-          const key = `${c.tienCod || 0}_${c.grteCod || 0}_${asig}_${g}`;
+          const key = `${asig}_${g}`;
           if (!combinados[key]) combinados[key] = [];
           combinados[key].push(c.horas);
         } else {

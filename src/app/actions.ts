@@ -1046,7 +1046,7 @@ export async function getSchoolAnalytics(establecimientoId: number) {
         if (c.esCombinado && c.grupoCombinado) {
           const g = c.grupoCombinado.toUpperCase().trim();
           const asig = c.asignaturaCod || 'GEN';
-          const key = `${c.tienCod || 0}_${c.grteCod || 0}_${asig}_${g}`;
+          const key = `${asig}_${g}`;
           if (!combinados[key]) combinados[key] = [];
           combinados[key].push(c);
         } else {
@@ -1169,7 +1169,7 @@ export async function getGlobalAnalytics() {
           if (c.esCombinado && c.grupoCombinado) {
             const g = c.grupoCombinado.toUpperCase().trim();
             const asig = c.asignaturaCod || 'GEN';
-            const key = `${c.tienCod || 0}_${c.grteCod || 0}_${asig}_${g}`;
+            const key = `${asig}_${g}`;
             if (!combinadosRpt[key]) combinadosRpt[key] = [];
             combinadosRpt[key].push(c.horasAllocadas);
           } else {

@@ -969,7 +969,9 @@ const parseCronoToDecimal = (crono: string) => {
 };
 
 export async function getSchoolAnalytics(establecimientoId: number) {
-  const [est, tablaConversion, rels, cargas, planesDetalles] = await Promise.all([
+  const [configGlobal, actividadesNL, est, tablaConversion, rels, cargas, planesDetalles] = await Promise.all([
+    getConfiguracionGlobal(),
+    getActividadesNoLectivas(),
     prisma.establecimiento.findUnique({ where: { esedSec: establecimientoId } }),
     getTablaConversion(),
     prisma.docenteEstablecimiento.findMany({
@@ -992,6 +994,15 @@ export async function getSchoolAnalytics(establecimientoId: number) {
   ]);
 
   const establecimientoNombre = est?.esedDescripcion || 'Establecimiento';
+  const establecimientoBloqueado = !!est?.bloqueado;
+  const pctPlanExigido = configGlobal?.porcentajeMinimoPlanificacion ?? 40;
+  const planificacionIds = new Set(
+    (actividadesNL || []).filter((a: any) => a.esPlanificacion).map((a: any) => a.id)
+  );
+  const convByJornada = new Map<number, any>();
+  for (const row of tablaConversion) {
+    convByJornada.set(row.jornadaSemanal, row);
+  }
   const convByLectivas = new Map<number, any>();
   for (const row of tablaConversion) {
     convByLectivas.set(row.lectivasPedagogicas, row);
@@ -1036,6 +1047,26 @@ export async function getSchoolAnalytics(establecimientoId: number) {
   let totalAceptados = 0;
   let totalRechazados = 0;
   let totalPendientes = 0;
+  const cuadraturaJornada = { exactos: 0, subAsignados: 0, sobrecargados: 0, sinCarga: 0 };
+  const vacantesListado: any[] = [];
+  let horasContratoVacantes = 0;
+  let horasAsignadasVacantes = 0;
+  let vacantesConCarga = 0;
+  const normativaResumen = {
+    pctExigido: pctPlanExigido,
+    cumplePlanificacion: 0,
+    incumplePlanificacion: 0,
+    cumpleTopeNoLectivo: 0,
+    excedeTopeNoLectivo: 0
+  };
+  const finStats: Record<
+    string,
+    { fondo: string; horasFicha: number; horasLectivasPed: number; horasNoLectivasCrono: number; docentesSet: Set<number> }
+  > = {
+    NORMAL: { fondo: 'SUBVENCIÓN GENERAL (NORMAL)', horasFicha: 0, horasLectivasPed: 0, horasNoLectivasCrono: 0, docentesSet: new Set() },
+    SEP: { fondo: 'SEP', horasFicha: 0, horasLectivasPed: 0, horasNoLectivasCrono: 0, docentesSet: new Set() },
+    PIE: { fondo: 'PIE', horasFicha: 0, horasLectivasPed: 0, horasNoLectivasCrono: 0, docentesSet: new Set() }
+  };
 
   for (const rel of rels) {
     const doc = rel.docente;
@@ -1095,6 +1126,85 @@ export async function getSchoolAnalytics(establecimientoId: number) {
 
     totalHorasAsignadas += asigTotal;
 
+    // Financiamiento en ficha docente
+    finStats.NORMAL.horasFicha += doc.horasContrato || doc.horasTitular || 0;
+    finStats.SEP.horasFicha += doc.horasSep || 0;
+    finStats.PIE.horasFicha += doc.horasPie || 0;
+
+    // Vacantes NN
+    const esComodin =
+      doc.rut?.startsWith('NN-') ||
+      /^NN\d+$/i.test(doc.apellidoPaterno || '') ||
+      (doc.contrato || '').toUpperCase() === 'VACANTE';
+    if (esComodin) {
+      horasContratoVacantes += contrato;
+      horasAsignadasVacantes += Math.ceil(asigTotal);
+      if (docCargas.length > 0) vacantesConCarga++;
+      vacantesListado.push({
+        codigo: doc.apellidoPaterno || doc.rut,
+        glosa: doc.nombres,
+        horasContrato: contrato,
+        horasAsignadas: Math.ceil(asigTotal)
+      });
+    }
+
+    // Semáforo cuadratura jornada
+    const asigRedondeado = docCargas.length > 0 ? Math.ceil(asigTotal) : 0;
+    const contratoRedondeado = Math.round(contrato);
+    if (docCargas.length === 0) {
+      cuadraturaJornada.sinCarga++;
+    } else if (asigRedondeado === contratoRedondeado) {
+      cuadraturaJornada.exactos++;
+    } else if (asigRedondeado < contratoRedondeado) {
+      cuadraturaJornada.subAsignados++;
+    } else {
+      cuadraturaJornada.sobrecargados++;
+    }
+
+    // Cumplimiento Normativo Ley 20.903 y Financiamiento en Cargas
+    if (docCargas.length > 0) {
+      let planifAsignada = 0;
+      docCargas.forEach((c: any) => {
+        const finKey = c.financiamiento === 'SEP' ? 'SEP' : c.financiamiento === 'PIE' ? 'PIE' : 'NORMAL';
+        finStats[finKey].docentesSet.add(doc.id);
+        if (c.tipoCarga === 'LECTIVA') {
+          if (!c.esCombinado || !c.grupoCombinado) {
+            finStats[finKey].horasLectivasPed += c.horasAllocadas;
+          }
+        } else {
+          finStats[finKey].horasNoLectivasCrono += c.horasAllocadas;
+        }
+        if (c.tipoCarga === 'NO_LECTIVA' && planificacionIds.has(c.actividadNoLectivaId)) {
+          planifAsignada += c.horasAllocadas;
+        }
+      });
+      for (const g in combinados) {
+        const maxC = combinados[g].reduce((prev: any, curr: any) =>
+          prev.horasAllocadas > curr.horasAllocadas ? prev : curr
+        );
+        const finKey = maxC.financiamiento === 'SEP' ? 'SEP' : maxC.financiamiento === 'PIE' ? 'PIE' : 'NORMAL';
+        finStats[finKey].horasLectivasPed += maxC.horasAllocadas;
+      }
+
+      const convProp = convByLectivas.get(Math.round(lectivasPed));
+      const maxNoLectProp = convProp ? parseCronoToDecimal(convProp.noLectivasCronologicas) : 0;
+      const minPlanifReq =
+        Math.floor(Number((maxNoLectProp * (pctPlanExigido / 100) * 100).toFixed(6))) / 100;
+      if (lectivasPed > 0 && minPlanifReq > 0 && planifAsignada + 0.0001 < minPlanifReq) {
+        normativaResumen.incumplePlanificacion++;
+      } else {
+        normativaResumen.cumplePlanificacion++;
+      }
+
+      const rowJornada = convByJornada.get(contratoRedondeado);
+      const maxNoLectJornada = rowJornada ? parseCronoToDecimal(rowJornada.noLectivasCronologicas) : maxNoLectProp;
+      if (maxNoLectJornada > 0 && anlCrono > maxNoLectJornada + 0.05) {
+        normativaResumen.excedeTopeNoLectivo++;
+      } else {
+        normativaResumen.cumpleTopeNoLectivo++;
+      }
+    }
+
     if (docCargas.length > 0) {
       docentesAsignados++;
       const tipoContrato = (doc.contrato || doc.tipoContrato || 'SIN ESPECIFICAR').trim().toUpperCase();
@@ -1126,6 +1236,23 @@ export async function getSchoolAnalytics(establecimientoId: number) {
 
   return {
     establecimientoNombre,
+    establecimientoBloqueado,
+    cuadraturaJornada,
+    vacantesResumen: {
+      totalVacantes: vacantesListado.length,
+      vacantesConCarga,
+      horasContratoVacantes: Math.ceil(horasContratoVacantes),
+      horasAsignadasVacantes: Math.ceil(horasAsignadasVacantes),
+      listado: vacantesListado
+    },
+    normativaResumen,
+    financiamientoResumen: Object.values(finStats).map(f => ({
+      fondo: f.fondo,
+      horasFicha: Math.round(f.horasFicha * 10) / 10,
+      horasLectivasPed: Math.round(f.horasLectivasPed * 10) / 10,
+      horasNoLectivasCrono: Math.round(f.horasNoLectivasCrono * 10) / 10,
+      docentesConCarga: f.docentesSet.size
+    })),
     totalDocentes: rels.length,
     docentesAsignados,
     totalHorasContrato: Math.ceil(totalHorasContrato),
@@ -1156,7 +1283,9 @@ export async function getSchoolAnalytics(establecimientoId: number) {
 }
 
 export async function getGlobalAnalytics() {
-  const [tablaConversion, ests, rels, cargas] = await Promise.all([
+  const [configGlobal, actividadesNL, tablaConversion, ests, rels, cargas] = await Promise.all([
+    getConfiguracionGlobal(),
+    getActividadesNoLectivas(),
     getTablaConversion(),
     getEstablecimientos(),
     prisma.docenteEstablecimiento.findMany({ include: { docente: true } }),
@@ -1195,6 +1324,37 @@ export async function getGlobalAnalytics() {
   let totalAceptadosComuna = 0;
   let totalRechazadosComuna = 0;
   let totalPendientesComuna = 0;
+  const pctPlanExigido = configGlobal?.porcentajeMinimoPlanificacion ?? 40;
+  const planificacionIds = new Set(
+    (actividadesNL || []).filter((a: any) => a.esPlanificacion).map((a: any) => a.id)
+  );
+  const convByJornada = new Map<number, any>();
+  for (const row of tablaConversion) {
+    convByJornada.set(row.jornadaSemanal, row);
+  }
+  const cuadraturaJornada = { exactos: 0, subAsignados: 0, sobrecargados: 0, sinCarga: 0 };
+  let totalVacantesComuna = 0;
+  let vacantesConCargaComuna = 0;
+  let horasContratoVacantesComuna = 0;
+  let horasAsignadasVacantesComuna = 0;
+  const vacantesPorEstablecimiento: any[] = [];
+  const normativaResumen = {
+    pctExigido: pctPlanExigido,
+    cumplePlanificacion: 0,
+    incumplePlanificacion: 0,
+    cumpleTopeNoLectivo: 0,
+    excedeTopeNoLectivo: 0
+  };
+  const finStats: Record<
+    string,
+    { fondo: string; horasFicha: number; horasLectivasPed: number; horasNoLectivasCrono: number; docentesSet: Set<number> }
+  > = {
+    NORMAL: { fondo: 'SUBVENCIÓN GENERAL (NORMAL)', horasFicha: 0, horasLectivasPed: 0, horasNoLectivasCrono: 0, docentesSet: new Set() },
+    SEP: { fondo: 'SEP', horasFicha: 0, horasLectivasPed: 0, horasNoLectivasCrono: 0, docentesSet: new Set() },
+    PIE: { fondo: 'PIE', horasFicha: 0, horasLectivasPed: 0, horasNoLectivasCrono: 0, docentesSet: new Set() }
+  };
+  let colegiosCerrados = 0;
+  let colegiosEnProceso = 0;
   const contratoStatsGlobalMap: Record<
     string,
     { tipoContrato: string; totalConCarga: number; aceptados: number; rechazados: number; pendientes: number }
@@ -1210,6 +1370,11 @@ export async function getGlobalAnalytics() {
     let estAceptados = 0;
     let estRechazados = 0;
     let estPendientes = 0;
+    let estVacantes = 0;
+    let estVacantesHorasContrato = 0;
+    let estVacantesHorasAsignadas = 0;
+    if (est.bloqueado) colegiosCerrados++;
+    else colegiosEnProceso++;
 
     for (const r of sRels) {
       const contrato =
@@ -1217,6 +1382,13 @@ export async function getGlobalAnalytics() {
       estContrato += contrato;
       totalDocentesComuna++;
       totalHorasComuna += contrato;
+      finStats.NORMAL.horasFicha += r.docente.horasContrato || r.docente.horasTitular || 0;
+      finStats.SEP.horasFicha += r.docente.horasSep || 0;
+      finStats.PIE.horasFicha += r.docente.horasPie || 0;
+      const esComodin =
+        r.docente.rut?.startsWith('NN-') ||
+        /^NN\d+$/i.test(r.docente.apellidoPaterno || '') ||
+        (r.docente.contrato || '').toUpperCase() === 'VACANTE';
 
       const docCargas = cargasByDocente.get(r.docente.id) || [];
       let lectPed = 0,
@@ -1249,10 +1421,83 @@ export async function getGlobalAnalytics() {
         if (row) recreoDecimal = parseCronoToDecimal(row.recreoCronologicas);
       }
 
+      if (lectPed === 0 && noLect === 0 && extra === 0) {
+        cuadraturaJornada.sinCarga++;
+        if (esComodin) {
+          totalVacantesComuna++;
+          horasContratoVacantesComuna += contrato;
+          estVacantes++;
+          estVacantesHorasContrato += contrato;
+        }
+      }
       if (lectPed > 0 || noLect > 0 || extra > 0) {
         estAsignado += Math.ceil((lectPed * 45) / 60 + recreoDecimal + noLect + extra + colacion);
         estDocentesConCarga++;
         totalDocentesConCargaComuna++;
+
+        const docAsigRedondeado = Math.ceil((lectPed * 45) / 60 + recreoDecimal + noLect + extra + colacion);
+        const contratoRedondeado = Math.round(contrato);
+        if (docAsigRedondeado === contratoRedondeado) cuadraturaJornada.exactos++;
+        else if (docAsigRedondeado < contratoRedondeado) cuadraturaJornada.subAsignados++;
+        else cuadraturaJornada.sobrecargados++;
+
+        if (esComodin) {
+          totalVacantesComuna++;
+          vacantesConCargaComuna++;
+          horasContratoVacantesComuna += contrato;
+          horasAsignadasVacantesComuna += docAsigRedondeado;
+          estVacantes++;
+          estVacantesHorasContrato += contrato;
+          estVacantesHorasAsignadas += docAsigRedondeado;
+        }
+
+        let planifAsignada = 0;
+        const combinadosObj: Record<string, any[]> = {};
+        for (const c of docCargas) {
+          const finKey = c.financiamiento === 'SEP' ? 'SEP' : c.financiamiento === 'PIE' ? 'PIE' : 'NORMAL';
+          finStats[finKey].docentesSet.add(r.docente.id);
+          if (c.tipoCarga === 'LECTIVA') {
+            if (c.esCombinado && c.grupoCombinado) {
+              const g = c.grupoCombinado.toUpperCase().trim();
+              const asig = c.asignaturaCod || 'GEN';
+              const key = `${asig}_${g}`;
+              if (!combinadosObj[key]) combinadosObj[key] = [];
+              combinadosObj[key].push(c);
+            } else {
+              finStats[finKey].horasLectivasPed += c.horasAllocadas;
+            }
+          } else {
+            finStats[finKey].horasNoLectivasCrono += c.horasAllocadas;
+          }
+          if (c.tipoCarga === 'NO_LECTIVA' && planificacionIds.has(c.actividadNoLectivaId)) {
+            planifAsignada += c.horasAllocadas;
+          }
+        }
+        for (const g in combinadosObj) {
+          const maxC = combinadosObj[g].reduce((prev: any, curr: any) =>
+            prev.horasAllocadas > curr.horasAllocadas ? prev : curr
+          );
+          const finKey = maxC.financiamiento === 'SEP' ? 'SEP' : maxC.financiamiento === 'PIE' ? 'PIE' : 'NORMAL';
+          finStats[finKey].horasLectivasPed += maxC.horasAllocadas;
+        }
+
+        const convProp = convByLectivas.get(Math.round(lectPed));
+        const maxNoLectProp = convProp ? parseCronoToDecimal(convProp.noLectivasCronologicas) : 0;
+        const minPlanifReq =
+          Math.floor(Number((maxNoLectProp * (pctPlanExigido / 100) * 100).toFixed(6))) / 100;
+        if (lectPed > 0 && minPlanifReq > 0 && planifAsignada + 0.0001 < minPlanifReq) {
+          normativaResumen.incumplePlanificacion++;
+        } else {
+          normativaResumen.cumplePlanificacion++;
+        }
+
+        const rowJornada = convByJornada.get(contratoRedondeado);
+        const maxNoLectJornada = rowJornada ? parseCronoToDecimal(rowJornada.noLectivasCronologicas) : maxNoLectProp;
+        if (maxNoLectJornada > 0 && noLect > maxNoLectJornada + 0.05) {
+          normativaResumen.excedeTopeNoLectivo++;
+        } else {
+          normativaResumen.cumpleTopeNoLectivo++;
+        }
 
         const tipoContrato = (r.docente.contrato || r.docente.tipoContrato || 'SIN ESPECIFICAR')
           .trim()
@@ -1285,6 +1530,15 @@ export async function getGlobalAnalytics() {
       }
     }
 
+    if (estVacantes > 0) {
+      vacantesPorEstablecimiento.push({
+        establecimiento: est.esedDescripcion,
+        cantidadVacantes: estVacantes,
+        horasContrato: Math.ceil(estVacantesHorasContrato),
+        horasAsignadas: Math.ceil(estVacantesHorasAsignadas)
+      });
+    }
+
     schoolStats.push({
       nombre: est.esedDescripcion,
       contrato: estContrato,
@@ -1294,7 +1548,8 @@ export async function getGlobalAnalytics() {
       docentesConCarga: estDocentesConCarga,
       aceptados: estAceptados,
       rechazados: estRechazados,
-      pendientes: estPendientes
+      pendientes: estPendientes,
+      bloqueado: !!est.bloqueado
     });
   }
 
@@ -1305,6 +1560,28 @@ export async function getGlobalAnalytics() {
 
   return {
     totalDocentesComuna,
+    cuadraturaJornada,
+    vacantesResumen: {
+      totalVacantes: totalVacantesComuna,
+      vacantesConCarga: vacantesConCargaComuna,
+      horasContratoVacantes: Math.ceil(horasContratoVacantesComuna),
+      horasAsignadasVacantes: Math.ceil(horasAsignadasVacantesComuna),
+      porEstablecimiento: vacantesPorEstablecimiento.sort((a, b) => b.horasContrato - a.horasContrato)
+    },
+    normativaResumen,
+    financiamientoResumen: Object.values(finStats).map(f => ({
+      fondo: f.fondo,
+      horasFicha: Math.round(f.horasFicha * 10) / 10,
+      horasLectivasPed: Math.round(f.horasLectivasPed * 10) / 10,
+      horasNoLectivasCrono: Math.round(f.horasNoLectivasCrono * 10) / 10,
+      docentesConCarga: f.docentesSet.size
+    })),
+    estadoCierreColegios: {
+      cerrados: colegiosCerrados,
+      enProceso: colegiosEnProceso,
+      totalConDotacion: colegiosCerrados + colegiosEnProceso,
+      colegiosConRechazos: schoolStats.filter((s: any) => s.rechazados > 0)
+    },
     totalHorasComuna,
     topDeficit,
     topEfficient,

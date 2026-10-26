@@ -1783,5 +1783,91 @@ export async function getDatosDocentesPage(establecimientoId: number) {
   return { docentes, todasCargas, tablaConversion, estConfig };
 }
 
+export async function guardarResolucionCargaDocente(
+  docenteId: number,
+  establecimientoId: number,
+  estadoAceptacion: 'PENDIENTE' | 'ACEPTADO' | 'RECHAZADO',
+  archivo?: { nombreArchivo: string; mimeType: string; archivoBase64: string } | null
+) {
+  await verificarEstablecimientoNoBloqueado(establecimientoId);
+
+  const docExistente = await prisma.docenteDocumentoFirmado.findUnique({
+    where: {
+      docenteId_establecimientoId: { docenteId, establecimientoId }
+    },
+    select: { nombreArchivo: true }
+  });
+
+  if (estadoAceptacion === 'ACEPTADO' || estadoAceptacion === 'RECHAZADO') {
+    if (!archivo?.archivoBase64 && !docExistente) {
+      return {
+        error:
+          'Para declarar que el docente ACEPTÓ o RECHAZÓ la propuesta, es obligatorio adjuntar el formulario firmado.'
+      };
+    }
+  }
+
+  if (archivo?.archivoBase64) {
+    await prisma.docenteDocumentoFirmado.upsert({
+      where: {
+        docenteId_establecimientoId: { docenteId, establecimientoId }
+      },
+      update: {
+        nombreArchivo: archivo.nombreArchivo,
+        mimeType: archivo.mimeType,
+        archivoBase64: archivo.archivoBase64
+      },
+      create: {
+        docenteId,
+        establecimientoId,
+        nombreArchivo: archivo.nombreArchivo,
+        mimeType: archivo.mimeType,
+        archivoBase64: archivo.archivoBase64
+      }
+    });
+  } else if (estadoAceptacion === 'PENDIENTE' && docExistente) {
+    await prisma.docenteDocumentoFirmado.delete({
+      where: {
+        docenteId_establecimientoId: { docenteId, establecimientoId }
+      }
+    });
+  }
+
+  const nombreFinal =
+    estadoAceptacion === 'PENDIENTE'
+      ? null
+      : archivo?.nombreArchivo || docExistente?.nombreArchivo || null;
+
+  await prisma.docenteEstablecimiento.update({
+    where: {
+      docenteId_establecimientoId: { docenteId, establecimientoId }
+    },
+    data: {
+      estadoAceptacion,
+      fechaAceptacion: estadoAceptacion === 'PENDIENTE' ? null : new Date(),
+      nombreArchivoFirmado: nombreFinal
+    }
+  });
+
+  return {
+    success: true,
+    estadoAceptacion,
+    nombreArchivoFirmado: nombreFinal,
+    fechaAceptacion: estadoAceptacion === 'PENDIENTE' ? null : new Date()
+  };
+}
+
+export async function obtenerDocumentoFirmadoDocente(
+  docenteId: number,
+  establecimientoId: number
+) {
+  return await prisma.docenteDocumentoFirmado.findUnique({
+    where: {
+      docenteId_establecimientoId: { docenteId, establecimientoId }
+    }
+  });
+}
+
+
 
 

@@ -10,7 +10,9 @@ import {
   reemplazarDocenteComodin,
   convertirDocenteEnVacante,
   getDatosDocentesPage,
-  getDatosPostGuardado
+  getDatosPostGuardado,
+  guardarResolucionCargaDocente,
+  obtenerDocumentoFirmadoDocente
 } from '../../actions';
 import * as XLSX from 'xlsx';
 
@@ -83,6 +85,14 @@ export default function DocentesPage() {
 
   const [tablaConversion, setTablaConversion] = useState<any[]>([]);
   const [docenteCargaObs, setDocenteCargaObs] = useState('');
+  const [estadoAceptacionUI, setEstadoAceptacionUI] = useState<'PENDIENTE' | 'ACEPTADO' | 'RECHAZADO'>('PENDIENTE');
+  const [nombreArchivoExistente, setNombreArchivoExistente] = useState<string | null>(null);
+  const [archivoFirmadoUI, setArchivoFirmadoUI] = useState<{
+    nombreArchivo: string;
+    mimeType: string;
+    archivoBase64: string;
+  } | null>(null);
+  const [guardandoResolucion, setGuardandoResolucion] = useState(false);
 
   useEffect(() => {
     const estId = Number(localStorage.getItem('selectedEstablecimientoId')) || 2;
@@ -232,12 +242,129 @@ export default function DocentesPage() {
   const handleVerCarga = async (doc: any) => {
     setDocenteSeleccionado(doc);
     const estRels = doc.establecimientos || [];
-    const rel = estRels.find((r: any) => r.establecimientoId === establecimientoId);
+    const rel = estRels.find((r: any) => r.establecimientoId === establecimientoId) || estRels[0];
     setDocenteCargaObs(rel?.observacionCarga || '');
+    setEstadoAceptacionUI((rel?.estadoAceptacion as any) || 'PENDIENTE');
+    setNombreArchivoExistente(rel?.nombreArchivoFirmado || null);
+    setArchivoFirmadoUI(null);
 
     const cargas = await getCargaDocenteUnico(doc.id, establecimientoId);
     setCargaDocente(cargas);
     setShowCargaModal(true);
+  };
+
+  const handleSeleccionarArchivoFirmado = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Si es imagen, comprimir automáticamente en el navegador para optimizar almacenamiento
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 1600;
+          let w = img.width;
+          let h = img.height;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, w, h);
+            ctx.drawImage(img, 0, 0, w, h);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+            setArchivoFirmadoUI({
+              nombreArchivo: file.name.replace(/\.[^.]+$/, '') + '.jpg',
+              mimeType: 'image/jpeg',
+              archivoBase64: dataUrl
+            });
+          }
+        };
+        img.src = ev.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    // Si es PDF, validar tamaño razonable (máx 2.5 MB)
+    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+      if (file.size > 2.5 * 1024 * 1024) {
+        alert('El archivo PDF supera los 2.5 MB. Por favor escanee el formulario en resolución estándar o suba una foto/imagen del documento.');
+        e.target.value = '';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = ev => {
+        setArchivoFirmadoUI({
+          nombreArchivo: file.name,
+          mimeType: 'application/pdf',
+          archivoBase64: ev.target?.result as string
+        });
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    alert('Formato no soportado. Por favor adjunte un archivo PDF o una imagen (JPG, PNG).');
+    e.target.value = '';
+  };
+
+  const handleGuardarResolucion = async () => {
+    if (!docenteSeleccionado) return;
+    if (estadoAceptacionUI === 'ACEPTADO' || estadoAceptacionUI === 'RECHAZADO') {
+      if (!archivoFirmadoUI && !nombreArchivoExistente) {
+        alert('Debe adjuntar el documento firmado para poder guardar si el docente Aceptó o Rechazó.');
+        return;
+      }
+    }
+
+    setGuardandoResolucion(true);
+    try {
+      const res: any = await guardarResolucionCargaDocente(
+        docenteSeleccionado.id,
+        establecimientoId,
+        estadoAceptacionUI,
+        archivoFirmadoUI
+      );
+      if (res?.error) {
+        alert(res.error);
+      } else {
+        setNombreArchivoExistente(res.nombreArchivoFirmado || null);
+        setArchivoFirmadoUI(null);
+        loadDocentes();
+        alert('Resolución y documento firmado guardados correctamente.');
+      }
+    } catch (err: any) {
+      alert(err?.message || 'Error al guardar la resolución del docente.');
+    }
+    setGuardandoResolucion(false);
+  };
+
+  const handleVerDocumentoFirmado = async (docId: number) => {
+    try {
+      const docFirmado = await obtenerDocumentoFirmadoDocente(docId, establecimientoId);
+      if (!docFirmado || !docFirmado.archivoBase64) {
+        alert('No se encontró el documento adjunto.');
+        return;
+      }
+      const res = await fetch(docFirmado.archivoBase64);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    } catch (err) {
+      alert('Error al abrir el documento firmado.');
+    }
   };
 
   const exportToExcel = () => {
@@ -251,7 +378,9 @@ export default function DocentesPage() {
       'TERMINO CONTRATO': d.terminoContrato ? new Date(d.terminoContrato).toLocaleDateString('es-CL') : '',
       'HRS TITULAR': d.horasTitular,
       'HRS CONTRATO': d.horasContrato,
-      'TOTAL JORNADA': d.totalJornada
+      'TOTAL JORNADA': d.totalJornada,
+      'RESOLUCION CARGA': d.estadoAceptacion || 'PENDIENTE',
+      'DOCUMENTO FIRMADO': d.nombreArchivoFirmado ? 'ADJUNTADO' : 'SIN ADJUNTAR'
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
@@ -406,6 +535,7 @@ export default function DocentesPage() {
                 <th className="px-4 py-3 text-center">Hrs Titular</th>
                 <th className="px-4 py-3 text-center">Hrs Contrato</th>
                 <th className="px-4 py-3 text-center">Total Jornada</th>
+                <th className="px-4 py-3 text-center">Resolución / Firma</th>
                 <th className="px-4 py-3 text-center">Acciones</th>
               </tr>
             </thead>
@@ -413,6 +543,11 @@ export default function DocentesPage() {
               {docentes.map(docente => {
                 const esComodin =
                   docente.rut?.startsWith('NN-') || /^NN\d+$/i.test(docente.apellidoPaterno || '');
+                const relEst =
+                  docente.establecimientos?.find((r: any) => r.establecimientoId === establecimientoId) ||
+                  docente.establecimientos?.[0];
+                const estadoAcep = relEst?.estadoAceptacion || 'PENDIENTE';
+                const tieneDocFirmado = !!relEst?.nombreArchivoFirmado;
                 return (
                   <tr
                     key={docente.id}
@@ -457,6 +592,36 @@ export default function DocentesPage() {
                     <td className="px-4 py-3 text-center text-gray-600">{docente.horasContrato || '-'}</td>
                     <td className="px-4 py-3 text-center font-bold text-[#39BABD]">
                       {docente.totalJornada || '-'}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <button
+                          onClick={() => handleVerCarga(docente)}
+                          title="Haz clic para registrar si el docente Aceptó o Rechazó y adjuntar su formulario firmado"
+                          className={`px-2 py-1 rounded text-xs font-bold border transition-colors ${
+                            estadoAcep === 'ACEPTADO'
+                              ? 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200'
+                              : estadoAcep === 'RECHAZADO'
+                              ? 'bg-red-100 text-red-800 border-red-300 hover:bg-red-200'
+                              : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'
+                          }`}
+                        >
+                          {estadoAcep === 'ACEPTADO'
+                            ? '✅ Aceptó'
+                            : estadoAcep === 'RECHAZADO'
+                            ? '❌ Rechazó'
+                            : '⏳ Pendiente'}
+                        </button>
+                        {tieneDocFirmado && (
+                          <button
+                            onClick={() => handleVerDocumentoFirmado(docente.id)}
+                            title={`Ver documento firmado (${relEst?.nombreArchivoFirmado})`}
+                            className="px-2 py-1 rounded text-xs font-semibold bg-blue-50 text-[#016098] border border-blue-200 hover:bg-blue-100 transition-colors"
+                          >
+                            📄 Ver Doc.
+                          </button>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-center w-48">
                       <div className="flex justify-center items-center gap-2">
@@ -1098,6 +1263,113 @@ export default function DocentesPage() {
                   <p className="text-sm text-amber-900 whitespace-pre-wrap">{docenteCargaObs}</p>
                 </div>
               )}
+
+              {/* Resolución del Docente y Documento Firmado */}
+              <div className="border border-blue-200 rounded-xl bg-blue-50/40 p-4 flex flex-col gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-blue-100 pb-2">
+                  <div>
+                    <h3 className="text-sm font-bold text-[#016098]">
+                      Resolución del Docente (Formulario de Conocimiento y Aceptación)
+                    </h3>
+                    <p className="text-xs text-gray-600">
+                      Declare si el docente aceptó o rechazó su propuesta y adjunte el formulario firmado.
+                    </p>
+                  </div>
+                  {nombreArchivoExistente && (
+                    <button
+                      type="button"
+                      onClick={() => handleVerDocumentoFirmado(docenteSeleccionado.id)}
+                      className="shrink-0 bg-white border border-blue-300 text-[#016098] hover:bg-blue-50 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors"
+                    >
+                      📄 Ver Documento Firmado ({nombreArchivoExistente})
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-semibold text-gray-700 mr-1">Decisión del Docente:</span>
+                    <button
+                      type="button"
+                      disabled={esModoSoloLectura}
+                      onClick={() => setEstadoAceptacionUI('ACEPTADO')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
+                        estadoAceptacionUI === 'ACEPTADO'
+                          ? 'bg-green-600 text-white border-green-700 shadow-sm ring-2 ring-green-200'
+                          : 'bg-white text-gray-700 border-gray-300 hover:bg-green-50'
+                      }`}
+                    >
+                      ✅ Aceptó Propuesta
+                    </button>
+                    <button
+                      type="button"
+                      disabled={esModoSoloLectura}
+                      onClick={() => setEstadoAceptacionUI('RECHAZADO')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
+                        estadoAceptacionUI === 'RECHAZADO'
+                          ? 'bg-red-600 text-white border-red-700 shadow-sm ring-2 ring-red-200'
+                          : 'bg-white text-gray-700 border-gray-300 hover:bg-red-50'
+                      }`}
+                    >
+                      ❌ Rechazó Propuesta
+                    </button>
+                    {estadoAceptacionUI !== 'PENDIENTE' && !esModoSoloLectura && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEstadoAceptacionUI('PENDIENTE');
+                          setArchivoFirmadoUI(null);
+                        }}
+                        className="px-2 py-1 text-[11px] text-gray-500 hover:text-gray-700 underline"
+                      >
+                        Volver a Pendiente
+                      </button>
+                    )}
+                  </div>
+
+                  {!esModoSoloLectura && (
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
+                      <label className="cursor-pointer bg-white border border-gray-300 hover:border-[#016098] text-gray-700 px-3 py-1.5 rounded-lg text-xs font-semibold text-center transition-colors shadow-sm">
+                        📎 {archivoFirmadoUI ? 'Cambiar Archivo' : nombreArchivoExistente ? 'Reemplazar Documento' : 'Adjuntar Documento Firmado'}
+                        <input
+                          type="file"
+                          accept=".pdf,image/*"
+                          onChange={handleSeleccionarArchivoFirmado}
+                          className="hidden"
+                        />
+                      </label>
+
+                      <button
+                        type="button"
+                        onClick={handleGuardarResolucion}
+                        disabled={
+                          guardandoResolucion ||
+                          ((estadoAceptacionUI === 'ACEPTADO' || estadoAceptacionUI === 'RECHAZADO') &&
+                            !archivoFirmadoUI &&
+                            !nombreArchivoExistente)
+                        }
+                        className="bg-[#016098] hover:bg-[#014976] disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-colors shadow-sm"
+                      >
+                        {guardandoResolucion ? 'Guardando...' : 'Guardar Resolución'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {archivoFirmadoUI && (
+                  <div className="text-xs text-emerald-700 font-semibold bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded">
+                    📎 Archivo listo para subir: <strong>{archivoFirmadoUI.nombreArchivo}</strong> (haz clic en &ldquo;Guardar Resolución&rdquo; para confirmar)
+                  </div>
+                )}
+
+                {(estadoAceptacionUI === 'ACEPTADO' || estadoAceptacionUI === 'RECHAZADO') &&
+                  !archivoFirmadoUI &&
+                  !nombreArchivoExistente && (
+                    <div className="text-xs text-amber-800 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded font-medium">
+                      ⚠️ Para guardar el estado de <strong>{estadoAceptacionUI === 'ACEPTADO' ? 'Aceptación' : 'Rechazo'}</strong> es obligatorio adjuntar primero el formulario firmado por el docente.
+                    </div>
+                  )}
+              </div>
 
               <div className="border rounded-lg bg-gray-50 p-2">
                 <h3 className="text-sm font-bold text-[#1e293b] mb-2 px-1">

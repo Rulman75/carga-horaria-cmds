@@ -503,7 +503,7 @@ Por favor, completa las horas de planificación antes de guardar.`);
               lectivas.forEach(c => {
                 if (c.esCombinado && c.grupoCombinado) {
                   const asig = c.codAsignatura || 'GEN';
-                  const key = `${c.tienCod || 0}_${c.grteCod || 0}_${asig}_${c.grupoCombinado.toUpperCase().trim()}`;
+                  const key = `${asig}_${c.grupoCombinado.toUpperCase().trim()}`;
                   if (!combinados[key]) combinados[key] = [];
                   combinados[key].push(c);
                 } else {
@@ -590,10 +590,29 @@ Por favor, completa las horas de planificación antes de guardar.`);
         <p style="font-size: 14px; text-align: justify; white-space: pre-wrap;">${observacionCarga}</p>
         ` : ``) + `
 
-        <div class="section">III. Declaración de Aceptación</div>
-        <p style="font-size: 14px; text-align: justify;">Mediante la firma del presente documento, declaro haber sido informado(a) detalladamente de mi carga horaria lectiva y no lectiva para el año escolar 2027 en el establecimiento indicado. Comprendo que esta distribución se ajusta a mi contrato de trabajo y a la planificación operativa del establecimiento.</p>
+        <div class="section">III. Declaración de Conocimiento y Resolución del Docente</div>
+        <p style="font-size: 13px; text-align: justify; margin-bottom: 12px;">Mediante el presente documento, declaro haber tomado conocimiento detallado de la propuesta de mi carga horaria lectiva y no lectiva para el año escolar 2027 en el establecimiento indicado, manifestando a continuación mi decisión (marcar con una X):</p>
 
-        <p style="font-size: 14px; margin-top: 40px;">En Antofagasta, a ____ de ______________ de 202__.</p>
+        <div style="display: flex; gap: 40px; margin: 14px 0 18px 0; font-size: 14px; font-weight: bold;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="display: inline-block; width: 22px; height: 22px; border: 2px solid #000;"></span>
+            <span>ACEPTO PROPUESTA DE CARGA HORARIA</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="display: inline-block; width: 22px; height: 22px; border: 2px solid #000;"></span>
+            <span>RECHAZO PROPUESTA DE CARGA HORARIA</span>
+          </div>
+        </div>
+
+        <div style="border: 1px solid #000; padding: 10px 12px; margin-bottom: 20px;">
+          <div style="font-size: 12px; font-weight: bold; margin-bottom: 18px;">OBSERVACIONES DEL DOCENTE (Completar de puño y letra):</div>
+          <div style="border-bottom: 1px dotted #555; height: 24px; margin-bottom: 8px;"></div>
+          <div style="border-bottom: 1px dotted #555; height: 24px; margin-bottom: 8px;"></div>
+          <div style="border-bottom: 1px dotted #555; height: 24px; margin-bottom: 8px;"></div>
+          <div style="border-bottom: 1px dotted #555; height: 24px;"></div>
+        </div>
+
+        <p style="font-size: 14px; margin-top: 25px;">En Antofagasta, a ____ de ______________ de 202__.</p>
 
         <div class="flex">
           <div class="signature">

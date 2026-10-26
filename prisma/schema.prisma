@@ -144,7 +144,21 @@ model DocenteEstablecimiento {
   docente           Docente         @relation(fields: [docenteId], references: [id])
   establecimiento   Establecimiento @relation(fields: [establecimientoId], references: [esedSec])
 
-  observacionCarga String?
+  observacionCarga     String?
+  estadoAceptacion     String    @default("PENDIENTE") // "PENDIENTE", "ACEPTADO", "RECHAZADO"
+  fechaAceptacion      DateTime?
+  nombreArchivoFirmado String?
+
+  @@id([docenteId, establecimientoId])
+}
+
+model DocenteDocumentoFirmado {
+  docenteId         Int
+  establecimientoId Int
+  nombreArchivo     String
+  mimeType          String
+  archivoBase64     String
+  updatedAt         DateTime @updatedAt
 
   @@id([docenteId, establecimientoId])
 }

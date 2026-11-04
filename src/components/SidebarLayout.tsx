@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { logoutUsuario, getEstablecimientos } from '../app/actions';
 import { usePathname } from 'next/navigation';
+import { APP_VERSION, GIT_COMMIT } from '@/lib/version';
 
 export default function SidebarLayout({
   children,
@@ -116,6 +117,12 @@ export default function SidebarLayout({
           </div>
           <h1 className="text-xl font-bold tracking-widest text-yellow-400">CMDS</h1>
           <p className="text-[10px] uppercase tracking-wider text-blue-200 mt-1 font-semibold">Carga Docente</p>
+          <span
+            className="mt-1.5 px-2.5 py-0.5 rounded-full bg-blue-900/50 border border-blue-300/30 text-[10px] font-mono text-blue-100 tracking-wide"
+            title={GIT_COMMIT ? `Versión v${APP_VERSION} (${GIT_COMMIT})` : `Versión v${APP_VERSION}`}
+          >
+            v{APP_VERSION}
+          </span>
         </div>
 
         <div className="px-4 py-4 bg-blue-50 border-b border-[#e2e8f0]">

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { loginUsuario, changePassword } from '../actions';
 import { useRouter } from 'next/navigation';
+import { APP_VERSION, GIT_COMMIT } from '@/lib/version';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -86,6 +87,12 @@ export default function Login() {
           Carga Docente
         </h2>
         <div className="mt-12 w-16 h-1 bg-yellow-400 rounded"></div>
+        <span
+          className="mt-6 px-3 py-1 rounded-full bg-blue-900/40 border border-blue-300/30 text-xs font-mono text-blue-100 tracking-wider"
+          title={GIT_COMMIT ? `Build commit: ${GIT_COMMIT}` : undefined}
+        >
+          Versión v{APP_VERSION}
+        </span>
       </div>
 
       {/* Panel Derecho (Formulario de Login o Cambio de Password) */}
@@ -202,6 +209,12 @@ export default function Login() {
           <div className="mt-8 pt-6 border-t border-gray-200 text-center">
             <p className="text-xs text-gray-400 font-semibold">
               &copy; 2026 CMDS - Corporación Municipal de Desarrollo Social de Antofagasta
+            </p>
+            <p
+              className="text-[11px] text-gray-400 font-mono mt-1"
+              title={GIT_COMMIT ? `Build commit: ${GIT_COMMIT}` : undefined}
+            >
+              Versión v{APP_VERSION}
             </p>
           </div>
         </div>

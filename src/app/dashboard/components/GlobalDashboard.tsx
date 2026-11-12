@@ -41,28 +41,31 @@ export default function GlobalDashboard() {
       </div>
 
       {/* Tarjetas KPI Ejecutivas Comunales (Siempre visibles) */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-xl shadow border border-gray-100 flex flex-col justify-between">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="md:col-span-2 bg-gradient-to-br from-[#016098] to-[#024a8d] text-white p-6 rounded-xl shadow-lg border-2 border-[#39BABD]/60 flex flex-col justify-between relative overflow-hidden">
           <div className="flex justify-between items-center">
-            <span className="text-xs font-bold uppercase text-gray-400">Docentes con Carga Comunal</span>
-            <span className="text-xs font-extrabold text-[#016098] bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+            <span className="text-xs font-extrabold uppercase tracking-wider text-blue-100">
+              ⭐ Docentes con Carga Comunal
+            </span>
+            <span className="text-sm font-extrabold text-[#016098] bg-yellow-400 px-2.5 py-0.5 rounded-full shadow-sm">
               {data.totalDocentesComuna > 0
                 ? Math.round(((data.resumenResolucion?.totalConCarga || 0) / data.totalDocentesComuna) * 1000) / 10
                 : 0}
-              %
+              % Avance
             </span>
           </div>
-          <div className="flex items-baseline justify-between mt-2">
-            <span className="text-3xl font-extrabold text-[#016098]">
+          <div className="flex items-baseline gap-3 mt-2">
+            <span className="text-4xl font-black text-white tracking-tight">
               {data.resumenResolucion?.totalConCarga || 0}
             </span>
-            <span className="text-xs text-gray-500 font-medium">
-              de {data.totalDocentesComuna} en colegios ({data.cuadraturaJornada?.sinCarga || 0} sin carga)
+            <span className="text-xs text-blue-100 font-medium">
+              de <strong>{data.totalDocentesComuna}</strong> en colegios (
+              <strong className="text-yellow-300">{data.cuadraturaJornada?.sinCarga || 0} sin carga</strong>)
             </span>
           </div>
-          <div className="w-full bg-gray-100 h-1.5 rounded-full mt-2 overflow-hidden">
+          <div className="w-full bg-blue-950/60 h-2.5 rounded-full mt-3 overflow-hidden p-0.5">
             <div
-              className="bg-[#016098] h-full rounded-full"
+              className="bg-gradient-to-r from-[#39BABD] to-yellow-400 h-full rounded-full transition-all duration-500"
               style={{
                 width: `${Math.min(
                   100,
@@ -73,15 +76,19 @@ export default function GlobalDashboard() {
               }}
             />
           </div>
-          <div className="flex justify-between items-center text-[11px] mt-2.5 pt-2 border-t border-gray-100 text-gray-600">
-            <span>
-              👤 Reales:{' '}
-              <strong className="text-gray-800">
-                {(data.resumenResolucion?.totalConCarga || 0) - (data.vacantesResumen?.vacantesConCarga || 0)}
-              </strong>{' '}
-              | 🏷️ NN: <strong className="text-amber-700">{data.vacantesResumen?.vacantesConCarga || 0}</strong>
-            </span>
-            <span className="font-bold text-[#016098]">{data.totalHorasComuna} hrs</span>
+          <div className="flex flex-wrap justify-between items-center gap-2 text-xs mt-3 pt-2.5 border-t border-white/15 text-blue-50">
+            <div className="flex items-center gap-2">
+              <span className="bg-white/10 px-2 py-0.5 rounded">
+                👤 Reales:{' '}
+                <strong className="text-white">
+                  {(data.resumenResolucion?.totalConCarga || 0) - (data.vacantesResumen?.vacantesConCarga || 0)}
+                </strong>
+              </span>
+              <span className="bg-amber-400/20 text-amber-200 px-2 py-0.5 rounded border border-amber-300/30">
+                🏷️ NN: <strong className="text-yellow-300">{data.vacantesResumen?.vacantesConCarga || 0}</strong>
+              </span>
+            </div>
+            <span className="font-extrabold text-yellow-300">{data.totalHorasComuna} hrs contrato</span>
           </div>
         </div>
 

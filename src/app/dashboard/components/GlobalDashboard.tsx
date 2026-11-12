@@ -43,13 +43,44 @@ export default function GlobalDashboard() {
       {/* Tarjetas KPI Ejecutivas Comunales (Siempre visibles) */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-xl shadow border border-gray-100 flex flex-col justify-between">
-          <span className="text-xs font-bold uppercase text-gray-400">Fuerza Laboral Comunal</span>
-          <div className="flex items-baseline justify-between mt-2">
-            <span className="text-3xl font-extrabold text-[#016098]">{data.totalDocentesComuna}</span>
-            <span className="text-xs text-gray-500 font-medium">docentes en red</span>
+          <div className="flex justify-between items-center">
+            <span className="text-xs font-bold uppercase text-gray-400">Docentes con Carga Comunal</span>
+            <span className="text-xs font-extrabold text-[#016098] bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+              {data.totalDocentesComuna > 0
+                ? Math.round(((data.resumenResolucion?.totalConCarga || 0) / data.totalDocentesComuna) * 1000) / 10
+                : 0}
+              %
+            </span>
           </div>
-          <div className="flex justify-between items-center text-xs mt-3 pt-2 border-t border-gray-100">
-            <span className="text-gray-500">Horas Contrato Totales:</span>
+          <div className="flex items-baseline justify-between mt-2">
+            <span className="text-3xl font-extrabold text-[#016098]">
+              {data.resumenResolucion?.totalConCarga || 0}
+            </span>
+            <span className="text-xs text-gray-500 font-medium">
+              de {data.totalDocentesComuna} en colegios ({data.cuadraturaJornada?.sinCarga || 0} sin carga)
+            </span>
+          </div>
+          <div className="w-full bg-gray-100 h-1.5 rounded-full mt-2 overflow-hidden">
+            <div
+              className="bg-[#016098] h-full rounded-full"
+              style={{
+                width: `${Math.min(
+                  100,
+                  data.totalDocentesComuna > 0
+                    ? ((data.resumenResolucion?.totalConCarga || 0) / data.totalDocentesComuna) * 100
+                    : 0
+                )}%`
+              }}
+            />
+          </div>
+          <div className="flex justify-between items-center text-[11px] mt-2.5 pt-2 border-t border-gray-100 text-gray-600">
+            <span>
+              👤 Reales:{' '}
+              <strong className="text-gray-800">
+                {(data.resumenResolucion?.totalConCarga || 0) - (data.vacantesResumen?.vacantesConCarga || 0)}
+              </strong>{' '}
+              | 🏷️ NN: <strong className="text-amber-700">{data.vacantesResumen?.vacantesConCarga || 0}</strong>
+            </span>
             <span className="font-bold text-[#016098]">{data.totalHorasComuna} hrs</span>
           </div>
         </div>

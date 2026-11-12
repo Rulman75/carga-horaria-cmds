@@ -77,15 +77,31 @@ export default function SchoolDashboard({ estId }: { estId: number }) {
       {/* Tarjetas KPI Superiores (Siempre visibles) */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-xl shadow border border-gray-100 flex flex-col justify-between">
-          <span className="text-xs font-bold uppercase text-gray-400">Progreso de Asignación (UTP)</span>
-          <div className="flex items-baseline justify-between mt-2">
-            <span className="text-3xl font-extrabold text-[#016098]">{pctAsignado}%</span>
-            <span className="text-xs text-gray-500 font-medium">
-              {data.docentesAsignados} / {data.totalDocentes} docentes
+          <div className="flex justify-between items-center">
+            <span className="text-xs font-bold uppercase text-gray-400">Docentes con Carga (UTP)</span>
+            <span className="text-xs font-extrabold text-[#016098] bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+              {pctAsignado}%
             </span>
           </div>
-          <div className="w-full bg-gray-100 h-2 rounded-full mt-3 overflow-hidden">
+          <div className="flex items-baseline justify-between mt-2">
+            <span className="text-3xl font-extrabold text-[#016098]">{data.docentesAsignados}</span>
+            <span className="text-xs text-gray-500 font-medium">
+              de {data.totalDocentes} docentes ({data.cuadraturaJornada?.sinCarga || 0} sin carga)
+            </span>
+          </div>
+          <div className="w-full bg-gray-100 h-1.5 rounded-full mt-2 overflow-hidden">
             <div className="bg-[#016098] h-full rounded-full" style={{ width: `${Math.min(100, pctAsignado)}%` }} />
+          </div>
+          <div className="flex justify-between items-center text-[11px] mt-2.5 pt-2 border-t border-gray-100 text-gray-600">
+            <span>
+              👤 Reales:{' '}
+              <strong className="text-gray-800">
+                {(data.docentesAsignados || 0) - (data.vacantesResumen?.vacantesConCarga || 0)}
+              </strong>
+            </span>
+            <span>
+              🏷️ Vacantes NN: <strong className="text-amber-700">{data.vacantesResumen?.vacantesConCarga || 0}</strong>
+            </span>
           </div>
         </div>
 

@@ -1019,7 +1019,19 @@ export async function getSchoolAnalytics(establecimientoId: number) {
     subjectNeed[det.codAsignatura].needed += det.horas * (det.grupos ?? cursos);
   });
 
-  const cargasByDocente = new Map<number, any[]>();
+  const cargasByDocente = new Map<any, any[]>();
+  for (const c of cargas) {
+    const estId = (c as any).planEstablecimiento?.establecimientoId;
+    if (estId) {
+      const key = `${c.docenteId}_${estId}`;
+      let list = cargasByDocente.get(key);
+      if (!list) {
+        list = [];
+        cargasByDocente.set(key, list);
+      }
+      list.push(c);
+    }
+  }
   cargas.forEach(c => {
     if (c.tipoCarga === 'LECTIVA' && c.asignaturaCod && subjectNeed[c.asignaturaCod]) {
       subjectNeed[c.asignaturaCod].assigned += c.horasAllocadas;
@@ -1289,7 +1301,9 @@ export async function getGlobalAnalytics() {
     getTablaConversion(),
     getEstablecimientos(),
     prisma.docenteEstablecimiento.findMany({ include: { docente: true } }),
-    prisma.cargaHoraria.findMany()
+    prisma.cargaHoraria.findMany({
+      include: { planEstablecimiento: { select: { establecimientoId: true } } }
+    })
   ]);
 
   const convByLectivas = new Map<number, any>();
@@ -1307,7 +1321,19 @@ export async function getGlobalAnalytics() {
     list.push(r);
   }
 
-  const cargasByDocente = new Map<number, any[]>();
+  const cargasByDocente = new Map<any, any[]>();
+  for (const c of cargas) {
+    const estId = (c as any).planEstablecimiento?.establecimientoId;
+    if (estId) {
+      const key = `${c.docenteId}_${estId}`;
+      let list = cargasByDocente.get(key);
+      if (!list) {
+        list = [];
+        cargasByDocente.set(key, list);
+      }
+      list.push(c);
+    }
+  }
   for (const c of cargas) {
     let list = cargasByDocente.get(c.docenteId);
     if (!list) {
@@ -1390,7 +1416,7 @@ export async function getGlobalAnalytics() {
         /^NN\d+$/i.test(r.docente.apellidoPaterno || '') ||
         (r.docente.contrato || '').toUpperCase() === 'VACANTE';
 
-      const docCargas = cargasByDocente.get(r.docente.id) || [];
+      const docCargas = cargasByDocente.get(`${r.docente.id}_${est.esedSec}`) || [];
       let lectPed = 0,
         noLect = 0,
         extra = 0;
